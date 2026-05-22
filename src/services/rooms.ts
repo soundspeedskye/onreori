@@ -8,6 +8,8 @@ const PREVIEW_ROOMS_KEY = '@onreori/previewRooms';
 const PREVIEW_MEMBERS_KEY = '@onreori/previewRoomMembers';
 const CHAT_MEDIA_BUCKET = 'chat-media';
 const CHAT_MEDIA_SIGNED_URL_SECONDS = 60 * 60;
+const TUTORIAL_ROOM_ID_PREFIX = 'tutorial-';
+const TUTORIAL_ENTRY_CODE = '0000';
 
 type ChatMessageRow = {
   id: unknown;
@@ -182,6 +184,39 @@ type PreviewRoom = EventRoom & {
   entryCode: string;
 };
 
+function isTutorialRoomId(roomId: string): boolean {
+  return roomId.startsWith(TUTORIAL_ROOM_ID_PREFIX);
+}
+
+function getTutorialRoom(categoryId: string): PreviewRoom {
+  return {
+    id: `${TUTORIAL_ROOM_ID_PREFIX}${categoryId}`,
+    categoryId,
+    title: '튜토리얼 단톡방',
+    eventDate: '상시',
+    location: `입장코드 ${TUTORIAL_ENTRY_CODE}`,
+    memberCount: 1,
+    createdBy: 'tutorial',
+    createdAt: '2026-05-22T00:00:00.000Z',
+    entryCode: TUTORIAL_ENTRY_CODE,
+  };
+}
+
+function getTutorialMessages(roomId: string): ChatMessage[] {
+  return [
+    {
+      id: `${roomId}-welcome`,
+      roomId,
+      userId: 'tutorial',
+      nickname: '온리오리',
+      type: 'text',
+      body: `튜토리얼 단톡방입니다. 입장코드는 ${TUTORIAL_ENTRY_CODE}이고, 현장 정보나 질문을 편하게 남겨보세요.`,
+      hashtags: [],
+      createdAt: '2026-05-22T00:00:00.000Z',
+    },
+  ];
+}
+
 async function readPreviewRooms(): Promise<PreviewRoom[]> {
   const rawValue = await AsyncStorage.getItem(PREVIEW_ROOMS_KEY);
 
@@ -242,11 +277,15 @@ export async function listRoomsByCategory(
   categoryId: string,
 ): Promise<EventRoom[]> {
   if (!isSupabaseConfigured || !supabase) {
-    return readPreviewRooms().then(rooms =>
-      rooms
+    return readPreviewRooms().then(rooms => {
+      const categoryRooms = rooms
         .filter(room => room.categoryId === categoryId)
-        .map(room => toPublicPreviewRoom(room)),
-    );
+        .map(room => toPublicPreviewRoom(room));
+
+      return categoryRooms.length > 0
+        ? categoryRooms
+        : [toPublicPreviewRoom(getTutorialRoom(categoryId))];
+    });
   }
 
   const {data, error} = await supabase
@@ -259,7 +298,11 @@ export async function listRoomsByCategory(
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(row => mapEventRoomRow(row));
+  const rooms = (data ?? []).map(row => mapEventRoomRow(row));
+
+  return rooms.length > 0
+    ? rooms
+    : [toPublicPreviewRoom(getTutorialRoom(categoryId))];
 }
 
 export async function createRoom(params: {
@@ -336,6 +379,15 @@ export async function joinRoomWithCode(
     throw new Error('입장코드를 입력하세요.');
   }
 
+  if (isTutorialRoomId(roomId)) {
+    if (entryCode.trim() !== TUTORIAL_ENTRY_CODE) {
+      throw new Error('입장코드가 맞지 않습니다.');
+    }
+
+    await addPreviewMember(roomId, user.id);
+    return;
+  }
+
   if (!isSupabaseConfigured || !supabase) {
     const rooms = await readPreviewRooms();
     const room = rooms.find(item => item.id === roomId);
@@ -359,6 +411,12 @@ export async function joinRoomWithCode(
 }
 
 export async function listMessages(roomId: string): Promise<ChatMessage[]> {
+  if (isTutorialRoomId(roomId)) {
+    const messages = await readPreviewMessages(roomId);
+
+    return messages.length > 0 ? messages : getTutorialMessages(roomId);
+  }
+
   if (!isSupabaseConfigured || !supabase) {
     return readPreviewMessages(roomId);
   }
@@ -400,6 +458,15 @@ export async function sendTextMessage(
     createdAt: new Date().toISOString(),
   };
 
+  if (isTutorialRoomId(roomId)) {
+    const messages = await readPreviewMessages(roomId);
+    await writePreviewMessages(roomId, [
+      ...(messages.length > 0 ? messages : getTutorialMessages(roomId)),
+      message,
+    ]);
+    return message;
+  }
+
   if (!isSupabaseConfigured || !supabase) {
     const messages = await readPreviewMessages(roomId);
     await writePreviewMessages(roomId, [...messages, message]);
@@ -434,19 +501,28 @@ export async function sendImageMessage(params: {
   contentType: string;
 }): Promise<ChatMessage> {
   const now = Date.now();
+  const message: ChatMessage = {
+    id: `message-${now}-${Math.random().toString(36).slice(2, 8)}`,
+    roomId: params.roomId,
+    userId: params.user.id,
+    nickname: params.user.nickname,
+    type: 'image',
+    body: '사진',
+    mediaUrl: params.imageUri,
+    hashtags: [],
+    createdAt: new Date().toISOString(),
+  };
+
+  if (isTutorialRoomId(params.roomId)) {
+    const messages = await readPreviewMessages(params.roomId);
+    await writePreviewMessages(params.roomId, [
+      ...(messages.length > 0 ? messages : getTutorialMessages(params.roomId)),
+      message,
+    ]);
+    return message;
+  }
 
   if (!isSupabaseConfigured || !supabase) {
-    const message: ChatMessage = {
-      id: `message-${now}-${Math.random().toString(36).slice(2, 8)}`,
-      roomId: params.roomId,
-      userId: params.user.id,
-      nickname: params.user.nickname,
-      type: 'image',
-      body: '사진',
-      mediaUrl: params.imageUri,
-      hashtags: [],
-      createdAt: new Date().toISOString(),
-    };
     const messages = await readPreviewMessages(params.roomId);
     await writePreviewMessages(params.roomId, [...messages, message]);
     return message;
