@@ -1,20 +1,19 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { colors } from '../theme/tokens';
 
-import {useAuth} from '../auth/AuthContext';
-import {ChecklistItemRow} from '../components/ChecklistItemRow';
-import {conditions} from '../data/templates';
-import {saveChecklistToAccount} from '../services/checklistAccount';
+import { useAuth } from '../auth/AuthContext';
+import { ChecklistHeroCard } from '../components/checklist/ChecklistHeroCard';
+import { ChecklistItemRow } from '../components/checklist/ChecklistItemRow';
+import { BottomActionBar } from '../components/ui/BottomActionBar';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
+import { TextField } from '../components/ui/TextField';
+import { conditions } from '../data/templates';
+import { saveChecklistToAccount } from '../services/checklistAccount';
 import {
   getChecklistById,
   saveChecklist,
@@ -23,7 +22,7 @@ import {
   saveChecklistSynced,
   setPendingAccountSaveChecklistId,
 } from '../storage/checklists';
-import type {Checklist, ChecklistItem, RootStackParamList} from '../types';
+import type { Checklist, ChecklistItem, RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checklist'>;
 
@@ -32,9 +31,10 @@ type SectionGroup = {
   items: ChecklistItem[];
 };
 
-export function ChecklistScreen({navigation, route}: Props) {
-  const {user} = useAuth();
+export function ChecklistScreen({ navigation, route }: Props) {
+  const { user } = useAuth();
   const [checklist, setChecklist] = useState<Checklist | null>(null);
+  const [customItemDescription, setCustomItemDescription] = useState('');
   const [customItemName, setCustomItemName] = useState('');
   const [savingToAccount, setSavingToAccount] = useState(false);
 
@@ -90,7 +90,7 @@ export function ChecklistScreen({navigation, route}: Props) {
       ...checklist,
       updatedAt: new Date().toISOString(),
       items: checklist.items.map(item =>
-        item.id === itemId ? {...item, checked: !item.checked} : item,
+        item.id === itemId ? { ...item, checked: !item.checked } : item,
       ),
     };
 
@@ -102,6 +102,7 @@ export function ChecklistScreen({navigation, route}: Props) {
       return;
     }
 
+    const nextDescription = customItemDescription.trim();
     const nextName = customItemName.trim();
 
     if (!nextName) {
@@ -119,7 +120,7 @@ export function ChecklistScreen({navigation, route}: Props) {
           name: nextName,
           section: '추가 항목',
           essential: false,
-          tip: '직접 추가한 항목입니다.',
+          tip: nextDescription || '직접 추가한 항목입니다.',
           when: [],
           checked: false,
           custom: true,
@@ -127,7 +128,28 @@ export function ChecklistScreen({navigation, route}: Props) {
       ],
     };
 
+    setCustomItemDescription('');
     setCustomItemName('');
+    await persistChecklist(nextChecklist);
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!checklist) {
+      return;
+    }
+
+    const targetItem = checklist.items.find(item => item.id === itemId);
+
+    if (!targetItem || targetItem.essential) {
+      return;
+    }
+
+    const nextChecklist = {
+      ...checklist,
+      updatedAt: new Date().toISOString(),
+      items: checklist.items.filter(item => item.id !== itemId),
+    };
+
     await persistChecklist(nextChecklist);
   };
 
@@ -151,7 +173,7 @@ export function ChecklistScreen({navigation, route}: Props) {
       setChecklist(draftChecklist);
       await setPendingAccountSaveChecklistId(draftChecklist.id);
       navigation.navigate('Auth', {
-        redirect: {type: 'accountSave', checklistId: draftChecklist.id},
+        redirect: { type: 'accountSave', checklistId: draftChecklist.id },
       });
       return;
     }
@@ -178,63 +200,57 @@ export function ChecklistScreen({navigation, route}: Props) {
   if (!checklist) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>체크리스트를 불러오지 못했습니다.</Text>
-        </View>
+        <EmptyState
+          title="체크리스트를 불러오지 못했습니다."
+          style={styles.emptyState}
+        />
       </SafeAreaView>
     );
   }
 
   const checkedCount = checklist.items.filter(item => item.checked).length;
+  const saveStateLabel =
+    checklist.saveState === 'synced'
+      ? '내 계정에 저장됨'
+      : checklist.saveState === 'localOnly'
+      ? '로컬에 저장됨'
+      : '아직 저장하지 않은 체크리스트';
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.heroCard}>
-          <View style={styles.heroTop}>
-            <Text style={styles.heroIcon}>{checklist.icon}</Text>
-            <View style={styles.heroCopy}>
-              <Text style={styles.heroTitle}>{checklist.title}</Text>
-              <Text style={styles.heroMeta}>
-                {checkedCount}/{checklist.items.length} 완료
-              </Text>
-              <Text style={styles.saveStateText}>
-                {checklist.saveState === 'synced'
-                  ? '내 계정에 저장됨'
-                  : checklist.saveState === 'localOnly'
-                    ? '로컬에 저장됨'
-                    : '아직 저장하지 않은 체크리스트'}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.conditionWrap}>
-            {selectedConditionLabels.length > 0 ? (
-              selectedConditionLabels.map(label => (
-                <Text key={label} style={styles.conditionChip}>
-                  {label}
-                </Text>
-              ))
-            ) : (
-              <Text style={styles.conditionFallback}>선택한 추가 조건 없음</Text>
-            )}
-          </View>
-        </View>
+        <ChecklistHeroCard
+          icon={checklist.icon}
+          title={checklist.title}
+          meta={`${checkedCount}/${checklist.items.length} 완료`}
+          saveStateLabel={saveStateLabel}
+          conditionLabels={selectedConditionLabels}
+        />
 
-        <View style={styles.addBox}>
-          <Text style={styles.sectionTitle}>항목 추가</Text>
-          <View style={styles.addRow}>
-            <TextInput
+        <Card style={styles.addCard}>
+          <Text style={styles.sectionTitle}>아이템 추가</Text>
+          <View style={styles.addFields}>
+            <TextField
               onChangeText={setCustomItemName}
-              placeholder="직접 챙길 항목을 입력하세요"
-              placeholderTextColor="#9d8f86"
-              style={styles.input}
+              placeholder="item"
               value={customItemName}
             />
-            <Pressable onPress={handleAddCustomItem} style={styles.addButton}>
-              <Text style={styles.addButtonText}>추가</Text>
-            </Pressable>
+            <TextField
+              multiline
+              onChangeText={setCustomItemDescription}
+              placeholder="description"
+              style={styles.descriptionInput}
+              value={customItemDescription}
+            />
+            <Button
+              onPress={handleAddCustomItem}
+              style={styles.addButton}
+              textStyle={styles.addButtonText}
+              title="추가"
+              variant="dark"
+            />
           </View>
-        </View>
+        </Card>
 
         {groupedItems.map(section => (
           <View key={section.title} style={styles.section}>
@@ -242,8 +258,12 @@ export function ChecklistScreen({navigation, route}: Props) {
             <View style={styles.sectionList}>
               {section.items.map(item => (
                 <ChecklistItemRow
+                  canDelete={!item.essential}
                   key={item.id}
                   item={item}
+                  onDelete={() => {
+                    handleDeleteItem(item.id);
+                  }}
                   onToggle={() => {
                     toggleItem(item.id);
                   }}
@@ -254,32 +274,36 @@ export function ChecklistScreen({navigation, route}: Props) {
         ))}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <BottomActionBar>
         <View style={styles.footerRow}>
-          <Pressable onPress={handleSaveLocal} style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>로컬에 저장</Text>
-          </Pressable>
-          <Pressable
+          <Button
+            onPress={handleSaveLocal}
+            style={styles.footerButton}
+            title="로컬에 저장"
+            variant="secondary"
+          />
+          <Button
             disabled={savingToAccount}
             onPress={handleSaveToAccount}
-            style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>
-              {savingToAccount ? '저장 중...' : '내 계정에 저장'}
-            </Text>
-          </Pressable>
+            style={styles.footerButton}
+            title={savingToAccount ? '저장 중...' : '내 계정에 저장'}
+          />
         </View>
-        <Pressable
-          onPress={() => navigation.navigate('ShareCard', {checklistId: checklist.id})}
-          style={styles.shareButton}>
-          <Text style={styles.shareButtonText}>공유 카드</Text>
-        </Pressable>
-      </View>
+        <Button
+          onPress={() =>
+            navigation.navigate('ShareCard', { checklistId: checklist.id })
+          }
+          title="공유 카드"
+          variant="dark"
+        />
+      </BottomActionBar>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    backgroundColor: colors.background,
     flex: 1,
   },
   content: {
@@ -287,86 +311,23 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 120,
   },
-  heroCard: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 24,
-    borderWidth: 1,
-    gap: 14,
-    padding: 18,
-  },
-  heroTop: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 14,
-  },
-  heroIcon: {
-    fontSize: 38,
-  },
-  heroCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  heroTitle: {
-    color: '#241b16',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  heroMeta: {
-    color: '#b05f3c',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  saveStateText: {
-    color: '#7a6d64',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  conditionWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  conditionChip: {
-    backgroundColor: '#ffe4d6',
-    borderRadius: 999,
-    color: '#8a4d2b',
-    fontSize: 12,
-    fontWeight: '700',
-    overflow: 'hidden',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  conditionFallback: {
-    color: '#7a6d64',
-    fontSize: 13,
-  },
-  addBox: {
+  addCard: {
     gap: 12,
   },
-  addRow: {
-    flexDirection: 'row',
+  addFields: {
     gap: 10,
   },
-  input: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 16,
-    borderWidth: 1,
-    color: '#241b16',
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  descriptionInput: {
+    minHeight: 74,
+    textAlignVertical: 'top',
   },
   addButton: {
-    alignItems: 'center',
-    backgroundColor: '#241b16',
     borderRadius: 16,
-    justifyContent: 'center',
+    minHeight: 0,
     paddingHorizontal: 18,
+    paddingVertical: 12,
   },
   addButtonText: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -374,70 +335,21 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   sectionTitle: {
-    color: '#241b16',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700',
   },
   sectionList: {
     gap: 10,
   },
-  footer: {
-    backgroundColor: '#f7f1ea',
-    gap: 10,
-    borderTopColor: '#eadccd',
-    borderTopWidth: 1,
-    padding: 16,
-  },
   footerRow: {
     flexDirection: 'row',
     gap: 10,
   },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#ff6b6b',
-    borderRadius: 16,
+  footerButton: {
     flex: 1,
-    paddingVertical: 16,
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 16,
-    borderWidth: 1,
-    flex: 1,
-    paddingVertical: 16,
-  },
-  secondaryButtonText: {
-    color: '#241b16',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  shareButton: {
-    alignItems: 'center',
-    backgroundColor: '#241b16',
-    borderRadius: 16,
-    paddingVertical: 14,
-  },
-  shareButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '700',
   },
   emptyState: {
-    alignItems: 'center',
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  emptyTitle: {
-    color: '#241b16',
-    fontSize: 18,
-    fontWeight: '700',
   },
 });

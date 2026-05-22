@@ -1,29 +1,18 @@
 import type {
   Checklist,
   ConditionId,
-  StickerSlotKey,
   Template,
   TemplatesDocument,
 } from '../types';
 
-const templatesDocument = require('../../data/templates.v1.json') as TemplatesDocument;
-
-const emptyStickers: Record<StickerSlotKey, string | null> = {
-  topLeft: null,
-  topRight: null,
-  bottomLeft: null,
-  bottomRight: null,
-};
+const templatesDocument =
+  require('../../data/templates.v1.json') as TemplatesDocument;
 
 export const conditions = templatesDocument.conditions;
-export const templates = templatesDocument.templates;
+const templates = templatesDocument.templates;
 
 export function getTemplateById(templateId: string): Template | undefined {
   return templates.find(template => template.id === templateId);
-}
-
-export function getTemplateByCategory(categoryId: string): Template | undefined {
-  return templates.find(template => template.category === categoryId);
 }
 
 export function createChecklistFromTemplate(
@@ -55,6 +44,5 @@ export function createChecklistFromTemplate(
         custom: false,
         sourceItemId: item.id,
       })),
-    stickers: {...emptyStickers},
   };
 }

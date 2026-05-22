@@ -1,18 +1,19 @@
 import React, {useState} from 'react';
 import {
-  ActivityIndicator,
   Alert,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {colors} from '../theme/tokens';
 
 import {useAuth} from '../auth/AuthContext';
+import {Button} from '../components/ui/Button';
+import {ScreenHeader} from '../components/ui/ScreenHeader';
+import {TextField} from '../components/ui/TextField';
 import {saveChecklistToAccount} from '../services/checklistAccount';
 import {
   consumePendingAccountSaveChecklistId,
@@ -86,13 +87,10 @@ export function AuthScreen({navigation, route}: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>
-            {mode === 'signIn' ? '로그인' : '회원가입'}
-          </Text>
-          <Text style={styles.description}>
-            이벤트 단톡방 입장과 내 계정 저장은 로그인한 사용자만 사용할 수
-            있어요.
-          </Text>
+          <ScreenHeader
+            title={mode === 'signIn' ? '로그인' : '회원가입'}
+            description="이벤트 단톡방 입장과 내 계정 저장은 로그인한 사용자만 사용할 수 있어요."
+          />
           {!serverConfigured ? (
             <Text style={styles.previewNotice}>
               Supabase 설정 전이라 현재는 로컬 프리뷰 로그인으로 동작합니다.
@@ -102,55 +100,48 @@ export function AuthScreen({navigation, route}: Props) {
 
         <View style={styles.form}>
           {mode === 'signUp' ? (
-            <TextInput
+            <TextField
               onChangeText={setNickname}
               placeholder="닉네임"
-              placeholderTextColor="#9d8f86"
               style={styles.input}
               value={nickname}
             />
           ) : null}
-          <TextInput
+          <TextField
             autoCapitalize="none"
             keyboardType="email-address"
             onChangeText={setEmail}
             placeholder="이메일"
-            placeholderTextColor="#9d8f86"
             style={styles.input}
             value={email}
           />
-          <TextInput
+          <TextField
             onChangeText={setPassword}
             placeholder="비밀번호"
-            placeholderTextColor="#9d8f86"
             secureTextEntry
             style={styles.input}
             value={password}
           />
         </View>
 
-        <Pressable
-          disabled={submitting}
+        <Button
+          loading={submitting}
           onPress={handleSubmit}
-          style={[styles.primaryButton, submitting && styles.disabledButton]}>
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.primaryButtonText}>
-              {mode === 'signIn' ? '로그인하기' : '가입하고 계속하기'}
-            </Text>
-          )}
-        </Pressable>
+          style={styles.primaryButton}
+          title={mode === 'signIn' ? '로그인하기' : '가입하고 계속하기'}
+        />
 
-        <Pressable
+        <Button
           onPress={() => setMode(mode === 'signIn' ? 'signUp' : 'signIn')}
-          style={styles.switchButton}>
-          <Text style={styles.switchButtonText}>
-            {mode === 'signIn'
+          style={styles.switchButton}
+          textStyle={styles.switchButtonText}
+          title={
+            mode === 'signIn'
               ? '계정이 없다면 회원가입'
-              : '이미 계정이 있다면 로그인'}
-          </Text>
-        </Pressable>
+              : '이미 계정이 있다면 로그인'
+          }
+          variant="ghost"
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -158,7 +149,7 @@ export function AuthScreen({navigation, route}: Props) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f7f1ea',
+    backgroundColor: colors.background,
     flex: 1,
   },
   content: {
@@ -166,23 +157,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    gap: 8,
     marginBottom: 8,
   },
-  title: {
-    color: '#241b16',
-    fontSize: 30,
-    fontWeight: '900',
-  },
-  description: {
-    color: '#5f5047',
-    fontSize: 15,
-    lineHeight: 22,
-  },
   previewNotice: {
-    backgroundColor: '#fff2c7',
+    backgroundColor: colors.actionSoft,
     borderRadius: 14,
-    color: '#76521b',
+    color: colors.text,
     fontSize: 13,
     fontWeight: '700',
     lineHeight: 19,
@@ -194,36 +174,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   input: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
     borderRadius: 16,
-    borderWidth: 1,
-    color: '#241b16',
-    fontSize: 15,
     paddingHorizontal: 14,
     paddingVertical: 13,
   },
   primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#ff6b6b',
     borderRadius: 17,
     minHeight: 54,
-    justifyContent: 'center',
-  },
-  disabledButton: {
-    opacity: 0.65,
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
   },
   switchButton: {
-    alignItems: 'center',
+    minHeight: 0,
     paddingVertical: 8,
   },
   switchButtonText: {
-    color: '#b05f3c',
     fontSize: 14,
     fontWeight: '800',
   },

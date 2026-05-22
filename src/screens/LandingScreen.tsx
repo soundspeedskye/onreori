@@ -1,13 +1,15 @@
 import React from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {StyleSheet, Text, View} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {colors} from '../theme/tokens';
 
-import type {RootStackParamList} from '../types';
+import {Button} from '../components/ui/Button';
+import type { RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
-export function LandingScreen({navigation}: Props) {
+export function LandingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
@@ -21,18 +23,18 @@ export function LandingScreen({navigation}: Props) {
 
         <View style={styles.copy}>
           <Text style={styles.eyebrow}>Fan day planner</Text>
-          <Text style={styles.title}>팬 이벤트 준비를 가볍고 확실하게</Text>
+          <Text style={styles.title}>가볍고 확실하게</Text>
           <Text style={styles.description}>
-            체크리스트는 바로 써보고, 현장 정보가 필요할 때만 로그인해서
-            이벤트 단톡방에 참여하세요.
+            준비물을 챙기고, 현장 정보를 실시간으로 공유해보세요.
           </Text>
         </View>
 
-        <Pressable
+        <Button
           onPress={() => navigation.replace('CategoryHome')}
-          style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>시작하기</Text>
-        </Pressable>
+          title="시작하기"
+          style={styles.primaryButton}
+          textStyle={styles.primaryButtonText}
+        />
       </View>
     </SafeAreaView>
   );
@@ -40,7 +42,7 @@ export function LandingScreen({navigation}: Props) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f7f1ea',
+    backgroundColor: colors.background,
     flex: 1,
   },
   content: {
@@ -50,8 +52,8 @@ const styles = StyleSheet.create({
   },
   visual: {
     alignSelf: 'center',
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: 32,
     borderWidth: 1,
     height: 240,
@@ -65,7 +67,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   floatingIcon: {
-    backgroundColor: '#ffe4d6',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 24,
     fontSize: 26,
     overflow: 'hidden',
@@ -93,30 +95,27 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   eyebrow: {
-    color: '#b05f3c',
+    color: colors.brandMuted,
     fontSize: 13,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
   title: {
-    color: '#241b16',
+    color: colors.text,
     fontSize: 32,
     fontWeight: '900',
     lineHeight: 40,
   },
   description: {
-    color: '#5f5047',
+    color: colors.muted,
     fontSize: 16,
     lineHeight: 24,
   },
   primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#ff6b6b',
     borderRadius: 18,
     paddingVertical: 17,
   },
   primaryButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '800',
   },
