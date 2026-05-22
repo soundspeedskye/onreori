@@ -10,11 +10,14 @@
     "test": "jest"
   },
   "dependencies": {
+    "@mj-studio/react-native-naver-map": "^2.8.0",
+    "@opentelemetry/api": "^1.9.1",
     "@react-native-async-storage/async-storage": "^3.0.1",
+    "@react-native-community/datetimepicker": "^9.1.0",
     "@react-native/new-app-screen": "0.84.1",
     "@react-navigation/native": "^7.1.33",
     "@react-navigation/native-stack": "^7.14.4",
-    "@supabase/supabase-js": "^2.105.4",
+    "@supabase/supabase-js": "^2.106.0",
     "react": "19.2.3",
     "react-native": "0.84.1",
     "react-native-image-picker": "^8.2.1",

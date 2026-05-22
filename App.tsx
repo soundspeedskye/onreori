@@ -3,6 +3,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {colors} from './src/theme/tokens';
 
 import { AuthProvider } from './src/auth/AuthContext';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -12,10 +13,10 @@ import { ChecklistScreen } from './src/screens/ChecklistScreen';
 import { ConditionsScreen } from './src/screens/ConditionsScreen';
 import { EventRoomsScreen } from './src/screens/EventRoomsScreen';
 import { LandingScreen } from './src/screens/LandingScreen';
+import { MapPickerScreen } from './src/screens/MapPickerScreen';
 import { MyPageScreen } from './src/screens/MyPageScreen';
 import { RoomChatScreen } from './src/screens/RoomChatScreen';
 import { ShareCardScreen } from './src/screens/ShareCardScreen';
-import { TemplatesScreen } from './src/screens/TemplatesScreen';
 import type { RootStackParamList } from './src/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -24,11 +25,11 @@ const navigationTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: '#f7f1ea',
-    card: '#fffaf5',
-    text: '#241b16',
-    primary: '#ff6b6b',
-    border: '#eadccd',
+    background: colors.background,
+    card: colors.surface,
+    text: colors.text,
+    primary: colors.brand,
+    border: colors.border,
   },
 };
 
@@ -36,16 +37,16 @@ function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar barStyle="dark-content" backgroundColor="#f7f1ea" />
+        <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator
             initialRouteName="Landing"
             screenOptions={{
               headerShadowVisible: false,
-              headerStyle: { backgroundColor: '#fffaf5' },
-              headerTitleStyle: { color: '#241b16', fontWeight: '700' },
-              headerTintColor: '#241b16',
-              contentStyle: { backgroundColor: '#f7f1ea' },
+              headerStyle: { backgroundColor: colors.surface },
+              headerTitleStyle: { color: colors.text, fontWeight: '700' },
+              headerTintColor: colors.text,
+              contentStyle: { backgroundColor: colors.background },
             }}>
             <Stack.Screen
               name="Landing"
@@ -61,11 +62,6 @@ function App() {
               name="CategoryDetail"
               component={CategoryDetailScreen}
               options={{ title: '카테고리' }}
-            />
-            <Stack.Screen
-              name="Templates"
-              component={TemplatesScreen}
-              options={{ title: '템플릿' }}
             />
             <Stack.Screen
               name="Conditions"
@@ -86,6 +82,11 @@ function App() {
               name="EventRooms"
               component={EventRoomsScreen}
               options={{ title: '이벤트 단톡방' }}
+            />
+            <Stack.Screen
+              name="MapPicker"
+              component={MapPickerScreen}
+              options={{ title: '장소 선택' }}
             />
             <Stack.Screen
               name="RoomChat"

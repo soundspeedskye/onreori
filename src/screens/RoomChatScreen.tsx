@@ -3,18 +3,20 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
-  Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {colors} from '../theme/tokens';
 
 import {useAuth} from '../auth/AuthContext';
+import {ChatComposer} from '../components/rooms/ChatComposer';
+import {ChatMessageBubble} from '../components/rooms/ChatMessageBubble';
+import {Button} from '../components/ui/Button';
+import {TextField} from '../components/ui/TextField';
 import {
   listMessages,
   sendImageMessage,
@@ -22,13 +24,144 @@ import {
   subscribeToRoomMessages,
 } from '../services/rooms';
 import type {ChatMessage, RootStackParamList} from '../types';
+import {filterMessagesByHashtag} from '../utils/hashtags';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoomChat'>;
+type MessageStateUpdater = (
+  updater: (currentMessages: ChatMessage[]) => ChatMessage[],
+) => void;
+
+type ChatMessagePresentation = {
+  isMine: boolean;
+  showNickname: boolean;
+  showTime: boolean;
+  timeLabel: string;
+};
+
+function getChatMessageMinuteKey(createdAt: string): string {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return createdAt.slice(0, 16);
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+function formatChatMessageTime(createdAt: string): string {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
+}
+
+export function getChatMessagePresentation(
+  messages: ChatMessage[],
+  index: number,
+  currentUserId: string | undefined,
+): ChatMessagePresentation {
+  const message = messages[index];
+  const previousMessage = index > 0 ? messages[index - 1] : undefined;
+  const isMine = message.userId === currentUserId;
+  const sameAuthor = previousMessage?.userId === message.userId;
+  const sameMinute =
+    sameAuthor &&
+    previousMessage !== undefined &&
+    getChatMessageMinuteKey(previousMessage.createdAt) ===
+      getChatMessageMinuteKey(message.createdAt);
+
+  return {
+    isMine,
+    showNickname: !isMine && !sameAuthor,
+    showTime: !sameAuthor || !sameMinute,
+    timeLabel: formatChatMessageTime(message.createdAt),
+  };
+}
+
+export function mergeMessagesByCreatedAt(
+  currentMessages: ChatMessage[],
+  ...incomingMessages: ChatMessage[]
+): ChatMessage[] {
+  const messagesById = new Map(
+    currentMessages.map(message => [message.id, message]),
+  );
+
+  incomingMessages.forEach(message => {
+    const existingMessage = messagesById.get(message.id);
+
+    if (!existingMessage) {
+      messagesById.set(message.id, message);
+      return;
+    }
+
+    if (
+      message.type === 'image' &&
+      message.mediaUrl &&
+      existingMessage.mediaUrl !== message.mediaUrl
+    ) {
+      messagesById.set(message.id, {
+        ...existingMessage,
+        mediaUrl: message.mediaUrl,
+      });
+    }
+  });
+
+  return Array.from(messagesById.values()).sort((left, right) =>
+    left.createdAt.localeCompare(right.createdAt),
+  );
+}
+
+export function mergeRoomMessagesByCreatedAt(
+  roomId: string,
+  currentMessages: ChatMessage[],
+  ...incomingMessages: ChatMessage[]
+): ChatMessage[] {
+  return mergeMessagesByCreatedAt(
+    currentMessages.filter(message => message.roomId === roomId),
+    ...incomingMessages.filter(message => message.roomId === roomId),
+  );
+}
+
+export function getVisibleMessagesForHashtagFilter(
+  messages: ChatMessage[],
+  filter: string,
+): ChatMessage[] {
+  const normalizedFilter = filter.trim();
+
+  return normalizedFilter
+    ? filterMessagesByHashtag(messages, normalizedFilter)
+    : messages;
+}
+
+export function appendRealtimeMessageIfActive(
+  isActive: boolean,
+  updateMessages: MessageStateUpdater,
+  message: ChatMessage,
+): void {
+  if (!isActive) {
+    return;
+  }
+
+  updateMessages(current => mergeMessagesByCreatedAt(current, message));
+}
 
 export function RoomChatScreen({navigation, route}: Props) {
   const {user} = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [body, setBody] = useState('');
+  const [hashtagFilter, setHashtagFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const listRef = useRef<FlatList<ChatMessage>>(null);
@@ -40,12 +173,19 @@ export function RoomChatScreen({navigation, route}: Props) {
     }
 
     let active = true;
+    const roomId = route.params.roomId;
+
+    setMessages(current =>
+      current.filter(message => message.roomId === roomId),
+    );
 
     async function load() {
       try {
-        const nextMessages = await listMessages(route.params.roomId);
+        const nextMessages = await listMessages(roomId);
         if (active) {
-          setMessages(nextMessages);
+          setMessages(current =>
+            mergeRoomMessagesByCreatedAt(roomId, current, ...nextMessages),
+          );
         }
       } catch (error) {
         Alert.alert(
@@ -61,12 +201,10 @@ export function RoomChatScreen({navigation, route}: Props) {
 
     load();
 
-    const unsubscribe = subscribeToRoomMessages(route.params.roomId, message => {
-      setMessages(current =>
-        current.some(item => item.id === message.id)
-          ? current
-          : [...current, message],
-      );
+    const unsubscribe = subscribeToRoomMessages(roomId, message => {
+      if (message.roomId === roomId) {
+        appendRealtimeMessageIfActive(active, setMessages, message);
+      }
     });
 
     return () => {
@@ -89,11 +227,7 @@ export function RoomChatScreen({navigation, route}: Props) {
     try {
       setSending(true);
       const message = await sendTextMessage(route.params.roomId, body, user);
-      setMessages(current =>
-        current.some(item => item.id === message.id)
-          ? current
-          : [...current, message],
-      );
+      setMessages(current => mergeMessagesByCreatedAt(current, message));
       setBody('');
     } catch (error) {
       Alert.alert(
@@ -136,11 +270,7 @@ export function RoomChatScreen({navigation, route}: Props) {
         fileName: asset.fileName ?? `photo-${Date.now()}.jpg`,
         contentType: asset.type ?? 'image/jpeg',
       });
-      setMessages(current =>
-        current.some(item => item.id === message.id)
-          ? current
-          : [...current, message],
-      );
+      setMessages(current => mergeMessagesByCreatedAt(current, message));
     } catch (error) {
       Alert.alert(
         '사진을 보내지 못했습니다.',
@@ -151,23 +281,19 @@ export function RoomChatScreen({navigation, route}: Props) {
     }
   };
 
-  const renderMessage = ({item}: {item: ChatMessage}) => {
-    const isMine = item.userId === user?.id;
+  const visibleMessages = getVisibleMessagesForHashtagFilter(
+    messages,
+    hashtagFilter,
+  );
 
-    return (
-      <View style={[styles.messageWrap, isMine && styles.myMessageWrap]}>
-        <Text style={styles.nickname}>{item.nickname}</Text>
-        <View style={[styles.bubble, isMine && styles.myBubble]}>
-          {item.type === 'image' && item.mediaUrl ? (
-            <Image source={{uri: item.mediaUrl}} style={styles.messageImage} />
-          ) : (
-            <Text style={[styles.messageText, isMine && styles.myMessageText]}>
-              {item.body}
-            </Text>
-          )}
-        </View>
-      </View>
+  const renderMessage = ({item, index}: {item: ChatMessage; index: number}) => {
+    const presentation = getChatMessagePresentation(
+      visibleMessages,
+      index,
+      user?.id,
     );
+
+    return <ChatMessageBubble message={item} {...presentation} />;
   };
 
   return (
@@ -178,167 +304,103 @@ export function RoomChatScreen({navigation, route}: Props) {
       </View>
 
       {loading ? (
-        <ActivityIndicator color="#ff6b6b" style={styles.loader} />
+        <ActivityIndicator color={colors.brand} style={styles.loader} />
       ) : (
-        <FlatList
-          ref={listRef}
-          contentContainerStyle={styles.messageList}
-          data={messages}
-          keyExtractor={item => item.id}
-          renderItem={renderMessage}
-          ListEmptyComponent={
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyText}>아직 메시지가 없습니다.</Text>
-            </View>
-          }
-        />
+        <>
+          <View style={styles.filterBar}>
+            <TextField
+              onChangeText={setHashtagFilter}
+              placeholder="카페명 또는 #태그 검색"
+              style={styles.filterInput}
+              value={hashtagFilter}
+            />
+            {hashtagFilter.trim() ? (
+              <Button
+                onPress={() => setHashtagFilter('')}
+                style={styles.clearFilterButton}
+                title="해제"
+                variant="secondary"
+              />
+            ) : null}
+          </View>
+          <FlatList
+            ref={listRef}
+            contentContainerStyle={styles.messageList}
+            data={visibleMessages}
+            keyExtractor={item => item.id}
+            renderItem={renderMessage}
+            ListEmptyComponent={
+              <View style={styles.emptyBox}>
+                <Text style={styles.emptyText}>아직 메시지가 없습니다.</Text>
+              </View>
+            }
+          />
+        </>
       )}
 
-      <View style={styles.composer}>
-        <Pressable
-          disabled={sending}
-          onPress={handleSendImage}
-          style={styles.photoButton}>
-          <Text style={styles.photoButtonText}>사진</Text>
-        </Pressable>
-        <TextInput
-          onChangeText={setBody}
-          placeholder="현장 정보를 공유해보세요"
-          placeholderTextColor="#9d8f86"
-          style={styles.input}
-          value={body}
-        />
-        <Pressable
-          disabled={sending}
-          onPress={handleSendText}
-          style={styles.sendButton}>
-          <Text style={styles.sendButtonText}>{sending ? '...' : '전송'}</Text>
-        </Pressable>
-      </View>
+      <ChatComposer
+        body={body}
+        onBodyChange={setBody}
+        onSendImage={handleSendImage}
+        onSendText={handleSendText}
+        sending={sending}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f7f1ea',
+    backgroundColor: colors.background,
     flex: 1,
   },
   header: {
-    backgroundColor: '#fffaf5',
-    borderBottomColor: '#eadccd',
+    backgroundColor: colors.surface,
+    borderBottomColor: colors.border,
     borderBottomWidth: 1,
     gap: 4,
     padding: 16,
   },
   title: {
-    color: '#241b16',
+    color: colors.text,
     fontSize: 20,
     fontWeight: '900',
   },
   description: {
-    color: '#6d5e55',
+    color: colors.brandMuted,
     fontSize: 13,
   },
   loader: {
     flex: 1,
   },
-  messageList: {
-    gap: 12,
-    padding: 16,
-    paddingBottom: 22,
-  },
-  messageWrap: {
-    alignItems: 'flex-start',
-    gap: 4,
-  },
-  myMessageWrap: {
-    alignItems: 'flex-end',
-  },
-  nickname: {
-    color: '#8b8078',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  bubble: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 17,
-    borderWidth: 1,
-    maxWidth: '82%',
-    overflow: 'hidden',
+  filterBar: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
     padding: 12,
   },
-  myBubble: {
-    backgroundColor: '#ff6b6b',
-    borderColor: '#ff6b6b',
+  filterInput: {
+    flex: 1,
   },
-  messageText: {
-    color: '#241b16',
-    fontSize: 15,
-    lineHeight: 21,
+  clearFilterButton: {
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  myMessageText: {
-    color: '#fff',
-  },
-  messageImage: {
-    borderRadius: 12,
-    height: 190,
-    width: 190,
+  messageList: {
+    gap: 8,
+    padding: 16,
+    paddingBottom: 22,
   },
   emptyBox: {
     alignItems: 'center',
     padding: 28,
   },
   emptyText: {
-    color: '#7a6d64',
+    color: colors.muted,
     fontSize: 14,
-  },
-  composer: {
-    alignItems: 'center',
-    backgroundColor: '#fffaf5',
-    borderTopColor: '#eadccd',
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    gap: 8,
-    padding: 12,
-  },
-  photoButton: {
-    alignItems: 'center',
-    backgroundColor: '#241b16',
-    borderRadius: 14,
-    justifyContent: 'center',
-    paddingHorizontal: 13,
-    paddingVertical: 12,
-  },
-  photoButtonText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '900',
-  },
-  input: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 15,
-    borderWidth: 1,
-    color: '#241b16',
-    flex: 1,
-    fontSize: 14,
-    paddingHorizontal: 13,
-    paddingVertical: 11,
-  },
-  sendButton: {
-    alignItems: 'center',
-    backgroundColor: '#ff6b6b',
-    borderRadius: 14,
-    justifyContent: 'center',
-    minWidth: 52,
-    paddingHorizontal: 13,
-    paddingVertical: 12,
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '900',
   },
 });

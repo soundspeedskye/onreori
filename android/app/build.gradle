@@ -72,6 +72,15 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def naverMapClientId = providers
+    .gradleProperty("NAVER_MAP_CLIENT_ID")
+    .orElse(providers.environmentVariable("NAVER_MAP_CLIENT_ID"))
+    .orNull
+
+if (!naverMapClientId?.trim()) {
+    throw new GradleException("NAVER_MAP_CLIENT_ID is required for Naver Maps. Provide it with -PNAVER_MAP_CLIENT_ID=your-client-id or the NAVER_MAP_CLIENT_ID environment variable.")
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -84,6 +93,10 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [
+            usesCleartextTraffic: "false",
+            naverMapClientId: naverMapClientId
+        ]
     }
     signingConfigs {
         debug {

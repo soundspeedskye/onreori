@@ -1,0 +1,6 @@
+// Naver Maps native SDK key for Debug builds.
+// Supply a real value with an xcodebuild override, or create a local override
+// file next to this one that is not committed.
+#include "../Pods/Target Support Files/Pods-onreori/Pods-onreori.debug.xcconfig"
+NAVER_MAP_CLIENT_ID =
+#include? "NaverMap.local.xcconfig"
