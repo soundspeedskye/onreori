@@ -44,6 +44,11 @@ jest.mock('react-native-image-picker', () => ({
   launchImageLibrary: jest.fn(),
 }));
 
+jest.mock('@mj-studio/react-native-naver-map', () => ({
+  NaverMapView: ({children}: {children: React.ReactNode}) => children,
+  NaverMapMarkerOverlay: () => null,
+}));
+
 test('renders correctly', async () => {
   await ReactTestRenderer.act(() => {
     ReactTestRenderer.create(<App />);

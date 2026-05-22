@@ -38,18 +38,12 @@ function makeChecklist(overrides: Partial<Checklist> = {}): Checklist {
     categoryId: 'concert',
     title: '콘서트/팬콘 기본 체크리스트',
     icon: '🎤',
-    theme: 'neon',
+    theme: 'orchid_gold',
     selectedConditions: [],
     createdAt: '2026-05-18T00:00:00.000Z',
     updatedAt: '2026-05-18T00:00:00.000Z',
     saveState: 'draft',
     items: [],
-    stickers: {
-      topLeft: null,
-      topRight: null,
-      bottomLeft: null,
-      bottomRight: null,
-    },
     ...overrides,
   };
 }
