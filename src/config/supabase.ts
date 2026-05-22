@@ -3,20 +3,25 @@ import 'react-native-url-polyfill/auto';
 import {createClient} from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const runtimeEnv =
-  (globalThis as {process?: {env?: Record<string, string | undefined>}})
-    .process?.env ?? {};
+import {resolveSupabaseRuntimeConfig} from './supabaseConfig';
 
-export const supabaseUrl =
-  runtimeEnv.SUPABASE_URL ?? runtimeEnv.REACT_NATIVE_SUPABASE_URL ?? '';
+declare const process: {
+  env: Record<string, string | undefined>;
+};
 
-export const supabaseAnonKey =
-  runtimeEnv.SUPABASE_ANON_KEY ??
-  runtimeEnv.REACT_NATIVE_SUPABASE_ANON_KEY ??
-  '';
+const runtimeEnv = {
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  REACT_NATIVE_SUPABASE_URL: process.env.REACT_NATIVE_SUPABASE_URL,
+  REACT_NATIVE_SUPABASE_ANON_KEY: process.env.REACT_NATIVE_SUPABASE_ANON_KEY,
+};
 
-export const isSupabaseConfigured =
-  supabaseUrl.startsWith('https://') && supabaseAnonKey.length > 20;
+const runtimeConfig = resolveSupabaseRuntimeConfig({
+  runtimeEnv,
+});
+
+export const {supabaseUrl, supabaseAnonKey, isSupabaseConfigured} =
+  runtimeConfig;
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
