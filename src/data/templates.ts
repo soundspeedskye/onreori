@@ -4,6 +4,7 @@ import type {
   Template,
   TemplatesDocument,
 } from '../types';
+import {createLocalId} from '../utils/localId';
 
 const templatesDocument =
   require('../../data/templates.v1.json') as TemplatesDocument;
@@ -22,7 +23,7 @@ export function createChecklistFromTemplate(
   const now = new Date().toISOString();
 
   return {
-    id: `checklist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: createLocalId('checklist'),
     templateId: template.id,
     categoryId: template.category,
     title: template.title,

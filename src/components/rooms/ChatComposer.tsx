@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import {Button} from '../ui/Button';
 import {TextField} from '../ui/TextField';
 
@@ -54,11 +54,11 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     borderTopWidth: 1,
     flexDirection: 'row',
-    gap: 8,
-    padding: 12,
+    gap: spacing.sm,
+    padding: spacing.md,
   },
   photoButton: {
-    borderRadius: 14,
+    borderRadius: radii.md,
     minHeight: 0,
     paddingHorizontal: 13,
     paddingVertical: 12,
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sendButton: {
-    borderRadius: 14,
+    borderRadius: radii.md,
     minHeight: 0,
     minWidth: 52,
     paddingHorizontal: 13,

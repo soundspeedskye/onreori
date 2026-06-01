@@ -1,0 +1,5 @@
+// Kakao Maps native SDK key for Release builds.
+// Supply the Kakao Developers Native app key as an xcodebuild build setting,
+// or create KakaoMap.local.xcconfig next to this file. Do not commit local keys.
+#include "../Pods/Target Support Files/Pods-onreori/Pods-onreori.release.xcconfig"
+#include? "KakaoMap.local.xcconfig"

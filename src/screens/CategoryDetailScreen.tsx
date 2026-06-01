@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, layout, radii, spacing} from '../theme/tokens';
 
 import { useAuth } from '../auth/AuthContext';
 import {Card} from '../components/ui/Card';
@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 18,
-    padding: 20,
+    gap: spacing.lg,
+    padding: layout.screenPadding,
   },
   heroCard: {
     alignItems: 'center',
-    borderRadius: 26,
-    gap: 8,
-    padding: 24,
+    borderRadius: radii.xl,
+    gap: spacing.sm,
+    padding: spacing.xl,
   },
   icon: {
     fontSize: 48,
@@ -102,12 +102,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actionList: {
-    gap: 14,
+    gap: spacing.lg,
   },
   actionCard: {
-    borderRadius: 22,
-    gap: 7,
-    padding: 18,
+    borderRadius: radii.hero,
+    gap: spacing.sm,
+    padding: spacing.lg,
   },
   actionEyebrow: {
     color: colors.brandMuted,

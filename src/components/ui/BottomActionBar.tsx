@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, spacing} from '../../theme/tokens';
 
 type BottomActionBarProps = {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopColor: colors.border,
     borderTopWidth: 1,
-    gap: 10,
-    padding: 16,
+    gap: spacing.sm,
+    padding: spacing.lg,
   },
 });

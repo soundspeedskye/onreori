@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -10,7 +9,7 @@ import {
 import {launchImageLibrary} from 'react-native-image-picker';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, radii, spacing} from '../theme/tokens';
 
 import {useAuth} from '../auth/AuthContext';
 import {ChatComposer} from '../components/rooms/ChatComposer';
@@ -18,18 +17,23 @@ import {ChatMessageBubble} from '../components/rooms/ChatMessageBubble';
 import {Button} from '../components/ui/Button';
 import {TextField} from '../components/ui/TextField';
 import {
+  createTutorialBotReply,
+  ensureTutorialWelcomeMessages,
+  isTutorialRoomId,
   listMessages,
   sendImageMessage,
   sendTextMessage,
   subscribeToRoomMessages,
 } from '../services/rooms';
 import type {ChatMessage, RootStackParamList} from '../types';
+import {ALERT_MESSAGES, showAlert, showError} from '../utils/appAlert';
 import {filterMessagesByHashtag} from '../utils/hashtags';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoomChat'>;
 type MessageStateUpdater = (
   updater: (currentMessages: ChatMessage[]) => ChatMessage[],
 ) => void;
+const TUTORIAL_BOT_TYPING_DELAY_MS = 700;
 
 type ChatMessagePresentation = {
   isMine: boolean;
@@ -164,7 +168,14 @@ export function RoomChatScreen({navigation, route}: Props) {
   const [hashtagFilter, setHashtagFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [botTyping, setBotTyping] = useState(false);
   const listRef = useRef<FlatList<ChatMessage>>(null);
+  const tutorialBotTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  function clearTutorialBotTimers() {
+    tutorialBotTimersRef.current.forEach(timer => clearTimeout(timer));
+    tutorialBotTimersRef.current = [];
+  }
 
   useEffect(() => {
     if (!user) {
@@ -174,10 +185,38 @@ export function RoomChatScreen({navigation, route}: Props) {
 
     let active = true;
     const roomId = route.params.roomId;
+    const tutorialRoom = isTutorialRoomId(roomId);
 
+    setLoading(true);
+    setBotTyping(false);
+    clearTutorialBotTimers();
     setMessages(current =>
       current.filter(message => message.roomId === roomId),
     );
+
+    function scheduleTutorialWelcomeMessages() {
+      setBotTyping(true);
+      const timer = setTimeout(async () => {
+        try {
+          const welcomeMessages = await ensureTutorialWelcomeMessages(roomId);
+          if (active) {
+            setMessages(current =>
+              mergeRoomMessagesByCreatedAt(
+                roomId,
+                current,
+                ...welcomeMessages,
+              ),
+            );
+          }
+        } finally {
+          if (active) {
+            setBotTyping(false);
+          }
+        }
+      }, TUTORIAL_BOT_TYPING_DELAY_MS);
+
+      tutorialBotTimersRef.current.push(timer);
+    }
 
     async function load() {
       try {
@@ -186,12 +225,16 @@ export function RoomChatScreen({navigation, route}: Props) {
           setMessages(current =>
             mergeRoomMessagesByCreatedAt(roomId, current, ...nextMessages),
           );
+
+          if (tutorialRoom && nextMessages.length === 0) {
+            scheduleTutorialWelcomeMessages();
+          }
         }
       } catch (error) {
-        Alert.alert(
-          '메시지를 불러오지 못했습니다.',
-          error instanceof Error ? error.message : '다시 시도하세요.',
-        );
+        showError(error, {
+          title: ALERT_MESSAGES.loadFailed,
+          fallbackMessage: ALERT_MESSAGES.retry,
+        });
       } finally {
         if (active) {
           setLoading(false);
@@ -209,6 +252,7 @@ export function RoomChatScreen({navigation, route}: Props) {
 
     return () => {
       active = false;
+      clearTutorialBotTimers();
       unsubscribe();
     };
   }, [navigation, route.params.roomId, user]);
@@ -229,11 +273,23 @@ export function RoomChatScreen({navigation, route}: Props) {
       const message = await sendTextMessage(route.params.roomId, body, user);
       setMessages(current => mergeMessagesByCreatedAt(current, message));
       setBody('');
+      if (isTutorialRoomId(route.params.roomId)) {
+        setBotTyping(true);
+        const timer = setTimeout(async () => {
+          try {
+            const botReply = await createTutorialBotReply(route.params.roomId);
+            setMessages(current => mergeMessagesByCreatedAt(current, botReply));
+          } finally {
+            setBotTyping(false);
+          }
+        }, TUTORIAL_BOT_TYPING_DELAY_MS);
+        tutorialBotTimersRef.current.push(timer);
+      }
     } catch (error) {
-      Alert.alert(
-        '메시지를 보내지 못했습니다.',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.sendFailed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
     } finally {
       setSending(false);
     }
@@ -257,7 +313,7 @@ export function RoomChatScreen({navigation, route}: Props) {
     const asset = result.assets?.[0];
 
     if (!asset?.uri) {
-      Alert.alert('선택한 사진을 읽지 못했습니다.');
+      showAlert({title: ALERT_MESSAGES.loadFailed});
       return;
     }
 
@@ -272,10 +328,10 @@ export function RoomChatScreen({navigation, route}: Props) {
       });
       setMessages(current => mergeMessagesByCreatedAt(current, message));
     } catch (error) {
-      Alert.alert(
-        '사진을 보내지 못했습니다.',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.sendFailed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
     } finally {
       setSending(false);
     }
@@ -285,6 +341,7 @@ export function RoomChatScreen({navigation, route}: Props) {
     messages,
     hashtagFilter,
   );
+  const tutorialRoom = isTutorialRoomId(route.params.roomId);
 
   const renderMessage = ({item, index}: {item: ChatMessage; index: number}) => {
     const presentation = getChatMessagePresentation(
@@ -300,7 +357,11 @@ export function RoomChatScreen({navigation, route}: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.title}>{route.params.title}</Text>
-        <Text style={styles.description}>입장코드로 들어온 사람들과만 대화해요.</Text>
+        <Text style={styles.description}>
+          {tutorialRoom
+            ? '오늘의오리가 단톡방 사용법을 안내해요.'
+            : '입장코드로 들어온 사람들과만 대화해요.'}
+        </Text>
       </View>
 
       {loading ? (
@@ -330,9 +391,18 @@ export function RoomChatScreen({navigation, route}: Props) {
             keyExtractor={item => item.id}
             renderItem={renderMessage}
             ListEmptyComponent={
+              botTyping ? null : (
               <View style={styles.emptyBox}>
                 <Text style={styles.emptyText}>아직 메시지가 없습니다.</Text>
               </View>
+              )
+            }
+            ListFooterComponent={
+              botTyping ? (
+                <View style={styles.typingBox}>
+                  <Text style={styles.typingText}>오늘의오리가 입력 중...</Text>
+                </View>
+              ) : null
             }
           />
         </>
@@ -358,8 +428,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderBottomColor: colors.border,
     borderBottomWidth: 1,
-    gap: 4,
-    padding: 16,
+    gap: spacing.xs,
+    padding: spacing.lg,
   },
   title: {
     color: colors.text,
@@ -379,28 +449,43 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     borderBottomWidth: 1,
     flexDirection: 'row',
-    gap: 8,
-    padding: 12,
+    gap: spacing.sm,
+    padding: spacing.md,
   },
   filterInput: {
     flex: 1,
   },
   clearFilterButton: {
     minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   messageList: {
-    gap: 8,
-    padding: 16,
-    paddingBottom: 22,
+    gap: spacing.sm,
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   emptyBox: {
     alignItems: 'center',
-    padding: 28,
+    padding: spacing.xxl,
   },
   emptyText: {
     color: colors.muted,
     fontSize: 14,
+  },
+  typingBox: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.button,
+    borderWidth: 1,
+    marginTop: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  typingText: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

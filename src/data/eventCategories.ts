@@ -1,8 +1,9 @@
-import type { EventCategory } from '../types';
+import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
+import type {EventCategory} from '../types';
 
 export const eventCategories: EventCategory[] = [
   {
-    id: 'EVENT_DAY',
+    id: EVENT_CATEGORY_IDS.EVENT_DAY,
     title: '콘서트/팬콘',
     icon: '🎤',
     description: '입장, 대기, 관람 준비를 한 번에 챙겨요.',
@@ -10,7 +11,7 @@ export const eventCategories: EventCategory[] = [
     roomLabel: '공연장 실시간 정보 공유',
   },
   {
-    id: 'POPUP',
+    id: EVENT_CATEGORY_IDS.POPUP,
     title: '팝업/전시',
     icon: '🛍️',
     description: '예약, 대기, 굿즈 구매를 한 번에 챙겨요.',
@@ -18,7 +19,7 @@ export const eventCategories: EventCategory[] = [
     roomLabel: '대기줄/재고 현황 공유',
   },
   {
-    id: 'CAFE_EVENT',
+    id: EVENT_CATEGORY_IDS.CAFE_EVENT,
     title: '생일카페 이벤트',
     icon: '☕',
     description: '카페 동선, 특전, 교환 준비를 한 번에 챙겨요.',

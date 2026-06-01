@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import type {Checklist} from '../../types';
 import {Card} from '../ui/Card';
 import {Chip} from '../ui/Chip';
@@ -61,17 +61,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   previewCard: {
-    borderRadius: 28,
+    borderRadius: radii.xxl,
     minHeight: 360,
     overflow: 'hidden',
-    padding: 24,
+    padding: spacing.xl,
     position: 'relative',
     width: '100%',
   },
   previewHeader: {
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 18,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   previewIcon: {
     fontSize: 42,
@@ -90,14 +90,14 @@ const styles = StyleSheet.create({
   previewConditions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
     justifyContent: 'center',
-    marginBottom: 18,
+    marginBottom: spacing.lg,
   },
   previewList: {
-    borderRadius: 18,
-    gap: 10,
-    padding: 16,
+    borderRadius: radii.card,
+    gap: spacing.sm,
+    padding: spacing.lg,
   },
   previewItem: {
     color: colors.text,

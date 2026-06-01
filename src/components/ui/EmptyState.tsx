@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, spacing} from '../../theme/tokens';
 
 type EmptyStateProps = {
   title: string;
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: spacing.xl,
   },
   title: {
     color: colors.text,
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 14,
     lineHeight: 20,
-    marginTop: 6,
+    marginTop: spacing.sm,
     textAlign: 'center',
   },
 });

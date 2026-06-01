@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import type {EventCategory} from '../../types';
 import {Card} from '../ui/Card';
 
@@ -27,15 +27,15 @@ export function CategoryCard({category, onPress}: CategoryCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
+    borderRadius: radii.hero,
     flexDirection: 'row',
-    gap: 14,
-    padding: 16,
+    gap: spacing.lg,
+    padding: spacing.lg,
   },
   iconWrap: {
     alignItems: 'center',
     backgroundColor: colors.surfaceMuted,
-    borderRadius: 18,
+    borderRadius: radii.card,
     height: 62,
     justifyContent: 'center',
     width: 62,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    gap: 5,
+    gap: spacing.xs,
   },
   title: {
     color: colors.text,

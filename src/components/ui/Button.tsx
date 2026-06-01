@@ -9,7 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii} from '../../theme/tokens';
 
 type ButtonVariant = 'primary' | 'secondary' | 'dark' | 'ghost';
 
@@ -64,7 +64,7 @@ export function Button({
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: radii.button,
     justifyContent: 'center',
     minHeight: 48,
     paddingHorizontal: 14,

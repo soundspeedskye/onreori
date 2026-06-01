@@ -1,14 +1,8 @@
 import React, {useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, layout, radii, spacing} from '../theme/tokens';
 
 import {useAuth} from '../auth/AuthContext';
 import {Button} from '../components/ui/Button';
@@ -21,6 +15,7 @@ import {
   saveChecklistSynced,
 } from '../storage/checklists';
 import type {AuthUser, RootStackParamList} from '../types';
+import {ALERT_MESSAGES, showAlert, showError} from '../utils/appAlert';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Auth'>;
 
@@ -55,7 +50,7 @@ export function AuthScreen({navigation, route}: Props) {
     const checklist = await getChecklistById(pendingChecklistId);
 
     if (!checklist) {
-      Alert.alert('체크리스트를 찾지 못했습니다.');
+      showAlert({title: ALERT_MESSAGES.notFound});
       navigation.replace('CategoryHome');
       return;
     }
@@ -74,10 +69,10 @@ export function AuthScreen({navigation, route}: Props) {
           : await signUp(email, password, nickname);
       await completeRedirect(nextUser);
     } catch (error) {
-      Alert.alert(
-        mode === 'signIn' ? '로그인 실패' : '회원가입 실패',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.failed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -153,38 +148,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 18,
-    padding: 20,
+    gap: spacing.lg,
+    padding: layout.screenPadding,
   },
   header: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   previewNotice: {
     backgroundColor: colors.actionSoft,
-    borderRadius: 14,
+    borderRadius: radii.md,
     color: colors.text,
     fontSize: 13,
     fontWeight: '700',
     lineHeight: 19,
-    marginTop: 8,
+    marginTop: spacing.sm,
     overflow: 'hidden',
-    padding: 12,
+    padding: spacing.md,
   },
   form: {
-    gap: 12,
+    gap: spacing.md,
   },
   input: {
-    borderRadius: 16,
+    borderRadius: radii.button,
     paddingHorizontal: 14,
     paddingVertical: 13,
   },
   primaryButton: {
-    borderRadius: 17,
+    borderRadius: radii.bubble,
     minHeight: 54,
   },
   switchButton: {
     minHeight: 0,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   switchButtonText: {
     fontSize: 14,

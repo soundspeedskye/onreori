@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -11,9 +10,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { colors } from '../theme/tokens';
+import { colors, layout, radii, spacing } from '../theme/tokens';
 
 import { useAuth } from '../auth/AuthContext';
+import {isCafeEventCategory} from '../constants/eventCategories';
 import { RoomCard } from '../components/rooms/RoomCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -24,6 +24,8 @@ import { getEventCategoryById } from '../data/eventCategories';
 import { fetchEventUrlPreview } from '../services/eventUrlPreview';
 import {
   createRoom,
+  getTutorialRoomForCategory,
+  isTutorialRoomId,
   joinRoomWithCode,
   listRoomsByCategory,
 } from '../services/rooms';
@@ -34,8 +36,27 @@ import {
   getRoomCreationConfig,
   validateRoomCreationDraft,
 } from '../utils/eventRoomForm';
+import { shouldShowRoomInTodayList } from '../utils/eventRoomVisibility';
+import {ALERT_MESSAGES, showAlert, showError} from '../utils/appAlert';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventRooms'>;
+
+type AppliedPreviewValues = {
+  eventDate?: string;
+  location?: string;
+  title?: string;
+};
+
+function shouldApplyPreviewValue(
+  currentValue: string,
+  nextValue: string | undefined,
+  previousPreviewValue: string | undefined,
+) {
+  return Boolean(
+    nextValue &&
+      (!currentValue.trim() || currentValue === previousPreviewValue),
+  );
+}
 
 export function EventRoomsScreen({ navigation, route }: Props) {
   const { user } = useAuth();
@@ -45,6 +66,7 @@ export function EventRoomsScreen({ navigation, route }: Props) {
     : getRoomCreationConfig(route.params.categoryId);
   const [rooms, setRooms] = useState<EventRoom[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usingTutorialFallback, setUsingTutorialFallback] = useState(false);
   const [creating, setCreating] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [entryCode, setEntryCode] = useState('');
@@ -58,6 +80,18 @@ export function EventRoomsScreen({ navigation, route }: Props) {
   const [selectedPlace, setSelectedPlace] = useState<PlaceSelection | null>(
     null,
   );
+  const appliedPreviewValuesRef = useRef<AppliedPreviewValues>({});
+
+  const handleTitleChange = (nextTitle: string) => {
+    setTitle(nextTitle);
+    delete appliedPreviewValuesRef.current.title;
+  };
+
+  const handleLocationChange = (nextLocation: string) => {
+    setLocation(nextLocation);
+    setSelectedPlace(null);
+    delete appliedPreviewValuesRef.current.location;
+  };
 
   const loadRooms = useCallback(async () => {
     if (!category) {
@@ -67,8 +101,10 @@ export function EventRoomsScreen({ navigation, route }: Props) {
     setLoading(true);
     try {
       setRooms(await listRoomsByCategory(category.id));
+      setUsingTutorialFallback(false);
     } catch {
-      Alert.alert('단톡방을 불러오지 못했습니다.', '잠시 후 다시 시도하세요.');
+      setRooms([getTutorialRoomForCategory(category.id)]);
+      setUsingTutorialFallback(true);
     } finally {
       setLoading(false);
     }
@@ -91,19 +127,25 @@ export function EventRoomsScreen({ navigation, route }: Props) {
     if (!creationConfig.requiresPlace) {
       setSelectedPlace(null);
       setLocation('');
+      delete appliedPreviewValuesRef.current.location;
       return;
     }
 
     if (!place) {
       setSelectedPlace(null);
       setLocation('');
+      delete appliedPreviewValuesRef.current.location;
       return;
     }
 
     setSelectedPlace(place);
     setLocation(
-      place.name || place.roadAddress || place.address || '선택한 장소',
+      place.name.trim() ||
+        place.roadAddress?.trim() ||
+        place.address?.trim() ||
+        (place.source === 'center' ? '선택한 장소' : ''),
     );
+    delete appliedPreviewValuesRef.current.location;
   }, [creationConfig.requiresPlace, route.params.selectedPlace]);
 
   const handleCreateRoom = async () => {
@@ -119,7 +161,7 @@ export function EventRoomsScreen({ navigation, route }: Props) {
     });
 
     if (validationMessage) {
-      Alert.alert(validationMessage);
+      showAlert({title: validationMessage});
       return;
     }
 
@@ -139,22 +181,30 @@ export function EventRoomsScreen({ navigation, route }: Props) {
         roadAddress: selectedPlaceForRoom?.roadAddress,
         latitude: selectedPlaceForRoom?.latitude,
         longitude: selectedPlaceForRoom?.longitude,
-        subjectName: category.id === 'CAFE_EVENT' ? title.trim() : undefined,
+        subjectName: isCafeEventCategory(category.id) ? title.trim() : undefined,
         entryCode: newRoomCode,
         user,
       });
-      setRooms(current => [room, ...current]);
+      if (shouldShowRoomInTodayList(room)) {
+        setRooms(current => [room, ...current]);
+      } else {
+        showAlert({
+          title: '생성했습니다.',
+          message: '이 단톡방은 이벤트 5일 전부터 오늘의 단톡방에 표시됩니다.',
+        });
+      }
       setTitle('');
       setEventDate('');
       setLocation('');
       setNewRoomCode('');
       setEventUrl('');
       setSelectedPlace(null);
+      appliedPreviewValuesRef.current = {};
     } catch (error) {
-      Alert.alert(
-        '방을 만들지 못했습니다.',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.createFailed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
     } finally {
       setCreating(false);
     }
@@ -162,25 +212,65 @@ export function EventRoomsScreen({ navigation, route }: Props) {
 
   const handleFetchEventUrlPreview = async () => {
     if (!eventUrl.trim()) {
-      Alert.alert('링크를 입력하세요.');
+      showAlert({title: ALERT_MESSAGES.requiredInput});
       return;
     }
 
     try {
       setPreviewLoading(true);
       const preview = await fetchEventUrlPreview(eventUrl);
-      setTitle(current => current.trim() || preview.title || '');
-      setEventDate(
-        current => current.trim() || preview.dateCandidates[0] || '',
-      );
-      setLocation(
-        current => current.trim() || preview.locationCandidates[0] || '',
-      );
+      const previewTitle = preview.title;
+      const previewDate = preview.dateCandidates[0];
+      const previewLocation = preview.locationCandidates[0];
+
+      setTitle(current => {
+        if (
+          !shouldApplyPreviewValue(
+            current,
+            previewTitle,
+            appliedPreviewValuesRef.current.title,
+          )
+        ) {
+          return current;
+        }
+
+        appliedPreviewValuesRef.current.title = previewTitle;
+        return previewTitle ?? current;
+      });
+      setEventDate(current => {
+        if (
+          !shouldApplyPreviewValue(
+            current,
+            previewDate,
+            appliedPreviewValuesRef.current.eventDate,
+          )
+        ) {
+          return current;
+        }
+
+        appliedPreviewValuesRef.current.eventDate = previewDate;
+        return previewDate ?? current;
+      });
+      setLocation(current => {
+        if (
+          !shouldApplyPreviewValue(
+            current,
+            previewLocation,
+            appliedPreviewValuesRef.current.location,
+          )
+        ) {
+          return current;
+        }
+
+        setSelectedPlace(null);
+        appliedPreviewValuesRef.current.location = previewLocation;
+        return previewLocation ?? current;
+      });
     } catch (error) {
-      Alert.alert(
-        '링크 정보를 가져오지 못했습니다.',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.loadFailed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
     } finally {
       setPreviewLoading(false);
     }
@@ -192,7 +282,11 @@ export function EventRoomsScreen({ navigation, route }: Props) {
     }
 
     try {
-      await joinRoomWithCode(room.id, entryCode, user);
+      await joinRoomWithCode(
+        room.id,
+        isTutorialRoomId(room.id) ? '' : entryCode,
+        user,
+      );
       setEntryCode('');
       setSelectedRoomId(null);
       navigation.navigate('RoomChat', {
@@ -201,10 +295,10 @@ export function EventRoomsScreen({ navigation, route }: Props) {
         categoryId: room.categoryId,
       });
     } catch (error) {
-      Alert.alert(
-        '입장하지 못했습니다.',
-        error instanceof Error ? error.message : '입장코드를 확인하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.failed,
+        fallbackMessage: ALERT_MESSAGES.checkInput,
+      });
     }
   };
 
@@ -229,7 +323,7 @@ export function EventRoomsScreen({ navigation, route }: Props) {
             <Text style={styles.sectionTitle}>방 만들기</Text>
             <TextField
               accessibilityLabel={creationConfig.titleLabel}
-              onChangeText={setTitle}
+              onChangeText={handleTitleChange}
               placeholder={creationConfig.titlePlaceholder}
               value={title}
             />
@@ -248,6 +342,7 @@ export function EventRoomsScreen({ navigation, route }: Props) {
                   }
 
                   if (date) {
+                    delete appliedPreviewValuesRef.current.eventDate;
                     setEventDate(formatDateInput(date));
                   }
                 }}
@@ -261,16 +356,23 @@ export function EventRoomsScreen({ navigation, route }: Props) {
               />
             ) : null}
             {creationConfig.requiresPlace ? (
-              <Button
-                onPress={() =>
-                  navigation.navigate('MapPicker', {
-                    categoryId: category.id,
-                    returnTo: 'EventRooms',
-                  })
-                }
-                title={location || '지도에서 장소 선택'}
-                variant="secondary"
-              />
+              <>
+                <TextField
+                  onChangeText={handleLocationChange}
+                  placeholder="장소"
+                  value={location}
+                />
+                <Button
+                  onPress={() =>
+                    navigation.navigate('MapPicker', {
+                      categoryId: category.id,
+                      returnTo: 'EventRooms',
+                    })
+                  }
+                  title="지도에서 장소 선택"
+                  variant="secondary"
+                />
+              </>
             ) : null}
             {creationConfig.allowsEventUrlPreview ? (
               <>
@@ -304,6 +406,11 @@ export function EventRoomsScreen({ navigation, route }: Props) {
           </Card>
 
           <Text style={styles.sectionTitle}>오늘의 단톡방</Text>
+          {usingTutorialFallback ? (
+            <Text style={styles.fallbackNotice}>
+              단톡방 목록을 잠시 불러오지 못해 튜토리얼 방을 보여드려요.
+            </Text>
+          ) : null}
         </View>
 
         {loading ? (
@@ -320,6 +427,7 @@ export function EventRoomsScreen({ navigation, route }: Props) {
               <RoomCard
                 key={item.id}
                 entryCode={entryCode}
+                isTutorial={isTutorialRoomId(item.id)}
                 onEntryCodeChange={setEntryCode}
                 onJoin={() => {
                   handleJoinRoom(item);
@@ -342,12 +450,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
-    paddingBottom: 32,
+    padding: layout.screenPadding,
+    paddingBottom: layout.screenBottomPadding,
   },
   header: {
-    gap: 14,
-    marginBottom: 14,
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     color: colors.text,
@@ -355,22 +463,27 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   createBox: {
-    borderRadius: 22,
-    gap: 10,
-    padding: 16,
+    borderRadius: radii.hero,
+    gap: spacing.sm,
+    padding: spacing.lg,
   },
   loader: {
-    marginTop: 18,
+    marginTop: spacing.lg,
+  },
+  fallbackNotice: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
   },
   roomList: {
-    gap: 12,
+    gap: spacing.md,
   },
   emptyBox: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: radii.lg,
     borderWidth: 1,
-    padding: 20,
+    padding: layout.screenPadding,
   },
   emptyState: {
     flex: 1,

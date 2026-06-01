@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, TextInput, TextInputProps} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii} from '../../theme/tokens';
 
 type TextFieldProps = TextInputProps;
 
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 15,
+    borderRadius: radii.button,
     borderWidth: 1,
     color: colors.text,
     fontSize: 14,

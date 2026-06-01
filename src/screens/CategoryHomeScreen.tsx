@@ -2,7 +2,7 @@ import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, layout, radii, spacing} from '../theme/tokens';
 
 import {CategoryCard} from '../components/categories/CategoryCard';
 import {Button} from '../components/ui/Button';
@@ -53,14 +53,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
-    paddingBottom: 32,
+    padding: layout.screenPadding,
+    paddingBottom: layout.screenBottomPadding,
   },
   header: {
-    marginBottom: 18,
+    marginBottom: spacing.lg,
   },
   myButton: {
-    borderRadius: 14,
+    borderRadius: radii.md,
     height: 44,
     minHeight: 44,
     paddingHorizontal: 0,
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   categoryList: {
-    gap: 14,
+    gap: spacing.lg,
   },
 });

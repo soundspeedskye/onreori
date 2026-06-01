@@ -1,14 +1,8 @@
 import React, {useMemo, useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, layout, radii, spacing} from '../theme/tokens';
 
 import {ConditionToggle} from '../components/templates/ConditionToggle';
 import {BottomActionBar} from '../components/ui/BottomActionBar';
@@ -22,6 +16,7 @@ import {
 } from '../data/templates';
 import {saveChecklistDraft} from '../storage/checklists';
 import type {ConditionId, RootStackParamList} from '../types';
+import {ALERT_MESSAGES, showAlert} from '../utils/appAlert';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conditions'>;
 
@@ -42,7 +37,7 @@ export function ConditionsScreen({navigation, route}: Props) {
 
   const handleCreateChecklist = async () => {
     if (!template) {
-      Alert.alert('템플릿을 찾지 못했습니다.');
+      showAlert({title: ALERT_MESSAGES.notFound});
       return;
     }
 
@@ -106,23 +101,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 20,
-    padding: 20,
-    paddingBottom: 120,
+    gap: spacing.screen,
+    padding: layout.screenPadding,
+    paddingBottom: layout.bottomActionScrollPadding,
   },
   headerCard: {
     alignItems: 'center',
-    borderRadius: 24,
+    borderRadius: radii.xl,
     flexDirection: 'row',
-    gap: 16,
-    padding: 18,
+    gap: spacing.lg,
+    padding: spacing.lg,
   },
   icon: {
     fontSize: 38,
   },
   headerCopy: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   title: {
     color: colors.text,
@@ -135,7 +130,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   sectionHeader: {
-    gap: 6,
+    gap: spacing.sm,
   },
   sectionTitle: {
     color: colors.text,
@@ -148,7 +143,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   toggleList: {
-    gap: 12,
+    gap: spacing.md,
   },
   emptyState: {
     flex: 1,

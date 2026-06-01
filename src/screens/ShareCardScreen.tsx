@@ -1,21 +1,17 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  Share,
-  StyleSheet,
-} from 'react-native';
+import {ScrollView, Share, StyleSheet} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, layout, spacing} from '../theme/tokens';
 
 import {ShareChecklistPreview} from '../components/checklist/ShareChecklistPreview';
 import {BottomActionBar} from '../components/ui/BottomActionBar';
 import {Button} from '../components/ui/Button';
 import {EmptyState} from '../components/ui/EmptyState';
-import {conditions} from '../data/templates';
 import {getChecklistById} from '../storage/checklists';
 import type {Checklist, RootStackParamList} from '../types';
+import {ALERT_MESSAGES, showAlert} from '../utils/appAlert';
+import {getSelectedConditionLabels} from '../utils/checklistPresentation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ShareCard'>;
 
@@ -31,22 +27,18 @@ export function ShareCardScreen({route}: Props) {
     loadChecklist();
   }, [route.params.checklistId]);
 
-  const selectedConditionLabels = useMemo(() => {
-    if (!checklist) {
-      return [];
-    }
-
-    return conditions
-      .filter(condition => checklist.selectedConditions.includes(condition.id))
-      .map(condition => condition.label);
-  }, [checklist]);
+  const selectedConditionLabels = useMemo(
+    () =>
+      checklist ? getSelectedConditionLabels(checklist.selectedConditions) : [],
+    [checklist],
+  );
 
   const checkedCount = checklist?.items.filter(item => item.checked).length ?? 0;
   const totalCount = checklist?.items.length ?? 0;
 
   const handleShare = async () => {
     if (!checklist) {
-      Alert.alert('공유할 체크리스트를 찾지 못했습니다.');
+      showAlert({title: ALERT_MESSAGES.notFound});
       return;
     }
 
@@ -68,7 +60,7 @@ export function ShareCardScreen({route}: Props) {
     try {
       await Share.share({message: shareMessage});
     } catch {
-      Alert.alert('공유를 열지 못했습니다.');
+      showAlert({title: ALERT_MESSAGES.openFailed});
     }
   };
 
@@ -107,9 +99,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 20,
-    padding: 20,
-    paddingBottom: 120,
+    gap: spacing.screen,
+    padding: layout.screenPadding,
+    paddingBottom: layout.bottomActionScrollPadding,
   },
   emptyState: {
     flex: 1,

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Image, StyleSheet, Text, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import type {ChatMessage} from '../../types';
 
 type ChatMessageBubbleProps = {
@@ -45,7 +45,7 @@ export function ChatMessageBubble({
 const styles = StyleSheet.create({
   messageWrap: {
     alignItems: 'flex-start',
-    gap: 4,
+    gap: spacing.xs,
   },
   myMessageWrap: {
     alignItems: 'flex-end',
@@ -54,12 +54,12 @@ const styles = StyleSheet.create({
     color: colors.brandMuted,
     fontSize: 11,
     fontWeight: '900',
-    marginBottom: 6,
+    marginBottom: spacing.sm,
   },
   bubble: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 17,
+    borderRadius: radii.bubble,
     borderWidth: 1,
     maxWidth: '82%',
     overflow: 'hidden',
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   messageImage: {
-    borderRadius: 12,
+    borderRadius: radii.sm,
     height: 190,
     width: 190,
   },

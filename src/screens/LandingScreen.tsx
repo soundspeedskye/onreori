@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {colors} from '../theme/tokens';
+import {colors, radii, spacing} from '../theme/tokens';
 
 import {Button} from '../components/ui/Button';
 import type { RootStackParamList } from '../types';
@@ -48,17 +48,17 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: spacing.xl,
   },
   visual: {
     alignSelf: 'center',
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 32,
+    borderRadius: radii.display,
     borderWidth: 1,
     height: 240,
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxl,
     position: 'relative',
     width: '100%',
   },
@@ -68,10 +68,10 @@ const styles = StyleSheet.create({
   },
   floatingIcon: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: 24,
+    borderRadius: radii.xl,
     fontSize: 26,
     overflow: 'hidden',
-    padding: 12,
+    padding: spacing.md,
     position: 'absolute',
   },
   topLeft: {
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     right: 34,
   },
   copy: {
-    gap: 10,
-    marginBottom: 28,
+    gap: spacing.sm,
+    marginBottom: spacing.xxl,
   },
   eyebrow: {
     color: colors.brandMuted,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   primaryButton: {
-    borderRadius: 18,
+    borderRadius: radii.card,
     paddingVertical: 17,
   },
   primaryButtonText: {

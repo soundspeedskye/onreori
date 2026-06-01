@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import type {TemplateCondition} from '../../types';
 import {Card} from '../ui/Card';
 
@@ -35,14 +35,14 @@ export function ConditionToggle({
 const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: radii.card,
     flexDirection: 'row',
-    gap: 12,
-    padding: 16,
+    gap: spacing.md,
+    padding: spacing.lg,
   },
   content: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   label: {
     color: colors.text,

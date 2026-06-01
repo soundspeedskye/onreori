@@ -3,11 +3,6 @@ export type FetchInit = RequestInit & {
   headers?: Record<string, string>;
 };
 
-export type EventUrlPreview = {
-  url: string;
-  title?: string;
-  description?: string;
-  dateCandidates: string[];
-  locationCandidates: string[];
-  confidence: 'high' | 'medium' | 'low';
-};
+export type {
+  ParsedEventUrlPreview as EventUrlPreview,
+} from '../../../src/utils/eventUrlPreviewParser.ts';

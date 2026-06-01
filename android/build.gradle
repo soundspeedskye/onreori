@@ -23,7 +23,7 @@ apply plugin: "com.facebook.react.rootproject"
 allprojects {
     repositories {
         maven {
-            url("https://repository.map.naver.com/archive/maven")
+            url("https://devrepo.kakao.com/nexus/content/groups/public/")
         }
         maven {
             url("$rootDir/../node_modules/@react-native-async-storage/async-storage/android/local_repo")

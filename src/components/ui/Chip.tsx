@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleProp, StyleSheet, Text, TextStyle} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii} from '../../theme/tokens';
 
 type ChipTone = 'brand' | 'action';
 
@@ -22,7 +22,7 @@ export function Chip({label, children, tone = 'brand', style}: ChipProps) {
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 999,
+    borderRadius: radii.chip,
     fontSize: 12,
     fontWeight: '700',
     overflow: 'hidden',

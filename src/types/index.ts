@@ -1,3 +1,7 @@
+import type {EventCategoryId} from '../constants/eventCategories';
+
+export type {EventCategoryId};
+
 export type ConditionId = string;
 
 export type TemplateCondition = {
@@ -38,7 +42,12 @@ export type ChecklistItem = TemplateItem & {
   sourceItemId?: string;
 };
 
-export type ChecklistSaveState = 'draft' | 'localOnly' | 'synced';
+export type ChecklistSaveState =
+  | 'draft'
+  | 'localOnly'
+  | 'deviceSaved'
+  | 'synced'
+  | 'syncFailed';
 
 export type Checklist = {
   id: string;
@@ -56,8 +65,19 @@ export type Checklist = {
   items: ChecklistItem[];
 };
 
+export type RemoteChecklistSummary = {
+  remoteId: string;
+  localId: string;
+  categoryId: string;
+  templateId: string;
+  title: string;
+  selectedConditions: ConditionId[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type EventCategory = {
-  id: string;
+  id: EventCategoryId;
   title: string;
   icon: string;
   description?: string;
@@ -65,21 +85,20 @@ export type EventCategory = {
   roomLabel: string;
 };
 
-export type EventCategoryId = 'EVENT_DAY' | 'POPUP' | 'CAFE_EVENT';
-
 export type PlaceSelection = {
-  provider: 'naver';
+  provider: 'kakao';
   name: string;
   address?: string;
   roadAddress?: string;
   latitude: number;
   longitude: number;
-  source: 'pin' | 'search';
+  source: 'center' | 'pin' | 'search';
 };
 
 export type EventUrlPreview = {
   url: string;
   title?: string;
+  description?: string;
   dateCandidates: string[];
   locationCandidates: string[];
   confidence: 'high' | 'medium' | 'low';
@@ -104,6 +123,8 @@ export type AuthUser = {
   nickname: string;
 };
 
+export type RoomStatus = 'active' | 'closed' | 'soft_deleted';
+
 export type EventRoom = {
   id: string;
   categoryId: string;
@@ -117,6 +138,12 @@ export type EventRoom = {
   latitude?: number;
   longitude?: number;
   subjectName?: string;
+  status: RoomStatus;
+  eventTimezone: string;
+  activeFromAt: string;
+  activeUntilAt: string;
+  closedAt?: string;
+  deletedAt?: string;
   memberCount: number;
   createdBy: string;
   createdAt: string;

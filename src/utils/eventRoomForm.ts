@@ -1,3 +1,6 @@
+import {ALERT_MESSAGES} from '../constants/alertMessages';
+import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
+
 type RoomCreationConfig = {
   titleLabel: string;
   titlePlaceholder: string;
@@ -12,11 +15,8 @@ type RoomCreationDraft = {
   location?: string;
 };
 
-const CAFE_EVENT = 'CAFE_EVENT';
-const POPUP = 'POPUP';
-
 export function getRoomCreationConfig(categoryId: string): RoomCreationConfig {
-  if (categoryId === CAFE_EVENT) {
+  if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
     return {
       titleLabel: '아티스트/멤버명',
       titlePlaceholder: '예: 민지',
@@ -28,7 +28,9 @@ export function getRoomCreationConfig(categoryId: string): RoomCreationConfig {
   return {
     titleLabel: '방 제목',
     titlePlaceholder:
-      categoryId === POPUP ? '예: 성수 팝업 재고방' : '예: KSPO 2일차 대기방',
+      categoryId === EVENT_CATEGORY_IDS.POPUP
+        ? '예: 성수 팝업 재고방'
+        : '예: KSPO 2일차 대기방',
     requiresPlace: true,
     allowsEventUrlPreview: true,
   };
@@ -37,7 +39,7 @@ export function getRoomCreationConfig(categoryId: string): RoomCreationConfig {
 export function buildRoomTitle(categoryId: string, title: string): string {
   const trimmedTitle = title.trim();
 
-  if (categoryId === CAFE_EVENT) {
+  if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
     return `${trimmedTitle} 생카 정보방`;
   }
 
@@ -51,21 +53,19 @@ export function validateRoomCreationDraft(
   const config = getRoomCreationConfig(categoryId);
 
   if (!draft.title?.trim()) {
-    return categoryId === CAFE_EVENT
-      ? '아티스트/멤버명을 입력하세요.'
-      : '방 제목을 입력하세요.';
+    return ALERT_MESSAGES.requiredInput;
   }
 
   if (!draft.eventDate?.trim()) {
-    return '날짜를 선택하세요.';
+    return ALERT_MESSAGES.requiredSelection;
   }
 
   if (config.requiresPlace && !draft.location?.trim()) {
-    return '장소를 선택하세요.';
+    return ALERT_MESSAGES.requiredSelection;
   }
 
   if (!draft.entryCode?.trim()) {
-    return '입장코드를 입력하세요.';
+    return ALERT_MESSAGES.requiredInput;
   }
 
   return null;

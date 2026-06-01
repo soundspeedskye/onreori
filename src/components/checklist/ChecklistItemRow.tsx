@@ -1,7 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import type {ChecklistItem} from '../../types';
 import {Card} from '../ui/Card';
 import {Chip} from '../ui/Chip';
@@ -20,7 +20,12 @@ export function ChecklistItemRow({
   onToggle,
 }: ChecklistItemRowProps) {
   return (
-    <Card onPress={onToggle} style={styles.row}>
+    <Card
+      accessibilityLabel={`${item.name} 체크`}
+      accessibilityRole="checkbox"
+      accessibilityState={{checked: item.checked}}
+      onPress={onToggle}
+      style={styles.row}>
       <Text style={styles.checkbox}>{item.checked ? '☑︎' : '☐'}</Text>
       <View style={styles.content}>
         <View style={styles.headerRow}>
@@ -58,10 +63,10 @@ export function ChecklistItemRow({
 const styles = StyleSheet.create({
   row: {
     alignItems: 'flex-start',
-    borderRadius: 18,
+    borderRadius: radii.card,
     flexDirection: 'row',
-    gap: 12,
-    padding: 14,
+    gap: spacing.md,
+    padding: spacing.md,
   },
   checkbox: {
     color: colors.brand,
@@ -71,25 +76,25 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   headerRow: {
     alignItems: 'flex-start',
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   titleRow: {
     alignItems: 'center',
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.sm,
   },
   deleteButton: {
     alignItems: 'center',
     backgroundColor: colors.background,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: radii.sm,
     borderWidth: 1,
     height: 24,
     justifyContent: 'center',

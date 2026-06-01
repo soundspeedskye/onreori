@@ -27,6 +27,12 @@ export const spacing = {
   xxl: 32,
 } as const;
 
+export const layout = {
+  bottomActionScrollPadding: 120,
+  screenBottomPadding: spacing.xxl,
+  screenPadding: spacing.screen,
+} as const;
+
 export const radii = {
   chip: 999,
   sm: 12,
@@ -34,5 +40,9 @@ export const radii = {
   button: 15,
   bubble: 17,
   card: 18,
+  lg: 20,
   hero: 22,
+  xl: 24,
+  xxl: 28,
+  display: 32,
 } as const;

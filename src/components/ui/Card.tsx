@@ -9,7 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 
 type CardProps = ViewProps & {
   children: React.ReactNode;
@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: radii.lg,
     borderWidth: 1,
-    padding: 16,
+    padding: spacing.lg,
   },
 });

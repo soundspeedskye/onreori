@@ -1,15 +1,36 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {isSupabaseConfigured, supabase} from '../config/supabase';
-import type {AuthUser, ChatMessage, EventRoom} from '../types';
+import type {AuthUser, ChatMessage, EventRoom, RoomStatus} from '../types';
+import {KOREAN_EVENT_TIME_ZONE} from '../utils/date';
+import {
+  EVENT_ROOM_ALWAYS_ACTIVE_FROM_AT,
+  EVENT_ROOM_ALWAYS_ACTIVE_UNTIL_AT,
+  getEventRoomAvailability,
+  isEventRoomActiveAt,
+} from '../utils/eventRoomVisibility';
 import {extractHashtags} from '../utils/hashtags';
+import {createLocalId} from '../utils/localId';
 
 const PREVIEW_ROOMS_KEY = '@onreori/previewRooms';
 const PREVIEW_MEMBERS_KEY = '@onreori/previewRoomMembers';
 const CHAT_MEDIA_BUCKET = 'chat-media';
 const CHAT_MEDIA_SIGNED_URL_SECONDS = 60 * 60;
 const TUTORIAL_ROOM_ID_PREFIX = 'tutorial-';
-const TUTORIAL_ENTRY_CODE = '0000';
+const TUTORIAL_BOT_USER_ID = 'tutorial-bot';
+const TUTORIAL_BOT_NICKNAME = '오늘의오리';
+const TUTORIAL_WELCOME_BODIES = [
+  '안녕하세요! 오늘의오리 입니다.',
+  '이 곳은 현장 상황을 자유롭게 공유할 수 있는 단톡방이에요',
+];
+const TUTORIAL_REPLY_BODIES = [
+  '서로 예쁜 말로 소통해요.',
+  '현장 정보는 확인한 내용만 차분히 공유해요.',
+  '급한 상황일수록 짧고 정확하게 남겨보면 좋아요.',
+  '사진이나 위치를 올릴 땐 다른 사람 개인정보가 보이지 않는지 확인해요.',
+  '궁금한 점은 편하게 묻고, 아는 정보는 따뜻하게 답해줘요.',
+];
 
 type ChatMessageRow = {
   id: unknown;
@@ -36,13 +57,31 @@ type EventRoomRow = {
   latitude?: unknown;
   longitude?: unknown;
   subject_name?: unknown;
+  status?: unknown;
+  event_timezone?: unknown;
+  active_from_at?: unknown;
+  active_until_at?: unknown;
+  closed_at?: unknown;
+  deleted_at?: unknown;
   member_count: unknown;
   created_by: unknown;
   created_at: unknown;
 };
 
+type RoomMemberWithRoomRow = {
+  role: unknown;
+  joined_at: unknown;
+  event_rooms: EventRoomRow | EventRoomRow[] | null;
+};
+
+export type MyRooms = {
+  createdRooms: EventRoom[];
+  joinedRooms: EventRoom[];
+};
+
 const ROOM_SELECT =
-  'id, category_id, title, event_date, location, event_url, location_name, address, road_address, latitude, longitude, subject_name, member_count, created_by, created_at';
+  'id, category_id, title, event_date, location, event_url, location_name, address, road_address, latitude, longitude, subject_name, status, event_timezone, active_from_at, active_until_at, closed_at, deleted_at, member_count, created_by, created_at';
+const MY_ROOM_SELECT = `role, joined_at, event_rooms (${ROOM_SELECT})`;
 const CHAT_MESSAGE_SELECT =
   'id, room_id, user_id, nickname, type, body, media_url, hashtags, created_at';
 
@@ -141,11 +180,20 @@ async function mapChatMessageRow(row: ChatMessageRow): Promise<ChatMessage> {
 }
 
 function mapEventRoomRow(row: EventRoomRow): EventRoom {
+  const eventDate = row.event_date as string;
+  const activeFromAt = nullableString(row.active_from_at);
+  const activeUntilAt = nullableString(row.active_until_at);
+  const availability = getEventRoomAvailability({
+    eventDate,
+    activeFromAt,
+    activeUntilAt,
+  });
+
   return {
     id: row.id as string,
     categoryId: row.category_id as string,
     title: row.title as string,
-    eventDate: row.event_date as string,
+    eventDate,
     location: row.location as string,
     eventUrl: nullableString(row.event_url),
     locationName: nullableString(row.location_name),
@@ -154,6 +202,14 @@ function mapEventRoomRow(row: EventRoomRow): EventRoom {
     latitude: nullableNumber(row.latitude),
     longitude: nullableNumber(row.longitude),
     subjectName: nullableString(row.subject_name),
+    status: (row.status as RoomStatus | undefined) ?? 'active',
+    eventTimezone:
+      nullableString(row.event_timezone) ??
+      KOREAN_EVENT_TIME_ZONE,
+    activeFromAt: availability.activeFromAt,
+    activeUntilAt: availability.activeUntilAt,
+    closedAt: nullableString(row.closed_at),
+    deletedAt: nullableString(row.deleted_at),
     memberCount: Number(row.member_count ?? 0),
     createdBy: row.created_by as string,
     createdAt: row.created_at as string,
@@ -161,6 +217,8 @@ function mapEventRoomRow(row: EventRoomRow): EventRoom {
 }
 
 function toPublicPreviewRoom(room: PreviewRoom): EventRoom {
+  const availability = getEventRoomAvailability(room);
+
   return {
     id: room.id,
     categoryId: room.categoryId,
@@ -174,6 +232,13 @@ function toPublicPreviewRoom(room: PreviewRoom): EventRoom {
     latitude: room.latitude,
     longitude: room.longitude,
     subjectName: room.subjectName,
+    status: room.status ?? 'active',
+    eventTimezone:
+      room.eventTimezone ?? KOREAN_EVENT_TIME_ZONE,
+    activeFromAt: availability.activeFromAt,
+    activeUntilAt: availability.activeUntilAt,
+    closedAt: room.closedAt,
+    deletedAt: room.deletedAt,
     memberCount: room.memberCount,
     createdBy: room.createdBy,
     createdAt: room.createdAt,
@@ -184,7 +249,7 @@ type PreviewRoom = EventRoom & {
   entryCode: string;
 };
 
-function isTutorialRoomId(roomId: string): boolean {
+export function isTutorialRoomId(roomId: string): boolean {
   return roomId.startsWith(TUTORIAL_ROOM_ID_PREFIX);
 }
 
@@ -194,27 +259,86 @@ function getTutorialRoom(categoryId: string): PreviewRoom {
     categoryId,
     title: '튜토리얼 단톡방',
     eventDate: '상시',
-    location: `입장코드 ${TUTORIAL_ENTRY_CODE}`,
+    location: '오늘의오리 사용법',
+    status: 'active',
+    eventTimezone: KOREAN_EVENT_TIME_ZONE,
+    activeFromAt: EVENT_ROOM_ALWAYS_ACTIVE_FROM_AT,
+    activeUntilAt: EVENT_ROOM_ALWAYS_ACTIVE_UNTIL_AT,
     memberCount: 1,
     createdBy: 'tutorial',
     createdAt: '2026-05-22T00:00:00.000Z',
-    entryCode: TUTORIAL_ENTRY_CODE,
+    entryCode: '',
   };
 }
 
-function getTutorialMessages(roomId: string): ChatMessage[] {
-  return [
-    {
-      id: `${roomId}-welcome`,
+export function getTutorialRoomForCategory(categoryId: string): EventRoom {
+  return toPublicPreviewRoom(getTutorialRoom(categoryId));
+}
+
+function withTutorialRoom(categoryId: string, rooms: EventRoom[]): EventRoom[] {
+  const visibleRooms = rooms.filter(room => !isTutorialRoomId(room.id));
+
+  return [...visibleRooms, getTutorialRoomForCategory(categoryId)];
+}
+
+function createTutorialBotMessage(
+  roomId: string,
+  idSuffix: string,
+  body: string,
+  createdAt: string,
+): ChatMessage {
+  return {
+    id: `${roomId}-${idSuffix}`,
+    roomId,
+    userId: TUTORIAL_BOT_USER_ID,
+    nickname: TUTORIAL_BOT_NICKNAME,
+    type: 'text',
+    body,
+    hashtags: [],
+    createdAt,
+  };
+}
+
+export async function ensureTutorialWelcomeMessages(
+  roomId: string,
+): Promise<ChatMessage[]> {
+  const messages = await readPreviewMessages(roomId);
+
+  if (messages.length > 0) {
+    return messages;
+  }
+
+  const now = Date.now();
+  const welcomeMessages = TUTORIAL_WELCOME_BODIES.map((body, index) =>
+    createTutorialBotMessage(
       roomId,
-      userId: 'tutorial',
-      nickname: '온리오리',
-      type: 'text',
-      body: `튜토리얼 단톡방입니다. 입장코드는 ${TUTORIAL_ENTRY_CODE}이고, 현장 정보나 질문을 편하게 남겨보세요.`,
-      hashtags: [],
-      createdAt: '2026-05-22T00:00:00.000Z',
-    },
-  ];
+      `welcome-${index + 1}`,
+      body,
+      new Date(now + index).toISOString(),
+    ),
+  );
+
+  await writePreviewMessages(roomId, welcomeMessages);
+  return welcomeMessages;
+}
+
+export async function createTutorialBotReply(
+  roomId: string,
+): Promise<ChatMessage> {
+  const messages = await readPreviewMessages(roomId);
+  const replyIndex = Math.min(
+    Math.floor(Math.random() * TUTORIAL_REPLY_BODIES.length),
+    TUTORIAL_REPLY_BODIES.length - 1,
+  );
+  const reply = createTutorialBotMessage(
+    roomId,
+    `reply-${Date.now()}-${replyIndex}`,
+    TUTORIAL_REPLY_BODIES[replyIndex],
+    new Date().toISOString(),
+  );
+
+  await writePreviewMessages(roomId, [...messages, reply]);
+  return reply;
 }
 
 async function readPreviewRooms(): Promise<PreviewRoom[]> {
@@ -262,29 +386,38 @@ async function writePreviewMessages(
   );
 }
 
-async function addPreviewMember(roomId: string, userId: string): Promise<void> {
+async function readPreviewMembers(): Promise<Record<string, string[]>> {
   const rawValue = await AsyncStorage.getItem(PREVIEW_MEMBERS_KEY);
-  const members = rawValue
-    ? (JSON.parse(rawValue) as Record<string, string[]>)
-    : {};
+
+  return rawValue ? (JSON.parse(rawValue) as Record<string, string[]>) : {};
+}
+
+async function addPreviewMember(roomId: string, userId: string): Promise<void> {
+  const members = await readPreviewMembers();
   const roomMembers = new Set(members[roomId] ?? []);
   roomMembers.add(userId);
   members[roomId] = Array.from(roomMembers);
   await AsyncStorage.setItem(PREVIEW_MEMBERS_KEY, JSON.stringify(members));
 }
 
+async function getPreviewRoom(roomId: string): Promise<PreviewRoom | undefined> {
+  const rooms = await readPreviewRooms();
+
+  return rooms.find(item => item.id === roomId);
+}
+
 export async function listRoomsByCategory(
   categoryId: string,
 ): Promise<EventRoom[]> {
   if (!isSupabaseConfigured || !supabase) {
+    const nowIso = new Date().toISOString();
     return readPreviewRooms().then(rooms => {
       const categoryRooms = rooms
         .filter(room => room.categoryId === categoryId)
+        .filter(room => isEventRoomActiveAt(room, nowIso))
         .map(room => toPublicPreviewRoom(room));
 
-      return categoryRooms.length > 0
-        ? categoryRooms
-        : [toPublicPreviewRoom(getTutorialRoom(categoryId))];
+      return withTutorialRoom(categoryId, categoryRooms);
     });
   }
 
@@ -292,17 +425,83 @@ export async function listRoomsByCategory(
     .from('event_rooms')
     .select(ROOM_SELECT)
     .eq('category_id', categoryId)
+    .eq('status', 'active')
     .order('event_date', {ascending: true});
+
+  if (error) {
+    return [getTutorialRoomForCategory(categoryId)];
+  }
+
+  const rooms = (data ?? []).map(row => mapEventRoomRow(row));
+
+  return withTutorialRoom(categoryId, rooms);
+}
+
+function splitMyRooms(rooms: EventRoom[], userId: string): MyRooms {
+  const createdRooms: EventRoom[] = [];
+  const joinedRooms: EventRoom[] = [];
+  const seenRoomIds = new Set<string>();
+
+  rooms.forEach(room => {
+    if (seenRoomIds.has(room.id)) {
+      return;
+    }
+
+    seenRoomIds.add(room.id);
+
+    if (room.createdBy === userId) {
+      createdRooms.push(room);
+    } else {
+      joinedRooms.push(room);
+    }
+  });
+
+  return {createdRooms, joinedRooms};
+}
+
+function getRoomRowFromMemberRow(
+  row: RoomMemberWithRoomRow,
+): EventRoomRow | undefined {
+  if (!row.event_rooms) {
+    return undefined;
+  }
+
+  return Array.isArray(row.event_rooms)
+    ? row.event_rooms[0]
+    : row.event_rooms;
+}
+
+export async function listMyRooms(user: AuthUser): Promise<MyRooms> {
+  if (!isSupabaseConfigured || !supabase) {
+    const [rooms, members] = await Promise.all([
+      readPreviewRooms(),
+      readPreviewMembers(),
+    ]);
+    const nowIso = new Date().toISOString();
+    const myRooms = rooms
+      .filter(room => (members[room.id] ?? []).includes(user.id))
+      .filter(room => isEventRoomActiveAt(room, nowIso))
+      .map(room => toPublicPreviewRoom(room));
+
+    return splitMyRooms(myRooms, user.id);
+  }
+
+  const {data, error} = await supabase
+    .from('room_members')
+    .select(MY_ROOM_SELECT)
+    .eq('user_id', user.id)
+    .order('joined_at', {ascending: false});
 
   if (error) {
     throw new Error(error.message);
   }
 
-  const rooms = (data ?? []).map(row => mapEventRoomRow(row));
+  const rooms = ((data ?? []) as RoomMemberWithRoomRow[])
+    .map(row => getRoomRowFromMemberRow(row))
+    .filter((row): row is EventRoomRow => Boolean(row))
+    .map(row => mapEventRoomRow(row));
 
-  return rooms.length > 0
-    ? rooms
-    : [toPublicPreviewRoom(getTutorialRoom(categoryId))];
+  return splitMyRooms(rooms, user.id);
 }
 
 export async function createRoom(params: {
@@ -321,10 +520,15 @@ export async function createRoom(params: {
   user: AuthUser;
 }): Promise<EventRoom> {
   const now = new Date().toISOString();
+  const availability = getEventRoomAvailability({
+    eventDate: params.eventDate.trim(),
+    activeFromAt: undefined,
+    activeUntilAt: undefined,
+  });
 
   if (!isSupabaseConfigured || !supabase) {
     const room: PreviewRoom = {
-      id: `room-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      id: createLocalId('room'),
       categoryId: params.categoryId,
       title: params.title.trim(),
       eventDate: params.eventDate.trim() || now.slice(0, 10),
@@ -336,6 +540,10 @@ export async function createRoom(params: {
       latitude: params.latitude,
       longitude: params.longitude,
       subjectName: params.subjectName,
+      status: 'active',
+      eventTimezone: KOREAN_EVENT_TIME_ZONE,
+      activeFromAt: availability.activeFromAt,
+      activeUntilAt: availability.activeUntilAt,
       memberCount: 1,
       createdBy: params.user.id,
       createdAt: now,
@@ -361,10 +569,11 @@ export async function createRoom(params: {
     input_latitude: params.latitude ?? null,
     input_longitude: params.longitude ?? null,
     input_subject_name: params.subjectName ?? null,
+    input_event_timezone: KOREAN_EVENT_TIME_ZONE,
   });
 
   if (error || !data) {
-    throw new Error(error?.message ?? '방 생성에 실패했습니다.');
+    throw new Error(error?.message ?? ALERT_MESSAGES.createFailed);
   }
 
   return mapEventRoomRow(data);
@@ -375,25 +584,24 @@ export async function joinRoomWithCode(
   entryCode: string,
   user: AuthUser,
 ): Promise<void> {
-  if (!entryCode.trim()) {
-    throw new Error('입장코드를 입력하세요.');
-  }
-
   if (isTutorialRoomId(roomId)) {
-    if (entryCode.trim() !== TUTORIAL_ENTRY_CODE) {
-      throw new Error('입장코드가 맞지 않습니다.');
-    }
-
     await addPreviewMember(roomId, user.id);
     return;
   }
 
+  if (!entryCode.trim()) {
+    throw new Error(ALERT_MESSAGES.requiredInput);
+  }
+
   if (!isSupabaseConfigured || !supabase) {
-    const rooms = await readPreviewRooms();
-    const room = rooms.find(item => item.id === roomId);
+    const room = await getPreviewRoom(roomId);
 
     if (!room || room.entryCode !== entryCode) {
-      throw new Error('입장코드가 맞지 않습니다.');
+      throw new Error(ALERT_MESSAGES.checkInput);
+    }
+
+    if (!isEventRoomActiveAt(room)) {
+      throw new Error(ALERT_MESSAGES.unavailable);
     }
 
     await addPreviewMember(roomId, user.id);
@@ -412,9 +620,7 @@ export async function joinRoomWithCode(
 
 export async function listMessages(roomId: string): Promise<ChatMessage[]> {
   if (isTutorialRoomId(roomId)) {
-    const messages = await readPreviewMessages(roomId);
-
-    return messages.length > 0 ? messages : getTutorialMessages(roomId);
+    return readPreviewMessages(roomId);
   }
 
   if (!isSupabaseConfigured || !supabase) {
@@ -443,12 +649,12 @@ export async function sendTextMessage(
   const trimmedBody = body.trim();
 
   if (!trimmedBody) {
-    throw new Error('메시지를 입력하세요.');
+    throw new Error(ALERT_MESSAGES.requiredInput);
   }
 
   const hashtags = extractHashtags(trimmedBody);
   const message: ChatMessage = {
-    id: `message-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: createLocalId('message'),
     roomId,
     userId: user.id,
     nickname: user.nickname,
@@ -460,14 +666,17 @@ export async function sendTextMessage(
 
   if (isTutorialRoomId(roomId)) {
     const messages = await readPreviewMessages(roomId);
-    await writePreviewMessages(roomId, [
-      ...(messages.length > 0 ? messages : getTutorialMessages(roomId)),
-      message,
-    ]);
+    await writePreviewMessages(roomId, [...messages, message]);
     return message;
   }
 
   if (!isSupabaseConfigured || !supabase) {
+    const room = await getPreviewRoom(roomId);
+
+    if (room && !isEventRoomActiveAt(room)) {
+      throw new Error(ALERT_MESSAGES.unavailable);
+    }
+
     const messages = await readPreviewMessages(roomId);
     await writePreviewMessages(roomId, [...messages, message]);
     return message;
@@ -487,7 +696,7 @@ export async function sendTextMessage(
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? '메시지를 보내지 못했습니다.');
+    throw new Error(error?.message ?? ALERT_MESSAGES.sendFailed);
   }
 
   return mapChatMessageRow(data);
@@ -502,7 +711,7 @@ export async function sendImageMessage(params: {
 }): Promise<ChatMessage> {
   const now = Date.now();
   const message: ChatMessage = {
-    id: `message-${now}-${Math.random().toString(36).slice(2, 8)}`,
+    id: createLocalId('message', now),
     roomId: params.roomId,
     userId: params.user.id,
     nickname: params.user.nickname,
@@ -515,14 +724,17 @@ export async function sendImageMessage(params: {
 
   if (isTutorialRoomId(params.roomId)) {
     const messages = await readPreviewMessages(params.roomId);
-    await writePreviewMessages(params.roomId, [
-      ...(messages.length > 0 ? messages : getTutorialMessages(params.roomId)),
-      message,
-    ]);
+    await writePreviewMessages(params.roomId, [...messages, message]);
     return message;
   }
 
   if (!isSupabaseConfigured || !supabase) {
+    const room = await getPreviewRoom(params.roomId);
+
+    if (room && !isEventRoomActiveAt(room)) {
+      throw new Error(ALERT_MESSAGES.unavailable);
+    }
+
     const messages = await readPreviewMessages(params.roomId);
     await writePreviewMessages(params.roomId, [...messages, message]);
     return message;
@@ -559,7 +771,7 @@ export async function sendImageMessage(params: {
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? '사진 메시지를 보내지 못했습니다.');
+    throw new Error(error?.message ?? ALERT_MESSAGES.sendFailed);
   }
 
   return mapChatMessageRow(data);
@@ -569,7 +781,7 @@ export function subscribeToRoomMessages(
   roomId: string,
   onMessage: (message: ChatMessage) => void,
 ): () => void {
-  if (!isSupabaseConfigured || !supabase) {
+  if (isTutorialRoomId(roomId) || !isSupabaseConfigured || !supabase) {
     return () => undefined;
   }
 

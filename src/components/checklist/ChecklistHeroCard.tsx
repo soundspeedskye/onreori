@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, radii, spacing} from '../../theme/tokens';
 import {Card} from '../ui/Card';
 import {Chip} from '../ui/Chip';
 
@@ -47,21 +47,21 @@ export function ChecklistHeroCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
-    gap: 14,
-    padding: 18,
+    borderRadius: radii.xl,
+    gap: spacing.lg,
+    padding: spacing.lg,
   },
   top: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 14,
+    gap: spacing.lg,
   },
   icon: {
     fontSize: 38,
   },
   copy: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   title: {
     color: colors.text,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   conditions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   fallback: {
     color: colors.muted,

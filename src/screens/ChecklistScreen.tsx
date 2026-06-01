@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { colors } from '../theme/tokens';
+import { colors, layout, radii, spacing } from '../theme/tokens';
 
 import { useAuth } from '../auth/AuthContext';
 import { ChecklistHeroCard } from '../components/checklist/ChecklistHeroCard';
@@ -12,17 +12,23 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
 import { TextField } from '../components/ui/TextField';
-import { conditions } from '../data/templates';
 import { saveChecklistToAccount } from '../services/checklistAccount';
 import {
   getChecklistById,
   saveChecklist,
   saveChecklistDraft,
   saveChecklistLocalOnly,
+  saveChecklistSyncFailed,
   saveChecklistSynced,
   setPendingAccountSaveChecklistId,
 } from '../storage/checklists';
 import type { Checklist, ChecklistItem, RootStackParamList } from '../types';
+import {
+  CHECKLIST_SYNCING_LABEL,
+  getChecklistSaveStateLabel,
+  getSelectedConditionLabels,
+} from '../utils/checklistPresentation';
+import {ALERT_MESSAGES, showAlert, showError} from '../utils/appAlert';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checklist'>;
 
@@ -37,6 +43,7 @@ export function ChecklistScreen({ navigation, route }: Props) {
   const [customItemDescription, setCustomItemDescription] = useState('');
   const [customItemName, setCustomItemName] = useState('');
   const [savingToAccount, setSavingToAccount] = useState(false);
+  const [syncingToAccount, setSyncingToAccount] = useState(false);
 
   useEffect(() => {
     const loadChecklist = async () => {
@@ -66,19 +73,58 @@ export function ChecklistScreen({ navigation, route }: Props) {
     }));
   }, [checklist]);
 
-  const selectedConditionLabels = useMemo(() => {
-    if (!checklist) {
-      return [];
+  const selectedConditionLabels = useMemo(
+    () =>
+      checklist ? getSelectedConditionLabels(checklist.selectedConditions) : [],
+    [checklist],
+  );
+
+  const shouldSyncToAccount = (targetChecklist: Checklist) =>
+    Boolean(
+      user &&
+        targetChecklist.remoteId &&
+        (targetChecklist.saveState === 'synced' ||
+          targetChecklist.saveState === 'syncFailed'),
+    );
+
+  const syncChecklistToAccount = async (targetChecklist: Checklist) => {
+    if (!user) {
+      return;
     }
 
-    return conditions
-      .filter(condition => checklist.selectedConditions.includes(condition.id))
-      .map(condition => condition.label);
-  }, [checklist]);
+    try {
+      setSyncingToAccount(true);
+      const remoteReference = await saveChecklistToAccount(
+        targetChecklist,
+        user,
+      );
+      const syncedChecklist = await saveChecklistSynced(
+        targetChecklist,
+        remoteReference,
+      );
+      setChecklist(syncedChecklist);
+    } catch {
+      const failedChecklist = await saveChecklistSyncFailed(targetChecklist);
+      setChecklist(failedChecklist);
+      showAlert({
+        title: ALERT_MESSAGES.syncFailed,
+        message: '로컬 변경은 저장했습니다. 다시 동기화해 주세요.',
+      });
+    } finally {
+      setSyncingToAccount(false);
+    }
+  };
 
-  const persistChecklist = async (nextChecklist: Checklist) => {
+  const persistChecklist = async (
+    nextChecklist: Checklist,
+    options: {syncToAccount?: boolean} = {},
+  ) => {
     setChecklist(nextChecklist);
     await saveChecklist(nextChecklist);
+
+    if (options.syncToAccount) {
+      await syncChecklistToAccount(nextChecklist);
+    }
   };
 
   const toggleItem = async (itemId: string) => {
@@ -94,7 +140,9 @@ export function ChecklistScreen({ navigation, route }: Props) {
       ),
     };
 
-    await persistChecklist(nextChecklist);
+    await persistChecklist(nextChecklist, {
+      syncToAccount: shouldSyncToAccount(checklist),
+    });
   };
 
   const handleAddCustomItem = async () => {
@@ -106,7 +154,7 @@ export function ChecklistScreen({ navigation, route }: Props) {
     const nextName = customItemName.trim();
 
     if (!nextName) {
-      Alert.alert('추가할 항목 이름을 입력하세요.');
+      showAlert({title: ALERT_MESSAGES.requiredInput});
       return;
     }
 
@@ -130,7 +178,9 @@ export function ChecklistScreen({ navigation, route }: Props) {
 
     setCustomItemDescription('');
     setCustomItemName('');
-    await persistChecklist(nextChecklist);
+    await persistChecklist(nextChecklist, {
+      syncToAccount: shouldSyncToAccount(checklist),
+    });
   };
 
   const handleDeleteItem = async (itemId: string) => {
@@ -150,7 +200,9 @@ export function ChecklistScreen({ navigation, route }: Props) {
       items: checklist.items.filter(item => item.id !== itemId),
     };
 
-    await persistChecklist(nextChecklist);
+    await persistChecklist(nextChecklist, {
+      syncToAccount: shouldSyncToAccount(checklist),
+    });
   };
 
   const handleSaveLocal = async () => {
@@ -160,7 +212,7 @@ export function ChecklistScreen({ navigation, route }: Props) {
 
     const nextChecklist = await saveChecklistLocalOnly(checklist);
     setChecklist(nextChecklist);
-    Alert.alert('로컬에 저장했습니다.');
+    showAlert({title: '저장했습니다.'});
   };
 
   const handleSaveToAccount = async () => {
@@ -186,15 +238,23 @@ export function ChecklistScreen({ navigation, route }: Props) {
         remoteReference,
       );
       setChecklist(nextChecklist);
-      Alert.alert('내 계정에 저장했습니다.');
+      showAlert({title: '저장했습니다.'});
     } catch (error) {
-      Alert.alert(
-        '계정 저장 실패',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
+      showError(error, {
+        title: ALERT_MESSAGES.saveFailed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
     } finally {
       setSavingToAccount(false);
     }
+  };
+
+  const handleRetrySync = async () => {
+    if (!checklist) {
+      return;
+    }
+
+    await syncChecklistToAccount(checklist);
   };
 
   if (!checklist) {
@@ -209,12 +269,9 @@ export function ChecklistScreen({ navigation, route }: Props) {
   }
 
   const checkedCount = checklist.items.filter(item => item.checked).length;
-  const saveStateLabel =
-    checklist.saveState === 'synced'
-      ? '내 계정에 저장됨'
-      : checklist.saveState === 'localOnly'
-      ? '로컬에 저장됨'
-      : '아직 저장하지 않은 체크리스트';
+  const saveStateLabel = getChecklistSaveStateLabel(checklist.saveState, {
+    syncing: syncingToAccount,
+  });
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
@@ -264,9 +321,7 @@ export function ChecklistScreen({ navigation, route }: Props) {
                   onDelete={() => {
                     handleDeleteItem(item.id);
                   }}
-                  onToggle={() => {
-                    toggleItem(item.id);
-                  }}
+                  onToggle={() => toggleItem(item.id)}
                 />
               ))}
             </View>
@@ -289,6 +344,14 @@ export function ChecklistScreen({ navigation, route }: Props) {
             title={savingToAccount ? '저장 중...' : '내 계정에 저장'}
           />
         </View>
+        {checklist.saveState === 'syncFailed' ? (
+          <Button
+            disabled={syncingToAccount}
+            onPress={handleRetrySync}
+            title={syncingToAccount ? CHECKLIST_SYNCING_LABEL : '다시 동기화'}
+            variant="secondary"
+          />
+        ) : null}
         <Button
           onPress={() =>
             navigation.navigate('ShareCard', { checklistId: checklist.id })
@@ -307,22 +370,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 20,
-    padding: 20,
-    paddingBottom: 120,
+    gap: spacing.screen,
+    padding: layout.screenPadding,
+    paddingBottom: layout.bottomActionScrollPadding,
   },
   addCard: {
-    gap: 12,
+    gap: spacing.md,
   },
   addFields: {
-    gap: 10,
+    gap: spacing.sm,
   },
   descriptionInput: {
     minHeight: 74,
     textAlignVertical: 'top',
   },
   addButton: {
-    borderRadius: 16,
+    borderRadius: radii.button,
     minHeight: 0,
     paddingHorizontal: 18,
     paddingVertical: 12,
@@ -332,7 +395,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   section: {
-    gap: 10,
+    gap: spacing.sm,
   },
   sectionTitle: {
     color: colors.text,
@@ -340,11 +403,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sectionList: {
-    gap: 10,
+    gap: spacing.sm,
   },
   footerRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: spacing.sm,
   },
   footerButton: {
     flex: 1,

@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
 
-import {colors} from '../../theme/tokens';
+import {colors, spacing} from '../../theme/tokens';
 
 type ScreenHeaderProps = {
   title: string;
@@ -33,11 +33,11 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'flex-start',
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.md,
   },
   copy: {
     flex: 1,
-    gap: 8,
+    gap: spacing.sm,
   },
   title: {
     color: colors.text,

@@ -72,13 +72,47 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
-def naverMapClientId = providers
-    .gradleProperty("NAVER_MAP_CLIENT_ID")
-    .orElse(providers.environmentVariable("NAVER_MAP_CLIENT_ID"))
-    .orNull
+def readDotEnvValue = { String key ->
+    def envFile = rootProject.file("../.env")
 
-if (!naverMapClientId?.trim()) {
-    throw new GradleException("NAVER_MAP_CLIENT_ID is required for Naver Maps. Provide it with -PNAVER_MAP_CLIENT_ID=your-client-id or the NAVER_MAP_CLIENT_ID environment variable.")
+    if (!envFile.exists()) {
+        return null
+    }
+
+    def value = null
+    def pattern = ~/^\s*(?:export\s+)?${java.util.regex.Pattern.quote(key)}\s*=\s*(.*)\s*$/
+
+    envFile.eachLine { line ->
+        if (value != null || line.trim().startsWith("#")) {
+            return
+        }
+
+        def matcher = line =~ pattern
+
+        if (!matcher.matches()) {
+            return
+        }
+
+        value = matcher.group(1).trim()
+
+        if (
+            (value.startsWith("\"") && value.endsWith("\"")) ||
+            (value.startsWith("'") && value.endsWith("'"))
+        ) {
+            value = value.substring(1, value.length() - 1)
+        }
+    }
+
+    return value
+}
+
+def kakaoNativeAppKey = providers
+    .gradleProperty("KAKAO_NATIVE_APP_KEY")
+    .orElse(providers.environmentVariable("KAKAO_NATIVE_APP_KEY"))
+    .orNull ?: readDotEnvValue("KAKAO_NATIVE_APP_KEY")
+
+if (!kakaoNativeAppKey?.trim()) {
+    throw new org.gradle.api.GradleException("KAKAO_NATIVE_APP_KEY is required for Kakao Maps. Provide it with -PKAKAO_NATIVE_APP_KEY=your-native-app-key or the KAKAO_NATIVE_APP_KEY environment variable.")
 }
 
 android {
@@ -94,9 +128,9 @@ android {
         versionCode 1
         versionName "1.0"
         manifestPlaceholders = [
-            usesCleartextTraffic: "false",
-            naverMapClientId: naverMapClientId
+            usesCleartextTraffic: "false"
         ]
+        resValue "string", "kakao_app_key", kakaoNativeAppKey
     }
     signingConfigs {
         debug {
