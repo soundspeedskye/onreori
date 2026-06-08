@@ -1,7 +1,7 @@
 import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
 
-type RoomCreationConfig = {
+export type RoomCreationConfig = {
   titleLabel: string;
   titlePlaceholder: string;
   requiresPlace: boolean;

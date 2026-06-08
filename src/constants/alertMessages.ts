@@ -2,6 +2,7 @@ export const ALERT_MESSAGES = {
   failed: '실패했습니다.',
   createFailed: '생성에 실패했습니다.',
   loadFailed: '불러오지 못했습니다.',
+  partialLoad: '일부 정보만 불러왔습니다.',
   saveFailed: '저장에 실패했습니다.',
   syncFailed: '동기화에 실패했습니다.',
   sendFailed: '전송에 실패했습니다.',
