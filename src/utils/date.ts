@@ -26,6 +26,8 @@ export function parseDateInput(value: string): Date | undefined {
 }
 
 export const KOREAN_EVENT_TIME_ZONE = 'Asia/Seoul';
+export const EVENT_ROOM_ACTIVE_DAYS_BEFORE_EVENT = 7;
+export const EVENT_ROOM_ACTIVE_DAYS_AFTER_EVENT = 7;
 
 const KOREA_UTC_OFFSET_MS = 9 * 60 * 60 * 1000;
 
@@ -51,7 +53,7 @@ function parseDateInputParts(value: string): DateInputParts | undefined {
     return undefined;
   }
 
-  return {year, monthIndex: month - 1, day};
+  return { year, monthIndex: month - 1, day };
 }
 
 function getKoreanDateStartInstant(
@@ -77,8 +79,14 @@ export function getKoreanEventRoomAvailability(eventDate: string):
       activeUntilAt: string;
     }
   | undefined {
-  const activeFromAt = getKoreanDateStartInstant(eventDate, -5);
-  const activeUntilAt = getKoreanDateStartInstant(eventDate, 4);
+  const activeFromAt = getKoreanDateStartInstant(
+    eventDate,
+    -EVENT_ROOM_ACTIVE_DAYS_BEFORE_EVENT,
+  );
+  const activeUntilAt = getKoreanDateStartInstant(
+    eventDate,
+    EVENT_ROOM_ACTIVE_DAYS_AFTER_EVENT + 1,
+  );
 
   if (!activeFromAt || !activeUntilAt) {
     return undefined;
