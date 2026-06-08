@@ -32,475 +32,6 @@ index 8c9b87a..c226f65 100644
      }
  
      dependencies {
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/a00d70b067387d8fd3aa7799d8996464/results.bin b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/a00d70b067387d8fd3aa7799d8996464/results.bin
-new file mode 100644
-index 0000000..0d259dd
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/a00d70b067387d8fd3aa7799d8996464/results.bin
-@@ -0,0 +1 @@
-+o/classes
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/a00d70b067387d8fd3aa7799d8996464/transformed/classes/classes_dex/classes.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/a00d70b067387d8fd3aa7799d8996464/transformed/classes/classes_dex/classes.dex
-new file mode 100644
-index 0000000..10812b1
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/a00d70b067387d8fd3aa7799d8996464/transformed/classes/classes_dex/classes.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/results.bin b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/results.bin
-new file mode 100644
-index 0000000..7ed749e
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/results.bin
-@@ -0,0 +1 @@
-+o/bundleLibRuntimeToDirDebug
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/BuildConfig.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/BuildConfig.dex
-new file mode 100644
-index 0000000..429939e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/BuildConfig.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/Constants.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/Constants.dex
-new file mode 100644
-index 0000000..3980e96
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/Constants.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapFragment.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapFragment.dex
-new file mode 100644
-index 0000000..a8c3505
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapFragment.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapManager$1.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapManager$1.dex
-new file mode 100644
-index 0000000..7a62c90
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapManager$1.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapManager.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapManager.dex
-new file mode 100644
-index 0000000..ae8b04e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapManager.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapPackage.dex b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapPackage.dex
-new file mode 100644
-index 0000000..c57e2a9
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/jiggag/rnkakaomaps/KakaoMapPackage.dex differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin
-new file mode 100644
-index 0000000..716d96e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/.transforms/cf70c841d13ccf60f0425d3ba967b54d/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/generated/source/buildConfig/debug/com/jiggag/rnkakaomaps/BuildConfig.java b/node_modules/@jiggag/react-native-kakao-maps/android/build/generated/source/buildConfig/debug/com/jiggag/rnkakaomaps/BuildConfig.java
-new file mode 100644
-index 0000000..5047932
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/generated/source/buildConfig/debug/com/jiggag/rnkakaomaps/BuildConfig.java
-@@ -0,0 +1,10 @@
-+/**
-+ * Automatically generated file. DO NOT MODIFY
-+ */
-+package com.jiggag.rnkakaomaps;
-+
-+public final class BuildConfig {
-+  public static final boolean DEBUG = Boolean.parseBoolean("true");
-+  public static final String LIBRARY_PACKAGE_NAME = "com.jiggag.rnkakaomaps";
-+  public static final String BUILD_TYPE = "debug";
-+}
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
-new file mode 100644
-index 0000000..b4a68b6
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
-@@ -0,0 +1,16 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-+    package="com.jiggag.rnkakaomaps" >
-+
-+    <uses-sdk android:minSdkVersion="24" />
-+
-+    <uses-permission android:name="android.permission.INTERNET" />
-+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-+
-+    <application>
-+        <meta-data
-+            android:name="com.kakao.sdk.AppKey"
-+            android:value="@string/kakao_app_key" />
-+    </application>
-+
-+</manifest>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
-new file mode 100644
-index 0000000..212561b
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
-@@ -0,0 +1,18 @@
-+{
-+  "version": 3,
-+  "artifactType": {
-+    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
-+    "kind": "Directory"
-+  },
-+  "applicationId": "com.jiggag.rnkakaomaps",
-+  "variantName": "debug",
-+  "elements": [
-+    {
-+      "type": "SINGLE",
-+      "filters": [],
-+      "attributes": [],
-+      "outputFile": "AndroidManifest.xml"
-+    }
-+  ],
-+  "elementType": "File"
-+}
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
-new file mode 100644
-index 0000000..1211b1e
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
-@@ -0,0 +1,6 @@
-+aarFormatVersion=1.0
-+aarMetadataVersion=1.0
-+minCompileSdk=1
-+minCompileSdkExtension=0
-+minAndroidGradlePluginVersion=1.0.0
-+coreLibraryDesugaringEnabled=false
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
-new file mode 100644
-index 0000000..9e26dfe
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
-@@ -0,0 +1 @@
-+{}
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar
-new file mode 100644
-index 0000000..418deb2
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
-new file mode 100644
-index 0000000..0e0b624
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
-new file mode 100644
-index 0000000..a0f46e1
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
-@@ -0,0 +1,3 @@
-+int id kakao_map_view 0x0
-+int layout kakao_map_view 0x0
-+int string kakao_app_key 0x0
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/layout_kakao_map_view.xml.flat b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/layout_kakao_map_view.xml.flat
-new file mode 100644
-index 0000000..dd3f898
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/layout_kakao_map_view.xml.flat differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
-new file mode 100644
-index 0000000..e4d2e7e
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
-@@ -0,0 +1,2 @@
-+#Fri May 22 15:57:44 KST 2026
-+com.jiggag.rnkakaomaps.jiggag_react-native-kakao-maps-main-6\:/layout/kakao_map_view.xml=/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/kakao_map_view.xml
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
-new file mode 100644
-index 0000000..708011b
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
-@@ -0,0 +1,4 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<resources>
-+    <string name="kakao_app_key">xxxxxx</string>
-+</resources>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
-new file mode 100644
-index 0000000..afb1e3c
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
-@@ -0,0 +1,2 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/res"><file name="kakao_map_view" path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/res/layout/kakao_map_view.xml" qualifiers="" type="layout"/><file path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/res/values/strings.xml" qualifiers=""><string name="kakao_app_key">xxxxxx</string></file></source></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugAssets/merger.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
-new file mode 100644
-index 0000000..c124226
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
-@@ -0,0 +1,2 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/debug/assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/shader_assets/debug/compileDebugShaders/out"/></dataSet></merger>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
-new file mode 100644
-index 0000000..0b10086
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
-@@ -0,0 +1,2 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/jniLibs"><file name="armeabi-v7a/libDaumMapEngineApi.so" path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/jniLibs/armeabi-v7a/libDaumMapEngineApi.so"/><file name="arm64-v8a/libDaumMapEngineApi.so" path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/jniLibs/arm64-v8a/libDaumMapEngineApi.so"/><file name="armeabi/libDaumMapEngineApi.so" path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/jniLibs/armeabi/libDaumMapEngineApi.so"/></source></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/debug/jniLibs"/></dataSet></merger>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugShaders/merger.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
-new file mode 100644
-index 0000000..a771577
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
-@@ -0,0 +1,2 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/debug/shaders"/></dataSet></merger>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/BuildConfig.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/BuildConfig.class
-new file mode 100644
-index 0000000..e4b8c20
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/BuildConfig.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/Constants.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/Constants.class
-new file mode 100644
-index 0000000..bbadb62
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/Constants.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapFragment.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapFragment.class
-new file mode 100644
-index 0000000..e3cb62e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapFragment.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapManager$1.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapManager$1.class
-new file mode 100644
-index 0000000..effb4f9
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapManager$1.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapManager.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapManager.class
-new file mode 100644
-index 0000000..f9d326e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapManager.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapPackage.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapPackage.class
-new file mode 100644
-index 0000000..3da167d
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jiggag/rnkakaomaps/KakaoMapPackage.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/arm64-v8a/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/arm64-v8a/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..bc302e1
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/arm64-v8a/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi-v7a/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi-v7a/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..45655ac
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi-v7a/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..f8da356
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
-new file mode 100644
-index 0000000..ce64fd4
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
-@@ -0,0 +1,5 @@
-+R_DEF: Internal format may change without notice
-+local
-+id kakao_map_view
-+layout kakao_map_view
-+string kakao_app_key
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
-new file mode 100644
-index 0000000..51e5564
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
-@@ -0,0 +1,24 @@
-+1<?xml version="1.0" encoding="utf-8"?>
-+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-+3    package="com.jiggag.rnkakaomaps" >
-+4
-+5    <uses-sdk android:minSdkVersion="24" />
-+6
-+7    <uses-permission android:name="android.permission.INTERNET" />
-+7-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:5:3-65
-+7-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:5:20-62
-+8    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-+8-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:6:3-77
-+8-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:6:20-74
-+9
-+10    <application>
-+10-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:8:3-10:17
-+11        <meta-data
-+11-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:9:5-91
-+12            android:name="com.kakao.sdk.AppKey"
-+12-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:9:16-51
-+13            android:value="@string/kakao_app_key" />
-+13-->/Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:9:52-89
-+14    </application>
-+15
-+16</manifest>
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/arm64-v8a/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/arm64-v8a/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..bc302e1
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/arm64-v8a/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi-v7a/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi-v7a/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..45655ac
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi-v7a/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..f8da356
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
-new file mode 100644
-index 0000000..b4a68b6
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
-@@ -0,0 +1,16 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-+    package="com.jiggag.rnkakaomaps" >
-+
-+    <uses-sdk android:minSdkVersion="24" />
-+
-+    <uses-permission android:name="android.permission.INTERNET" />
-+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-+
-+    <application>
-+        <meta-data
-+            android:name="com.kakao.sdk.AppKey"
-+            android:value="@string/kakao_app_key" />
-+    </application>
-+
-+</manifest>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..bc302e1
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..45655ac
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi/libDaumMapEngineApi.so b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi/libDaumMapEngineApi.so
-new file mode 100644
-index 0000000..f8da356
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi/libDaumMapEngineApi.so differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
-new file mode 100644
-index 0000000..0637a08
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
-@@ -0,0 +1 @@
-+[]
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
-new file mode 100644
-index 0000000..08f4ebe
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
-@@ -0,0 +1 @@
-+0 Warning/Error
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/kakao_map_view.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/kakao_map_view.xml
-new file mode 100644
-index 0000000..055a108
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/layout/kakao_map_view.xml
-@@ -0,0 +1,12 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:orientation="vertical"
-+    android:layout_width="match_parent"
-+    android:layout_height="match_parent">
-+
-+    <RelativeLayout
-+        android:id="@+id/kakao_map_view"
-+        android:layout_width="match_parent"
-+        android:layout_height="match_parent" />
-+
-+</RelativeLayout>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
-new file mode 100644
-index 0000000..708011b
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
-@@ -0,0 +1,4 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<resources>
-+    <string name="kakao_app_key">xxxxxx</string>
-+</resources>
-\ No newline at end of file
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/BuildConfig.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/BuildConfig.class
-new file mode 100644
-index 0000000..e4b8c20
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/BuildConfig.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/Constants.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/Constants.class
-new file mode 100644
-index 0000000..bbadb62
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/Constants.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapFragment.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapFragment.class
-new file mode 100644
-index 0000000..e3cb62e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapFragment.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapManager$1.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapManager$1.class
-new file mode 100644
-index 0000000..effb4f9
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapManager$1.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapManager.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapManager.class
-new file mode 100644
-index 0000000..f9d326e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapManager.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapPackage.class b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapPackage.class
-new file mode 100644
-index 0000000..3da167d
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/jiggag/rnkakaomaps/KakaoMapPackage.class differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar
-new file mode 100644
-index 0000000..1e4ca1f
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
-new file mode 100644
-index 0000000..b4e18c9
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
-@@ -0,0 +1,4 @@
-+com.jiggag.rnkakaomaps
-+id kakao_map_view
-+layout kakao_map_view
-+string kakao_app_key
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/@jiggag/react-native-kakao-maps/android/build/outputs/logs/manifest-merger-debug-report.txt
-new file mode 100644
-index 0000000..471514d
---- /dev/null
-+++ b/node_modules/@jiggag/react-native-kakao-maps/android/build/outputs/logs/manifest-merger-debug-report.txt
-@@ -0,0 +1,33 @@
-+-- Merging decision tree log ---
-+manifest
-+ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:2:1-12:12
-+INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:2:1-12:12
-+	package
-+		ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:3:11-43
-+		INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml
-+	xmlns:android
-+		ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:2:11-69
-+uses-permission#android.permission.INTERNET
-+ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:5:3-65
-+	android:name
-+		ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:5:20-62
-+uses-permission#android.permission.ACCESS_FINE_LOCATION
-+ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:6:3-77
-+	android:name
-+		ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:6:20-74
-+application
-+ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:8:3-10:17
-+meta-data#com.kakao.sdk.AppKey
-+ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:9:5-91
-+	android:value
-+		ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:9:52-89
-+	android:name
-+		ADDED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml:9:16-51
-+uses-sdk
-+INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
-+INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml
-+INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml
-+	android:targetSdkVersion
-+		INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml
-+	android:minSdkVersion
-+		INJECTED from /Users/skye-slogup/Documents/personal/onreori/node_modules/@jiggag/react-native-kakao-maps/android/src/main/AndroidManifest.xml
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapManager$1.class.uniqueId2 b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapManager$1.class.uniqueId2
-new file mode 100644
-index 0000000..462b536
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapManager$1.class.uniqueId2 differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapManager.class.uniqueId0 b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapManager.class.uniqueId0
-new file mode 100644
-index 0000000..734e1ef
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapManager.class.uniqueId0 differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapPackage.class.uniqueId1 b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapPackage.class.uniqueId1
-new file mode 100644
-index 0000000..3da167d
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/KakaoMapPackage.class.uniqueId1 differ
-diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
-new file mode 100644
-index 0000000..dd0123e
-Binary files /dev/null and b/node_modules/@jiggag/react-native-kakao-maps/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java
 index 38d074a..9bece53 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java
@@ -752,10 +283,10 @@ index e7c27e9..63e2036 100644
  
  @interface MapViewController : UIView
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
-index fc6a668..50fb66d 100644
+index fc6a668..b30c412 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
 +++ b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
-@@ -1,99 +1,255 @@
+@@ -1,99 +1,287 @@
  #import "MapViewController.h"
  
 -@interface MapViewController () {
@@ -777,6 +308,7 @@ index fc6a668..50fb66d 100644
    NSString *__markerImageName;
 +  BOOL _mapReady;
 +  BOOL _enginePrepared;
++  BOOL _enginePrepareScheduled;
  }
  
 -@end
@@ -831,33 +363,59 @@ index fc6a668..50fb66d 100644
 +    _mapContainer = [[KMViewContainer alloc] initWithFrame:self.bounds];
 +    _mapContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 +    [self addSubview:_mapContainer];
-+
+ 
+-    [pointList addObject:item];
 +    _mapController = [[KMController alloc] initWithViewContainer:_mapContainer];
 +    _mapController.delegate = self;
 +    [self prepareEngineIfNeeded];
-+  }
+   }
 +  return self;
 +}
-+
+ 
+-  return pointList;
 +- (void)dealloc
 +{
 +  [_mapController pauseEngine];
 +  [_mapController resetEngine];
-+}
- 
--    [pointList addObject:item];
-+- (void)prepareEngineIfNeeded
-+{
-+  if (_enginePrepared || self.bounds.size.width <= 0 || self.bounds.size.height <= 0) {
-+    return;
-   }
- 
--  return pointList;
-+  _enginePrepared = YES;
-+  [_mapController prepareEngine];
  }
  
 -- (void)setMarkerImageName:(NSString *)markerImageName {
++- (void)prepareEngineIfNeeded
++{
++  if (
++    _enginePrepared ||
++    _enginePrepareScheduled ||
++    _mapController.isEnginePrepared ||
++    _mapController.isEngineActive ||
++    self.bounds.size.width <= 0 ||
++    self.bounds.size.height <= 0 ||
++    _mapContainer.bounds.size.width <= 0 ||
++    _mapContainer.bounds.size.height <= 0
++  ) {
++    return;
++  }
++
++  _enginePrepareScheduled = YES;
++  dispatch_async(dispatch_get_main_queue(), ^{
++    self->_enginePrepareScheduled = NO;
++
++    if (
++      self->_enginePrepared ||
++      self->_mapController.isEnginePrepared ||
++      self->_mapController.isEngineActive ||
++      self.bounds.size.width <= 0 ||
++      self.bounds.size.height <= 0 ||
++      self->_mapContainer.bounds.size.width <= 0 ||
++      self->_mapContainer.bounds.size.height <= 0
++    ) {
++      return;
++    }
++
++    BOOL prepared = [self->_mapController prepareEngine];
++    self->_enginePrepared = prepared || self->_mapController.isEnginePrepared;
++  });
++}
++
 +- (KakaoMap *)map
 +{
 +  return (KakaoMap *)[_mapController getView:OnreoriMapViewName];
@@ -867,6 +425,7 @@ index fc6a668..50fb66d 100644
 +{
 +  [super layoutSubviews];
 +  _mapContainer.frame = self.bounds;
++  [_mapContainer layoutIfNeeded];
 +  [self prepareEngineIfNeeded];
 +
 +  if (self.map != nil) {
@@ -1001,6 +560,7 @@ index fc6a668..50fb66d 100644
 +
 +- (void)authenticationSucceeded
 +{
++  _enginePrepared = YES;
 +  if (!_mapController.isEngineActive) {
 +    [_mapController activateEngine];
 +  }
@@ -1008,6 +568,8 @@ index fc6a668..50fb66d 100644
 +
 +- (void)authenticationFailed:(NSInteger)errorCode desc:(NSString *)desc
 +{
++  _enginePrepared = NO;
++  _enginePrepareScheduled = NO;
 +  NSLog(@"[KakaoMapView] authentication failed: %ld %@", (long)errorCode, desc);
 +}
 +
@@ -1039,6 +601,7 @@ index fc6a668..50fb66d 100644
 +
 +- (void)addViewFailed:(NSString *)viewName viewInfoName:(NSString *)viewInfoName
 +{
++  _enginePrepared = NO;
 +  NSLog(@"[KakaoMapView] add view failed: %@ %@", viewName, viewInfoName);
 +}
 +
