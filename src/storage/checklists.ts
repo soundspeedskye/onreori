@@ -81,19 +81,6 @@ export async function saveChecklistDraft(
   return nextChecklist;
 }
 
-export async function saveChecklistLocalOnly(
-  checklist: Checklist,
-): Promise<Checklist> {
-  const nextChecklist: Checklist = {
-    ...checklist,
-    saveState: 'localOnly',
-    updatedAt: new Date().toISOString(),
-  };
-
-  await upsertChecklist(nextChecklist);
-  return nextChecklist;
-}
-
 export async function saveChecklistDeviceSaved(
   checklist: Checklist,
 ): Promise<Checklist> {

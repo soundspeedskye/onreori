@@ -33,17 +33,11 @@ export function createChecklistFromTemplate(
     createdAt: now,
     updatedAt: now,
     saveState: 'draft',
-    items: template.items
-      .filter(
-        item =>
-          item.when.length === 0 ||
-          item.when.some(conditionId => selectedConditions.includes(conditionId)),
-      )
-      .map(item => ({
-        ...item,
-        checked: false,
-        custom: false,
-        sourceItemId: item.id,
-      })),
+    items: template.items.map(item => ({
+      ...item,
+      checked: false,
+      custom: false,
+      sourceItemId: item.id,
+    })),
   };
 }

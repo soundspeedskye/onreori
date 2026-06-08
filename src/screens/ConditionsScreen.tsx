@@ -69,8 +69,8 @@ export function ConditionsScreen({navigation, route}: Props) {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>상황 선택</Text>
           <Text style={styles.sectionDescription}>
-            여러 조건을 같이 켜면 해당되는 추천 준비물만 포함해 체크리스트를
-            만듭니다.
+            선택한 상황은 체크리스트에 함께 기록됩니다. 목록은 상황과
+            상관없이 전체 항목으로 만듭니다.
           </Text>
         </View>
 

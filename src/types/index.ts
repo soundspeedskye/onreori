@@ -16,7 +16,6 @@ export type TemplateItem = {
   section: string;
   essential: boolean;
   tip: string;
-  when: ConditionId[];
 };
 
 export type Template = {

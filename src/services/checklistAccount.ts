@@ -68,7 +68,6 @@ function mapChecklistItemRow(row: ChecklistItemRow): ChecklistItem {
     section: row.section as string,
     essential: Boolean(row.essential),
     tip: row.tip as string,
-    when: [],
     checked: Boolean(row.checked),
     custom: Boolean(row.custom),
   };

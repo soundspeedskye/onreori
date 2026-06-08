@@ -35,7 +35,7 @@
     {
       "id": "GIVEAWAY",
       "label": "나눔/교환 예정",
-      "description": "포장재/슬리브/라벨/펜 등 준비"
+      "description": "여분 쇼핑백/포장재/슬리브/라벨/펜 등 준비"
     },
     {
       "id": "FOREIGN",
@@ -57,152 +57,133 @@
           "name": "예매 내역/티켓(또는 QR)",
           "section": "필수",
           "essential": true,
-          "tip": "통신이 불안할 수 있어 캡처 저장(오프라인 접근 가능하게) 추천",
-          "when": []
+          "tip": "통신이 불안할 수 있어 예비로 캡처 저장(오프라인 접근 가능하게)도 준비 추천"
         },
         {
           "id": "id_card",
           "name": "신분증",
           "section": "필수",
           "essential": true,
-          "tip": "본인확인/현장수령/연령확인 등에서 필요",
-          "when": []
+          "tip": "본인확인/현장수령 등에서 필요"
         },
         {
           "id": "phone",
           "name": "휴대폰",
           "section": "필수",
           "essential": true,
-          "tip": "입장/연락/지도/촬영 등 사용, 배터리 관리 필수",
-          "when": []
+          "tip": "입장/연락/지도/촬영 등 사용, 배터리 관리 필수"
         },
         {
           "id": "battery",
           "name": "보조배터리",
           "section": "필수",
           "essential": false,
-          "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비",
-          "when": []
+          "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비"
         },
         {
           "id": "cable",
           "name": "충전 케이블",
           "section": "필수",
           "essential": false,
-          "tip": "대비를 대비",
-          "when": []
+          "tip": "대비를 대비"
         },
         {
           "id": "transport_card",
           "name": "교통카드/교통 앱",
           "section": "이동",
           "essential": false,
-          "tip": "막차/환승 동선 체크",
-          "when": []
+          "tip": "막차/환승 동선 체크"
         },
         {
           "id": "payment",
           "name": "결제 수단(카드/현금 약간)",
           "section": "이동",
           "essential": true,
-          "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액",
-          "when": []
+          "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액"
         },
         {
           "id": "lightstick",
           "name": "응원봉/배터리(필요 시)",
           "section": "관람",
           "essential": false,
-          "tip": "배터리 규격(AAA 등) 혹은 완충 미리 체크",
-          "when": []
+          "tip": "배터리 규격(AAA 등) 혹은 완충 미리 체크"
         },
         {
           "id": "tote_bag",
           "name": "에코백/장바구니",
           "section": "구매",
           "essential": true,
-          "tip": "굿즈 담기 용",
-          "when": []
+          "tip": "굿즈 담기 용"
         },
         {
           "id": "small_bag",
           "name": "가벼운 가방(크로스/미니백)",
           "section": "관람",
           "essential": false,
-          "tip": "현장 반입 규정에 따라 다름, 귀중품과 필수품 위주",
-          "when": ["STANDING"]
+          "tip": "현장 반입 규정에 따라 다름, 귀중품과 필수품 위주"
         },
         {
           "id": "water",
           "name": "물/음료",
           "section": "편의",
           "essential": false,
-          "tip": "긴 대기시간 방지, 현장 반입 규정 체크",
-          "when": ["LONG_WAIT", "OUTDOOR_WAITING", "SUMMER"]
+          "tip": "긴 대기시간 방지, 현장 반입 규정 체크"
         },
         {
           "id": "snack",
           "name": "간단한 간식",
           "section": "편의",
           "essential": false,
-          "tip": "당 떨어질 때 도움, 말랑카우, 마이쮸처럼 부피 작은 것 추천",
-          "when": ["LONG_WAIT", "OUTDOOR_WAITING"]
+          "tip": "당 떨어질 때 도움, 말랑카우, 마이쮸처럼 부피 작은 것 추천"
         },
         {
           "id": "wet_tissue",
           "name": "물티슈/휴지",
           "section": "의외템",
           "essential": false,
-          "tip": "손 닦기/오염/땀 닦기 등 범용템",
-          "when": []
+          "tip": "손 닦기/오염/땀 닦기 등 범용템"
         },
         {
           "id": "hand_sanitizer",
           "name": "손 소독제",
           "section": "의외템",
           "essential": false,
-          "tip": "찝찝함 방지, 위생 관리 도움",
-          "when": []
+          "tip": "찝찝함 방지, 위생 관리 도움"
         },
         {
           "id": "comfortable_shoes",
           "name": "편한 신발/깔창",
           "section": "체력",
           "essential": false,
-          "tip": "하루종일 줄서기 + 대기 + 이동 방지",
-          "when": ["LONG_WAIT", "OUTDOOR_WAITING", "STANDING"]
+          "tip": "하루종일 줄서기 + 대기 + 이동 방지"
         },
         {
           "id": "zip_bag",
           "name": "지퍼백(소형)",
           "section": "의외템",
           "essential": false,
-          "tip": "영수증/충전기/작은 굿즈 보관 + 방수",
-          "when": []
+          "tip": "영수증/충전기/작은 굿즈 보관 + 방수"
         },
         {
           "id": "portable_fan",
           "name": "휴대용 선풍기/쿨링티슈/양산",
           "section": "날씨",
           "essential": false,
-          "tip": "특히 여름 + 실외 대기 시 필수",
-          "when": ["SUMMER", "OUTDOOR_WAITING", "LONG_WAIT"]
+          "tip": "특히 여름 + 실외 대기 시 필수"
         },
         {
           "id": "hand_warmers",
           "name": "손난로/핫팩",
           "section": "날씨",
           "essential": false,
-          "tip": "특히 겨울 + 실외 대기 시 필수",
-          "when": ["WINTER", "OUTDOOR_WAITING", "LONG_WAIT"]
+          "tip": "특히 겨울 + 실외 대기 시 필수"
         },
         {
           "id": "giveaway_pack",
           "name": "나눔/교환용 포장(슬리브/봉투)",
           "section": "나눔/교환",
           "essential": false,
-          "tip": "포카는 구김 방지",
-          "when": ["GIVEAWAY"]
+          "tip": "포카는 구김 방지"
         }
       ]
     },
@@ -219,120 +200,98 @@
           "name": "예약/입장 QR(또는 안내 문자)",
           "section": "필수",
           "essential": true,
-          "tip": "캡처 저장 + 문자/메일도 바로 찾을 수 있게 즐겨찾기",
-          "when": []
+          "tip": "캡처 저장 + 문자/메일도 바로 찾을 수 있게 즐겨찾기"
         },
         {
           "id": "id_card",
           "name": "신분증",
           "section": "필수",
           "essential": true,
-          "tip": "본인확인/현장수령/연령확인 등에서 필요",
-          "when": []
+          "tip": "본인확인/현장수령/연령확인 등에서 필요"
         },
         {
           "id": "payment",
           "name": "결제 수단(카드/현금 약간)",
           "section": "필수",
           "essential": true,
-          "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액",
-          "when": []
+          "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액"
         },
         {
           "id": "tote_bag",
           "name": "에코백/장바구니",
           "section": "구매",
           "essential": true,
-          "tip": "굿즈 담기 용",
-          "when": []
+          "tip": "굿즈 담기 용"
         },
         {
           "id": "card_sleeves",
           "name": "포카 슬리브/보호필름",
           "section": "굿즈 보호",
           "essential": false,
-          "tip": "구김/오염 방지",
-          "when": []
+          "tip": "구김/오염 방지"
         },
         {
           "id": "wet_tissue",
           "name": "물티슈/휴지",
           "section": "의외템",
           "essential": false,
-          "tip": "손 닦기/오염/땀 닦기 등 범용템",
-          "when": []
+          "tip": "손 닦기/오염/땀 닦기 등 범용템"
         },
         {
           "id": "hand_sanitizer",
           "name": "손 소독제",
           "section": "의외템",
           "essential": false,
-          "tip": "찝찝함 방지, 위생 관리 도움",
-          "when": []
+          "tip": "찝찝함 방지, 위생 관리 도움"
         },
         {
           "id": "water",
           "name": "물/음료",
           "section": "편의",
           "essential": false,
-          "tip": "긴 대기시간 방지, 현장 반입 규정 체크",
-          "when": ["LONG_WAIT", "OUTDOOR_WAITING", "SUMMER"]
+          "tip": "긴 대기시간 방지, 현장 반입 규정 체크"
         },
         {
           "id": "battery",
           "name": "보조배터리",
           "section": "편의",
           "essential": false,
-          "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비",
-          "when": ["LONG_WAIT"]
+          "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비"
         },
         {
           "id": "cable",
           "name": "충전 케이블",
           "section": "편의",
           "essential": false,
-          "tip": "대비를 대비",
-          "when": ["LONG_WAIT"]
+          "tip": "대비를 대비"
         },
         {
           "id": "comfortable_shoes",
           "name": "편한 신발/깔창",
           "section": "체력",
           "essential": false,
-          "tip": "하루종일 줄서기 + 대기 + 이동 방지",
-          "when": ["LONG_WAIT", "OUTDOOR_WAITING"]
-        },
-        {
-          "id": "rain_poncho",
-          "name": "우비/판초",
-          "section": "날씨",
-          "essential": false,
-          "tip": "줄 설 때 우산은 불편할 수 있어요",
-          "when": ["RAIN", "OUTDOOR_WAITING"]
+          "tip": "하루종일 줄서기 + 대기 + 이동 방지"
         },
         {
           "id": "portable_fan",
           "name": "휴대용 선풍기/쿨링티슈/양산",
           "section": "날씨",
           "essential": false,
-          "tip": "특히 여름 + 실외 대기 시 필수",
-          "when": ["SUMMER", "OUTDOOR_WAITING", "LONG_WAIT"]
+          "tip": "특히 여름 + 실외 대기 시 필수"
         },
         {
           "id": "hand_warmers",
           "name": "손난로/핫팩",
           "section": "날씨",
           "essential": false,
-          "tip": "특히 겨울 + 실외 대기 시 필수",
-          "when": ["WINTER", "OUTDOOR_WAITING", "LONG_WAIT"]
+          "tip": "특히 겨울 + 실외 대기 시 필수"
         },
         {
           "id": "basic_phrase_card",
           "name": "기본 문구 메모(예약/입장/결제)",
           "section": "해외팬",
           "essential": false,
-          "tip": "예: “예약했어요”, “이 굿즈 재고 있나요?”, “카드 결제 돼요?”",
-          "when": ["FOREIGN"]
+          "tip": "예: “예약했어요”, “이 굿즈 재고 있나요?”, “카드 결제 돼요?”"
         }
       ]
     },
@@ -349,144 +308,84 @@
           "name": "지도 링크/주소 저장",
           "section": "필수",
           "essential": true,
-          "tip": "네이버/카카오/구글 중 본인에게 편한 걸로 저장해두기",
-          "when": []
+          "tip": "네이버/카카오/구글 중 본인에게 편한 걸로 저장해두기"
         },
         {
           "id": "payment",
           "name": "결제 수단(카드/현금 약간)",
           "section": "필수",
           "essential": true,
-          "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액",
-          "when": []
+          "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액"
         },
         {
           "id": "tote_bag",
           "name": "에코백/장바구니",
           "section": "이동",
           "essential": false,
-          "tip": "굿즈 담기 용",
-          "when": ["LONG_WAIT"]
-        },
-        {
-          "id": "card_sleeves",
-          "name": "포카 슬리브/보호필름",
-          "section": "굿즈 보호",
-          "essential": false,
-          "tip": "구김/오염 방지",
-          "when": ["GIVEAWAY"]
+          "tip": "특전 담기 용"
         },
         {
           "id": "mini_zipbags",
           "name": "지퍼백(소형)",
           "section": "굿즈 보호",
           "essential": false,
-          "tip": "영수증/충전기/작은 굿즈 보관 + 방수",
-          "when": []
-        },
-        {
-          "id": "binder",
-          "name": "바인더/보관 케이스(선택)",
-          "section": "굿즈 보호",
-          "essential": false,
-          "tip": "여러 카페 돌면 수납이 정리돼서 편해요",
-          "when": ["LONG_WAIT"]
-        },
-        {
-          "id": "pen_marker",
-          "name": "펜/네임펜",
-          "section": "의외템",
-          "essential": false,
-          "tip": "메모/라벨/교환 표기 등에 유용",
-          "when": ["GIVEAWAY"]
-        },
-        {
-          "id": "sticky_notes",
-          "name": "포스트잇/메모지",
-          "section": "의외템",
-          "essential": false,
-          "tip": "교환 조건 적거나, 같이 받은 굿즈 분류할 때 좋아요",
-          "when": ["GIVEAWAY"]
+          "tip": "영수증/충전기/작은 굿즈 보관 + 방수"
         },
         {
           "id": "wet_tissue",
           "name": "물티슈/휴지",
           "section": "의외템",
           "essential": false,
-          "tip": "손 닦기/오염/땀 닦기 등 범용템",
-          "when": []
+          "tip": "손 닦기/오염/땀 닦기 등 범용템"
         },
         {
           "id": "hand_sanitizer",
           "name": "손 소독제",
           "section": "의외템",
           "essential": false,
-          "tip": "찝찝함 방지, 위생 관리 도움",
-          "when": ["GIVEAWAY"]
+          "tip": "찝찝함 방지, 위생 관리 도움"
         },
         {
           "id": "water",
           "name": "물/음료",
           "section": "편의",
           "essential": false,
-          "tip": "긴 대기시간 방지, 현장 반입 규정 체크",
-          "when": ["SUMMER", "LONG_WAIT"]
+          "tip": "긴 대기시간 방지, 현장 반입 규정 체크"
         },
         {
           "id": "battery",
           "name": "보조배터리",
           "section": "편의",
           "essential": false,
-          "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비",
-          "when": ["LONG_WAIT"]
+          "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비"
         },
         {
           "id": "comfortable_shoes",
           "name": "편한 신발/깔창",
           "section": "체력",
           "essential": false,
-          "tip": "하루종일 줄서기 + 대기 + 이동 방지",
-          "when": ["LONG_WAIT", "OUTDOOR_WAITING"]
-        },
-        {
-          "id": "umbrella_small",
-          "name": "접이식 우산",
-          "section": "날씨",
-          "essential": false,
-          "tip": "비 오는 날 특전/엽서 방수에도 도움",
-          "when": ["RAIN"]
+          "tip": "하루종일 줄서기 + 대기 + 이동 방지"
         },
         {
           "id": "portable_fan",
           "name": "휴대용 선풍기/쿨링티슈/양산",
           "section": "날씨",
           "essential": false,
-          "tip": "특히 여름 + 실외 대기 시 필수",
-          "when": ["SUMMER"]
+          "tip": "특히 여름 + 실외 대기 시 필수"
         },
         {
           "id": "hand_warmers",
           "name": "손난로/핫팩",
           "section": "날씨",
           "essential": false,
-          "tip": "특히 겨울 + 실외 대기 시 필수",
-          "when": ["WINTER"]
-        },
-        {
-          "id": "giveaway_pack",
-          "name": "나눔/교환용 포장(슬리브/봉투)",
-          "section": "나눔/교환",
-          "essential": false,
-          "tip": "포카는 구김 방지",
-          "when": ["GIVEAWAY"]
+          "tip": "특히 겨울 + 실외 대기 시 필수"
         },
         {
           "id": "korean_order_phrase",
           "name": "카페 주문용 기본 문구(메모/이미지)",
           "section": "해외팬",
           "essential": false,
-          "tip": "예: “아이스로 주세요”, “테이크아웃 가능해요?”, “특전은 어디서 받아요?”",
-          "when": ["FOREIGN"]
+          "tip": "예: “아이스로 주세요”, “테이크아웃 가능해요?”, “특전은 어디서 받아요?”"
         }
       ]
     }
