@@ -23,7 +23,7 @@ apply plugin: "com.facebook.react.rootproject"
 allprojects {
     repositories {
         maven {
-            url("https://devrepo.kakao.com/nexus/content/groups/public/")
+            url("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/")
         }
         maven {
             url("$rootDir/../node_modules/@react-native-async-storage/async-storage/android/local_repo")
