@@ -4,6 +4,7 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {KakaoMapCanvas} from '../components/mapPicker/KakaoMapCanvas';
+import {KakaoPlaceSearchPanel} from '../components/mapPicker/KakaoPlaceSearchPanel';
 import {MapSelectionPanel} from '../components/mapPicker/MapSelectionPanel';
 import {colors} from '../theme/tokens';
 import type {RootStackParamList} from '../types';
@@ -13,8 +14,14 @@ import {useMapCenterSelection} from './mapPicker/useMapCenterSelection';
 type Props = NativeStackScreenProps<RootStackParamList, 'MapPicker'>;
 
 export function MapPickerScreen({navigation, route}: Props) {
-  const {nativeCenter, place, handleMapChange, handleSelectCenter} =
-    useMapCenterSelection();
+  const {
+    nativeCenter,
+    searchCenter,
+    place,
+    handleMapChange,
+    handleSelectCenter,
+    handleSelectSearchPlace,
+  } = useMapCenterSelection();
 
   const handleConfirm = () => {
     if (!place) {
@@ -34,6 +41,10 @@ export function MapPickerScreen({navigation, route}: Props) {
         nativeCenter={nativeCenter}
         place={place}
         onMapChange={handleMapChange}
+      />
+      <KakaoPlaceSearchPanel
+        center={searchCenter}
+        onSelectPlace={handleSelectSearchPlace}
       />
       <MapSelectionPanel
         place={place}

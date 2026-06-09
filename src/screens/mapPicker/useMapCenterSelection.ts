@@ -1,5 +1,6 @@
 import {useRef, useState} from 'react';
 
+import type {KakaoPlaceSearchResult} from '../../services/placeSearch';
 import type {PlaceSelection} from '../../types';
 
 export type Coordinate = {
@@ -23,13 +24,17 @@ export const SEOUL_COORDINATE = {
 export function useMapCenterSelection() {
   const currentCenterRef = useRef<Coordinate>(SEOUL_COORDINATE);
   const [nativeCenter, setNativeCenter] = useState(SEOUL_COORDINATE);
+  const [searchCenter, setSearchCenter] = useState(SEOUL_COORDINATE);
   const [place, setPlace] = useState<PlaceSelection | null>(null);
 
   const handleMapChange = ({nativeEvent}: KakaoMapChangeEvent) => {
-    currentCenterRef.current = {
+    const nextCenter = {
       latitude: nativeEvent.lat,
       longitude: nativeEvent.lng,
     };
+
+    currentCenterRef.current = nextCenter;
+    setSearchCenter(nextCenter);
   };
 
   const handleSelectCenter = () => {
@@ -45,10 +50,32 @@ export function useMapCenterSelection() {
     });
   };
 
+  const handleSelectSearchPlace = (searchPlace: KakaoPlaceSearchResult) => {
+    const selectedCenter = {
+      latitude: searchPlace.latitude,
+      longitude: searchPlace.longitude,
+    };
+
+    currentCenterRef.current = selectedCenter;
+    setSearchCenter(selectedCenter);
+    setNativeCenter(selectedCenter);
+    setPlace({
+      provider: 'kakao',
+      name: searchPlace.name,
+      address: searchPlace.address,
+      roadAddress: searchPlace.roadAddress,
+      latitude: searchPlace.latitude,
+      longitude: searchPlace.longitude,
+      source: 'search',
+    });
+  };
+
   return {
     nativeCenter,
+    searchCenter,
     place,
     handleMapChange,
     handleSelectCenter,
+    handleSelectSearchPlace,
   };
 }
