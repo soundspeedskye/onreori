@@ -1,3 +1,7 @@
+import type {EventCategoryId} from '../constants/eventCategories';
+
+export type {EventCategoryId};
+
 export type ConditionId = string;
 
 export type TemplateCondition = {
@@ -12,7 +16,6 @@ export type TemplateItem = {
   section: string;
   essential: boolean;
   tip: string;
-  when: ConditionId[];
 };
 
 export type Template = {
@@ -32,19 +35,18 @@ export type TemplatesDocument = {
   templates: Template[];
 };
 
-export type StickerSlotKey =
-  | 'topLeft'
-  | 'topRight'
-  | 'bottomLeft'
-  | 'bottomRight';
-
 export type ChecklistItem = TemplateItem & {
   checked: boolean;
   custom: boolean;
   sourceItemId?: string;
 };
 
-export type ChecklistSaveState = 'draft' | 'localOnly' | 'synced';
+export type ChecklistSaveState =
+  | 'draft'
+  | 'localOnly'
+  | 'deviceSaved'
+  | 'synced'
+  | 'syncFailed';
 
 export type Checklist = {
   id: string;
@@ -60,17 +62,45 @@ export type Checklist = {
   updatedAt: string;
   saveState: ChecklistSaveState;
   items: ChecklistItem[];
-  stickers: Record<StickerSlotKey, string | null>;
+};
+
+export type RemoteChecklistSummary = {
+  remoteId: string;
+  localId: string;
+  categoryId: string;
+  templateId: string;
+  title: string;
+  selectedConditions: ConditionId[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type EventCategory = {
-  id: string;
+  id: EventCategoryId;
   title: string;
-  shortTitle: string;
   icon: string;
-  description: string;
+  description?: string;
   templateId: string;
   roomLabel: string;
+};
+
+export type PlaceSelection = {
+  provider: 'kakao';
+  name: string;
+  address?: string;
+  roadAddress?: string;
+  latitude: number;
+  longitude: number;
+  source: 'center' | 'pin' | 'search';
+};
+
+export type EventUrlPreview = {
+  url: string;
+  title?: string;
+  description?: string;
+  dateCandidates: string[];
+  locationCandidates: string[];
+  confidence: 'high' | 'medium' | 'low';
 };
 
 export type AuthRedirect =
@@ -92,12 +122,27 @@ export type AuthUser = {
   nickname: string;
 };
 
+export type RoomStatus = 'active' | 'closed' | 'soft_deleted';
+
 export type EventRoom = {
   id: string;
   categoryId: string;
   title: string;
   eventDate: string;
   location: string;
+  eventUrl?: string;
+  locationName?: string;
+  address?: string;
+  roadAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  subjectName?: string;
+  status: RoomStatus;
+  eventTimezone: string;
+  activeFromAt: string;
+  activeUntilAt: string;
+  closedAt?: string;
+  deletedAt?: string;
   memberCount: number;
   createdBy: string;
   createdAt: string;
@@ -111,19 +156,20 @@ export type ChatMessage = {
   type: 'text' | 'image';
   body: string;
   mediaUrl?: string;
+  hashtags?: string[];
   createdAt: string;
 };
 
 export type RootStackParamList = {
   Landing: undefined;
   CategoryHome: undefined;
-  CategoryDetail: {categoryId: string};
-  Templates: {categoryId?: string} | undefined;
-  Conditions: {templateId: string};
-  Checklist: {checklistId: string};
-  Auth: {redirect?: AuthRedirect} | undefined;
-  EventRooms: {categoryId: string};
-  RoomChat: {roomId: string; title: string};
+  CategoryDetail: { categoryId: string };
+  Conditions: { templateId: string };
+  Checklist: { checklistId: string };
+  Auth: { redirect?: AuthRedirect } | undefined;
+  EventRooms: { categoryId: string; selectedPlace?: PlaceSelection };
+  MapPicker: { categoryId: string; returnTo: 'EventRooms' };
+  RoomChat: { roomId: string; title: string; categoryId?: string };
   MyPage: undefined;
-  ShareCard: {checklistId: string};
+  ShareCard: { checklistId: string };
 };

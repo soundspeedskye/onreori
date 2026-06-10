@@ -1,0 +1,627 @@
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/ReactNativeKakaoMaps.podspec b/node_modules/@jiggag/react-native-kakao-maps/ReactNativeKakaoMaps.podspec
+index 089242c..ee6478c 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/ReactNativeKakaoMaps.podspec
++++ b/node_modules/@jiggag/react-native-kakao-maps/ReactNativeKakaoMaps.podspec
+@@ -19,12 +19,11 @@ Pod::Spec.new do |s|
+   s.homepage     = "https://github.com/jiggag/react-native-kakao-maps"
+   s.license      = "MIT"
+   s.author       = { "Atul R" => "jiggag90@gmail.com" }
+-  s.platform     = :ios, "9.0"
++  s.platform     = :ios, "13.0"
+   s.source       = { :git => "https://github.com/jiggag/react-native-kakao-maps.git", :tag => s.version.to_s }
+-  s.source_files  = "ios/*.{h,m}"
++  s.source_files  = "ios/*.{h,m,mm}"
+ 
+-  s.vendored_frameworks = 'ios/DaumMap.embeddedframework/DaumMap.framework'
+-  s.resources = ['ios/DaumMap.embeddedframework/Resources/*.png']
+   s.dependency "React"
++  s.dependency "KakaoMapsSDK", "2.12.11"
+ 
+ end
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle b/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle
+index 8c9b87a..c226f65 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle
++++ b/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle
+@@ -1,7 +1,8 @@
+ 
+ buildscript {
+     repositories {
+-        jcenter()
++        google()
++        mavenCentral()
+     }
+ 
+     dependencies {
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java
+index 38d074a..9bece53 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java
++++ b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java
+@@ -19,14 +19,12 @@ import java.net.HttpURLConnection;
+ import java.net.URL;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+-import java.util.Map;
+ 
+ import androidx.fragment.app.Fragment;
+ 
+ import com.facebook.react.bridge.Arguments;
+ import com.facebook.react.bridge.ReactContext;
+ import com.facebook.react.bridge.WritableMap;
+-import com.facebook.react.common.MapBuilder;
+ import com.facebook.react.uimanager.events.RCTEventEmitter;
+ 
+ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuthenticationResultListener, MapView.MapViewEventListener {
+@@ -34,11 +32,21 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
+     ViewGroup mapViewContainer;
+     private MapView mMapView;
+     private MapPOIItem mDefaultMarker;
+-    private Bitmap markerImage = null;
+     private MapPoint.GeoCoordinate mapCenterPoint;
+     MapLayout mapLayout;
++    private Bundle mapOptions = new Bundle();
++    private int markerUpdateVersion = 0;
++
++    public void updateMap(Bundle bundle) {
++        mapOptions = bundle != null ? bundle : new Bundle();
++        createMapView();
++    }
+ 
+     private void createMapView() {
++        if (mapLayout == null) {
++            return;
++        }
++
+         if (mMapView == null) {
+             mMapView = mapLayout.getMapView();
+             mMapView.setDaumMapApiKey(this.getString(R.string.kakao_app_key));
+@@ -49,22 +57,29 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
+ 
+         mMapView.removeAllPOIItems();
+ 
++        Bundle options = mapOptions != null ? mapOptions : new Bundle();
++
+         if (mapCenterPoint == null) {
+-            Double lat = getArguments().getDouble(Constants.PARAM_LAT);
+-            Double lng = getArguments().getDouble(Constants.PARAM_LNG);
++            Double lat = options.getDouble(Constants.PARAM_LAT);
++            Double lng = options.getDouble(Constants.PARAM_LNG);
+             mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat, lng), true);
+         } else {
+             mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(mapCenterPoint.latitude, mapCenterPoint.longitude), true);
+         }
+ 
+-        ArrayList<HashMap<String, Object>> markerList = (ArrayList<HashMap<String, Object>>) getArguments().get(Constants.PARAM_MARKER_LIST);
+-        String markerImageUrl = getArguments().getString(Constants.PARAM_MARKER_IMAGE_URL);
+-        String markerImageName = getArguments().getString(Constants.PARAM_MARKER_NAME);
++        ArrayList<HashMap<String, Object>> markerList = (ArrayList<HashMap<String, Object>>) options.get(Constants.PARAM_MARKER_LIST);
++        String markerImageUrl = options.getString(Constants.PARAM_MARKER_IMAGE_URL);
++        String markerImageName = options.getString(Constants.PARAM_MARKER_NAME);
+         int markerImageResourceId = markerImageName != null ? this.getResources().getIdentifier(markerImageName, "drawable", getActivity().getPackageName()) : 0;
++        int updateVersion = ++markerUpdateVersion;
+ 
+         new Thread(() -> {
+-            getBitmapFromUrl(markerImageUrl);
+-            createMarker(markerList, markerImage, markerImageResourceId);
++            Bitmap downloadedMarkerImage = getBitmapFromUrl(markerImageUrl);
++            mapLayout.post(() -> {
++                if (updateVersion == markerUpdateVersion) {
++                    createMarker(markerList, downloadedMarkerImage, markerImageResourceId);
++                }
++            });
+         }).start();
+     }
+ 
+@@ -163,19 +178,9 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
+                 .receiveEvent(getId(), "topChange", event);
+     }
+ 
+-    private Map getExportedCustomBubblingEventTypeConstants() {
+-        return MapBuilder.builder().put(
+-                "topChange",
+-                MapBuilder.of(
+-                        "phasedRegistrationNames",
+-                        MapBuilder.of("bubbled", "onChange")
+-                )
+-        ).build();
+-    }
+-
+-    private void getBitmapFromUrl(String imageUrl) {
++    private Bitmap getBitmapFromUrl(String imageUrl) {
+         if (imageUrl == null) {
+-            return;
++            return null;
+         }
+ 
+         try {
+@@ -185,10 +190,11 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
+             connection.connect();
+             InputStream input = connection.getInputStream();
+ 
+-            markerImage = BitmapFactory.decodeStream(input);
++            return BitmapFactory.decodeStream(input);
+         } catch (IOException e) {
+             Log.e("getBitmapFromUrl", e.getMessage());
+         }
++        return null;
+     }
+ 
+     private void createMarker(ArrayList<HashMap<String, Object>> markerList, Bitmap markerImage, int markerResourceId) {
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java
+index d226222..3922c58 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java
++++ b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java
+@@ -28,6 +28,10 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
+ 
+     private ReactApplicationContext reactContext;
+     private KakaoMapFragment fragment;
++    private boolean fragmentAttached = false;
++    private Choreographer.FrameCallback layoutCallback;
++    private View layoutView;
++    private boolean layoutCallbackActive = false;
+     private int containerViewId;
+     private ArrayList markerList;
+     private double paramLat = Constants.INIT_LAT;
+@@ -55,6 +59,16 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
+         return MapBuilder.of("create", COMMAND_CREATE);
+     }
+ 
++    @Nullable
++    @Override
++    public Map<String, Object> getExportedCustomBubblingEventTypeConstants() {
++        Map<String, Object> event = MapBuilder.of(
++                "phasedRegistrationNames",
++                MapBuilder.of("bubbled", "onChange")
++        );
++        return MapBuilder.of("topChange", event);
++    }
++
+     @Override
+     public void receiveCommand(
+             @NonNull FrameLayout root,
+@@ -69,6 +83,21 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
+         }
+     }
+ 
++    @Override
++    public void onDropViewInstance(@NonNull FrameLayout root) {
++        stopLayout();
++        FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
++        if (activity != null && fragment != null) {
++            activity.getSupportFragmentManager()
++                    .beginTransaction()
++                    .remove(fragment)
++                    .commitAllowingStateLoss();
++        }
++        fragment = null;
++        fragmentAttached = false;
++        super.onDropViewInstance(root);
++    }
++
+     @ReactProp(name = "markerList")
+     public void setMarkerList(FrameLayout view, @Nullable ReadableArray _markerList) {
+         if (_markerList != null) {
+@@ -102,6 +131,7 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
+         ViewGroup parentView = (ViewGroup) root.findViewById(containerViewId);
+         setupLayout(parentView);
+         fragment = new KakaoMapFragment();
++        fragmentAttached = false;
+         bundleFragment();
+     }
+ 
+@@ -110,6 +140,10 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
+             return;
+         }
+         FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
++        if (activity == null) {
++            return;
++        }
++
+         Bundle bundle = new Bundle();
+         bundle.putDouble(Constants.PARAM_LAT, paramLat);
+         bundle.putDouble(Constants.PARAM_LNG, paramLng);
+@@ -118,24 +152,43 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
+         bundle.putParcelableArrayList(Constants.PARAM_MARKER_LIST, markerList);
+ 
+         fragment.reactContext = reactContext;
+-        fragment.setArguments(bundle);
++        fragment.updateMap(bundle);
++        if (fragmentAttached) {
++            return;
++        }
++
+         activity.getSupportFragmentManager()
+                 .beginTransaction()
+-                .addToBackStack(null)
+                 .replace(containerViewId, fragment, String.valueOf(containerViewId))
+                 .commitAllowingStateLoss();
+-        fragment.onResume();
++        fragmentAttached = true;
+     }
+ 
+     private void setupLayout(View view) {
+-        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
++        stopLayout();
++        layoutView = view;
++        layoutCallbackActive = true;
++        layoutCallback = new Choreographer.FrameCallback() {
+             @Override
+             public void doFrame(long frameTimeNanos) {
+-                manuallyLayoutChildren(view);
+-                view.getViewTreeObserver().dispatchOnGlobalLayout();
++                if (!layoutCallbackActive || layoutView == null) {
++                    return;
++                }
++                manuallyLayoutChildren(layoutView);
++                layoutView.getViewTreeObserver().dispatchOnGlobalLayout();
+                 Choreographer.getInstance().postFrameCallback(this);
+             }
+-        });
++        };
++        Choreographer.getInstance().postFrameCallback(layoutCallback);
++    }
++
++    private void stopLayout() {
++        layoutCallbackActive = false;
++        if (layoutCallback != null) {
++            Choreographer.getInstance().removeFrameCallback(layoutCallback);
++        }
++        layoutCallback = null;
++        layoutView = null;
+     }
+ 
+     private void manuallyLayoutChildren(View view) {
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h
+index e7c27e9..63e2036 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h
++++ b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h
+@@ -1,5 +1,6 @@
+ #import <UIKit/UIKit.h>
+-#import <DaumMap/MTMapView.h>
++#import <KakaoMapsSDK/KakaoMapsSDK.h>
++#import <KakaoMapsSDK/KakaoMapsSDK-Swift.h>
+ #import <React/RCTComponent.h>
+ 
+ @interface MapViewController : UIView
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
+index fc6a668..b30c412 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
++++ b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
+@@ -1,99 +1,287 @@
+ #import "MapViewController.h"
+ 
+-@interface MapViewController () {
+-  MTMapView *_mapView;
++static NSString *const OnreoriMapViewName = @"mapview";
++static NSString *const OnreoriMapViewInfoName = @"map";
++static NSString *const OnreoriMapAppName = @"openmap";
++static NSString *const OnreoriMarkerLayerID = @"onreori-marker-layer";
++static NSString *const OnreoriDefaultPoiStyleID = @"label_default_style";
++
++@interface MapViewController () <MapControllerDelegate, KakaoMapEventDelegate>
++@end
++
++@implementation MapViewController {
++  KMViewContainer *_mapContainer;
++  KMController *_mapController;
+   NSArray *__markerList;
+   NSString *__markerImageUrl;
+   NSString *__markerImageName;
++  BOOL _mapReady;
++  BOOL _enginePrepared;
++  BOOL _enginePrepareScheduled;
+ }
+ 
+-@end
++static void InitializeKakaoMapsSDKIfNeeded(void) {
++  static dispatch_once_t onceToken;
++  dispatch_once(&onceToken, ^{
++    NSString *appKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"KAKAO_APP_KEY"];
++    if (appKey.length == 0) {
++      appKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"KAKAO_NATIVE_APP_KEY"];
++    }
+ 
+-@implementation MapViewController
++    if (appKey.length > 0 && ![appKey hasPrefix:@"$("]) {
++      [SDKInitializer InitSDKWithAppKey:appKey phase:KAPhaseReal];
++    }
++  });
++}
+ 
+-NSArray *createMarker(NSArray *markerList, NSString *markerImageUrl, NSString *markerImageName) {
+-  NSMutableArray *pointList = [[NSMutableArray alloc] init];
++static MapPoint *CreateMapPoint(double lat, double lng) {
++  return [[MapPoint alloc] initWithLongitude:lng latitude:lat];
++}
+ 
+-  for (NSDictionary *point in markerList) {
+-    MTMapPOIItem* item = [MTMapPOIItem poiItem];
+-    item.itemName = point[@"markerName"];
+-    item.mapPoint = [MTMapPoint mapPointWithGeoCoord:MTMapPointGeoMake([point[@"lat"] doubleValue], [point[@"lng"] doubleValue])];
+-    item.showAnimationType = MTMapPOIItemShowAnimationTypeSpringFromGround;
++static double CoordinateValue(NSDictionary *point, NSString *key) {
++  id value = point[key];
++  return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : 0;
++}
+ 
+-    item.markerType = markerImageUrl != nil || markerImageName != nil ? MTMapPOIItemMarkerTypeCustomImage : MTMapPOIItemMarkerTypeBluePin;
++- (instancetype)init
++{
++  self = [super init];
++  if (self) {
++    _lat = 37.59523;
++    _lng = 127.08600;
++    __markerList = @[];
+ 
+-    if (markerImageUrl != nil) {
+-      item.customImage = [[[UIImage alloc] init] initWithData: [NSData dataWithContentsOfURL: [NSURL URLWithString: markerImageUrl]]];
+-    }
+-    if (markerImageName != nil) {
+-      item.customImageName = markerImageName;
+-    }
++    InitializeKakaoMapsSDKIfNeeded();
++
++    _mapContainer = [[KMViewContainer alloc] initWithFrame:self.bounds];
++    _mapContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
++    [self addSubview:_mapContainer];
+ 
+-    [pointList addObject:item];
++    _mapController = [[KMController alloc] initWithViewContainer:_mapContainer];
++    _mapController.delegate = self;
++    [self prepareEngineIfNeeded];
+   }
++  return self;
++}
+ 
+-  return pointList;
++- (void)dealloc
++{
++  [_mapController pauseEngine];
++  [_mapController resetEngine];
+ }
+ 
+-- (void)setMarkerImageName:(NSString *)markerImageName {
++- (void)prepareEngineIfNeeded
++{
++  if (
++    _enginePrepared ||
++    _enginePrepareScheduled ||
++    _mapController.isEnginePrepared ||
++    _mapController.isEngineActive ||
++    self.bounds.size.width <= 0 ||
++    self.bounds.size.height <= 0 ||
++    _mapContainer.bounds.size.width <= 0 ||
++    _mapContainer.bounds.size.height <= 0
++  ) {
++    return;
++  }
++
++  _enginePrepareScheduled = YES;
++  dispatch_async(dispatch_get_main_queue(), ^{
++    self->_enginePrepareScheduled = NO;
++
++    if (
++      self->_enginePrepared ||
++      self->_mapController.isEnginePrepared ||
++      self->_mapController.isEngineActive ||
++      self.bounds.size.width <= 0 ||
++      self.bounds.size.height <= 0 ||
++      self->_mapContainer.bounds.size.width <= 0 ||
++      self->_mapContainer.bounds.size.height <= 0
++    ) {
++      return;
++    }
++
++    BOOL prepared = [self->_mapController prepareEngine];
++    self->_enginePrepared = prepared || self->_mapController.isEnginePrepared;
++  });
++}
++
++- (KakaoMap *)map
++{
++  return (KakaoMap *)[_mapController getView:OnreoriMapViewName];
++}
++
++- (void)layoutSubviews
++{
++  [super layoutSubviews];
++  _mapContainer.frame = self.bounds;
++  [_mapContainer layoutIfNeeded];
++  [self prepareEngineIfNeeded];
++
++  if (self.map != nil) {
++    self.map.viewRect = self.bounds;
++  }
++}
++
++- (void)setMarkerImageName:(NSString *)markerImageName
++{
+   __markerImageName = markerImageName;
+-  [self load];
++  [self refreshMarkers];
+ }
+ 
+-- (void)setMarkerImageUrl:(NSString *)markerImageUrl {
++- (void)setMarkerImageUrl:(NSString *)markerImageUrl
++{
+   __markerImageUrl = markerImageUrl;
+-  [self load];
++  [self refreshMarkers];
+ }
+ 
+-- (void)setMarkerList:(NSArray *)markerList {
+-  __markerList = markerList;
+-  [self load];
++- (void)setMarkerList:(NSArray *)markerList
++{
++  __markerList = markerList ?: @[];
++  [self refreshMarkers];
+ }
+ 
+-- (void)setCenterPoint:(NSDictionary *)centerPoint {
++- (void)setCenterPoint:(NSDictionary *)centerPoint
++{
+   if (centerPoint == nil) {
+     _lat = 37.59523;
+     _lng = 127.08600;
+   } else {
+-    _lat = [centerPoint[@"lat"] doubleValue];
+-    _lng = [centerPoint[@"lng"] doubleValue];
++    _lat = CoordinateValue(centerPoint, @"lat");
++    _lng = CoordinateValue(centerPoint, @"lng");
+   }
+-  [self load];
++
++  [self moveMapToCurrentCenter];
+ }
+ 
+-- (void)load {
+-  if (_mapView == nil) {
++- (void)moveMapToCurrentCenter
++{
++  KakaoMap *map = self.map;
++  if (!_mapReady || map == nil) {
+     return;
+   }
+ 
+-  [_mapView removeAllPOIItems];
+-  [_mapView addPOIItems: createMarker(__markerList, __markerImageUrl, __markerImageName)];
+-  [_mapView setMapCenterPoint: [MTMapPoint mapPointWithGeoCoord:MTMapPointGeoMake(_lat, _lng)] animated:YES];
+-
+-  [self addSubview: _mapView];
++  NSInteger zoomLevel = map.zoomLevel > 0 ? map.zoomLevel : 15;
++  CameraUpdate *cameraUpdate = [CameraUpdate makeWithTarget:CreateMapPoint(_lat, _lng)
++                                                  zoomLevel:zoomLevel
++                                                    mapView:map];
++  [map moveCamera:cameraUpdate callback:nil];
+ }
+ 
+-- (instancetype)init
++- (void)refreshMarkers
+ {
+-  self = [super init];
+-  if (self && _mapView == nil) {
+-    _mapView = [[MTMapView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
+-    _mapView.delegate = self;
+-    _mapView.baseMapType = MTMapTypeStandard;
+-    [_mapView fitMapViewAreaToShowAllPOIItems];
++  KakaoMap *map = self.map;
++  if (!_mapReady || map == nil) {
++    return;
++  }
+ 
+-    [self load];
++  LabelManager *manager = [map getLabelManager];
++  LabelLayer *layer = [manager getLabelLayerWithLayerID:OnreoriMarkerLayerID];
++  if (layer == nil) {
++    LabelLayerOptions *options =
++      [[LabelLayerOptions alloc] initWithLayerID:OnreoriMarkerLayerID
++                                 competitionType:CompetitionTypeNone
++                                 competitionUnit:CompetitionUnitPoi
++                                      orderType:OrderingTypeRank
++                                         zOrder:0];
++    layer = [manager addLabelLayerWithOption:options];
+   }
+-  return self;
++
++  [layer clearAllItems];
++
++  [__markerList enumerateObjectsUsingBlock:^(NSDictionary *point, NSUInteger index, BOOL *stop) {
++    double lat = CoordinateValue(point, @"lat");
++    double lng = CoordinateValue(point, @"lng");
++    NSString *poiID = [NSString stringWithFormat:@"onreori-marker-%lu", (unsigned long)index];
++    PoiOptions *poiOptions = [[PoiOptions alloc] initWithStyleID:OnreoriDefaultPoiStyleID poiID:poiID];
++    Poi *poi = [layer addPoiWithOption:poiOptions at:CreateMapPoint(lat, lng) callback:nil];
++    [poi show];
++  }];
+ }
+ 
+-- (void)mapView:(MTMapView*)mapView finishedMapMoveAnimation:(MTMapPoint*)mapCenterPoint
++- (void)emitChangeForMap:(KakaoMap *)map
+ {
++  if (_onChange == nil || map == nil) {
++    return;
++  }
++
++  CGPoint centerPoint = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
++  MapPoint *mapCenterPoint = [map getPosition:centerPoint];
++  struct GeoCoordinate coordinate = mapCenterPoint.wgsCoord;
++
+   _onChange(@{
+-    @"zoomLevel": @(mapView.zoomLevel),
+-    @"lat": @(mapCenterPoint.mapPointGeo.latitude),
+-    @"lng": @(mapCenterPoint.mapPointGeo.longitude)
++    @"zoomLevel": @(map.zoomLevel),
++    @"lat": @(coordinate.latitude),
++    @"lng": @(coordinate.longitude)
+   });
+ }
+ 
++#pragma mark - MapControllerDelegate
++
++- (void)authenticationSucceeded
++{
++  _enginePrepared = YES;
++  if (!_mapController.isEngineActive) {
++    [_mapController activateEngine];
++  }
++}
++
++- (void)authenticationFailed:(NSInteger)errorCode desc:(NSString *)desc
++{
++  _enginePrepared = NO;
++  _enginePrepareScheduled = NO;
++  NSLog(@"[KakaoMapView] authentication failed: %ld %@", (long)errorCode, desc);
++}
++
++- (void)addViews
++{
++  MapviewInfo *mapViewInfo =
++    [[MapviewInfo alloc] initWithViewName:OnreoriMapViewName
++                                  appName:OnreoriMapAppName
++                             viewInfoName:OnreoriMapViewInfoName
++                          defaultPosition:CreateMapPoint(_lat, _lng)
++                             defaultLevel:15
++                                  enabled:YES];
++
++  [_mapController addView:mapViewInfo viewSize:self.bounds.size];
++}
++
++- (void)addViewSucceeded:(NSString *)viewName viewInfoName:(NSString *)viewInfoName
++{
++  if (![viewName isEqualToString:OnreoriMapViewName]) {
++    return;
++  }
++
++  _mapReady = YES;
++  self.map.eventDelegate = self;
++  self.map.viewRect = self.bounds;
++  [self refreshMarkers];
++  [self moveMapToCurrentCenter];
++}
++
++- (void)addViewFailed:(NSString *)viewName viewInfoName:(NSString *)viewInfoName
++{
++  _enginePrepared = NO;
++  NSLog(@"[KakaoMapView] add view failed: %@ %@", viewName, viewInfoName);
++}
++
++- (void)containerDidResized:(CGSize)size
++{
++  if (self.map != nil) {
++    self.map.viewRect = CGRectMake(0, 0, size.width, size.height);
++  }
++}
++
++- (void)viewWillDestroyed:(ViewBase *)view
++{
++  _mapReady = NO;
++}
++
++#pragma mark - KakaoMapEventDelegate
++
++- (void)cameraDidStoppedWithKakaoMap:(KakaoMap *)kakaoMap by:(MoveBy)by
++{
++  [self emitChangeForMap:kakaoMap];
++}
++
+ @end

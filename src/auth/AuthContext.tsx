@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 
+import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {isSupabaseConfigured, supabase} from '../config/supabase';
 import type {AuthUser} from '../types';
 
@@ -111,7 +112,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     if (!email.trim() || !password.trim()) {
-      throw new Error('이메일과 비밀번호를 입력하세요.');
+      throw new Error(ALERT_MESSAGES.requiredInput);
     }
 
     if (!isSupabaseConfigured || !supabase) {
@@ -131,7 +132,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     });
 
     if (error || !data.user) {
-      throw new Error(error?.message ?? '로그인에 실패했습니다.');
+      throw new Error(error?.message ?? ALERT_MESSAGES.failed);
     }
 
     const nextUser = toAuthUser(
@@ -146,7 +147,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
   const signUp = useCallback(
     async (email: string, password: string, nickname: string) => {
       if (!email.trim() || !password.trim() || !nickname.trim()) {
-        throw new Error('이메일, 비밀번호, 닉네임을 모두 입력하세요.');
+        throw new Error(ALERT_MESSAGES.requiredInput);
       }
 
       if (!isSupabaseConfigured || !supabase) {
@@ -172,7 +173,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
       });
 
       if (error || !data.user) {
-        throw new Error(error?.message ?? '회원가입에 실패했습니다.');
+        throw new Error(error?.message ?? ALERT_MESSAGES.failed);
       }
 
       if (!data.session) {

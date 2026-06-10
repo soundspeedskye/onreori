@@ -1,58 +1,53 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import React, {useEffect} from 'react';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
-import {useAuth} from '../auth/AuthContext';
+import {EventRoomList} from '../components/rooms/EventRoomList';
+import {RoomCreateForm} from '../components/rooms/RoomCreateForm';
+import {EmptyState} from '../components/ui/EmptyState';
+import {ScreenHeader} from '../components/ui/ScreenHeader';
 import {getEventCategoryById} from '../data/eventCategories';
-import {
-  createRoom,
-  joinRoomWithCode,
-  listRoomsByCategory,
-} from '../services/rooms';
-import type {EventRoom, RootStackParamList} from '../types';
+import {colors, layout, spacing} from '../theme/tokens';
+import {useAuth} from '../auth/AuthContext';
+import type {RootStackParamList} from '../types';
+import {getRoomCreationConfig} from '../utils/eventRoomForm';
+import {useCreateRoomAction} from './eventRooms/useCreateRoomAction';
+import {useEventRooms} from './eventRooms/useEventRooms';
+import {useEventUrlPreview} from './eventRooms/useEventUrlPreview';
+import {useRoomCreationForm} from './eventRooms/useRoomCreationForm';
+import {useRoomJoinAction} from './eventRooms/useRoomJoinAction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventRooms'>;
 
 export function EventRoomsScreen({navigation, route}: Props) {
   const {user} = useAuth();
   const category = getEventCategoryById(route.params.categoryId);
-  const [rooms, setRooms] = useState<EventRoom[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [entryCode, setEntryCode] = useState('');
-  const [title, setTitle] = useState('');
-  const [eventDate, setEventDate] = useState('');
-  const [location, setLocation] = useState('');
-  const [newRoomCode, setNewRoomCode] = useState('');
-
-  const loadRooms = useCallback(async () => {
-    if (!category) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      setRooms(await listRoomsByCategory(category.id));
-    } catch (error) {
-      Alert.alert(
-        '단톡방을 불러오지 못했습니다.',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [category]);
+  const creationConfig = category
+    ? getRoomCreationConfig(category.id)
+    : getRoomCreationConfig(route.params.categoryId);
+  const {rooms, loading, usingTutorialFallback, loadRooms, addRoomToList} =
+    useEventRooms(category?.id);
+  const form = useRoomCreationForm({
+    requiresPlace: creationConfig.requiresPlace,
+    selectedPlace: route.params.selectedPlace,
+  });
+  const {previewLoading, handleFetchEventUrlPreview} = useEventUrlPreview({
+    eventUrl: form.eventUrl,
+    appliedPreviewValuesRef: form.appliedPreviewValuesRef,
+    setTitle: form.setTitle,
+    setEventDate: form.setEventDate,
+    setLocation: form.setLocation,
+    setSelectedPlaceForRoom: form.setSelectedPlaceForRoom,
+  });
+  const {creating, handleCreateRoom} = useCreateRoomAction({
+    user,
+    category,
+    creationConfig,
+    form,
+    onVisibleRoomCreated: addRoomToList,
+  });
+  const roomJoin = useRoomJoinAction({user, navigation});
 
   useEffect(() => {
     if (!user) {
@@ -65,65 +60,13 @@ export function EventRoomsScreen({navigation, route}: Props) {
     loadRooms();
   }, [loadRooms, navigation, route.params.categoryId, user]);
 
-  const handleCreateRoom = async () => {
-    if (!user || !category) {
-      return;
-    }
-
-    if (!title.trim() || !newRoomCode.trim()) {
-      Alert.alert('방 제목과 입장코드를 입력하세요.');
-      return;
-    }
-
-    try {
-      setCreating(true);
-      const room = await createRoom({
-        categoryId: category.id,
-        title,
-        eventDate,
-        location,
-        entryCode: newRoomCode,
-        user,
-      });
-      setRooms(current => [room, ...current]);
-      setTitle('');
-      setEventDate('');
-      setLocation('');
-      setNewRoomCode('');
-    } catch (error) {
-      Alert.alert(
-        '방을 만들지 못했습니다.',
-        error instanceof Error ? error.message : '다시 시도하세요.',
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleJoinRoom = async (room: EventRoom) => {
-    if (!user) {
-      return;
-    }
-
-    try {
-      await joinRoomWithCode(room.id, entryCode, user);
-      setEntryCode('');
-      setSelectedRoomId(null);
-      navigation.navigate('RoomChat', {roomId: room.id, title: room.title});
-    } catch (error) {
-      Alert.alert(
-        '입장하지 못했습니다.',
-        error instanceof Error ? error.message : '입장코드를 확인하세요.',
-      );
-    }
-  };
-
   if (!category) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>카테고리를 찾지 못했습니다.</Text>
-        </View>
+        <EmptyState
+          title="카테고리를 찾지 못했습니다."
+          style={styles.emptyState}
+        />
       </SafeAreaView>
     );
   }
@@ -132,102 +75,50 @@ export function EventRoomsScreen({navigation, route}: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>{category.title} 단톡방</Text>
-          <Text style={styles.description}>
-            방을 만들거나 공유받은 입장코드로 오늘의 이벤트 방에 들어가세요.
-          </Text>
+          <ScreenHeader title={`${category.title} 단톡방`} />
+          <RoomCreateForm
+            creationConfig={creationConfig}
+            title={form.title}
+            eventDate={form.eventDate}
+            location={form.location}
+            newRoomCode={form.newRoomCode}
+            showDatePicker={form.showDatePicker}
+            eventUrl={form.eventUrl}
+            previewLoading={previewLoading}
+            creating={creating}
+            onTitleChange={form.handleTitleChange}
+            onEventDateChange={form.handleDateChange}
+            onLocationChange={form.handleLocationChange}
+            onNewRoomCodeChange={form.setNewRoomCode}
+            onShowDatePickerChange={form.setShowDatePicker}
+            onEventUrlChange={form.setEventUrl}
+            onFetchEventUrlPreview={handleFetchEventUrlPreview}
+            onOpenMapPicker={() =>
+              navigation.navigate('MapPicker', {
+                categoryId: category.id,
+                returnTo: 'EventRooms',
+              })
+            }
+            onCreateRoom={handleCreateRoom}
+          />
 
-          <View style={styles.createBox}>
-            <Text style={styles.sectionTitle}>방 만들기</Text>
-            <TextInput
-              onChangeText={setTitle}
-              placeholder="예: KSPO 2일차 대기방"
-              placeholderTextColor="#9d8f86"
-              style={styles.input}
-              value={title}
-            />
-            <View style={styles.inlineFields}>
-              <TextInput
-                onChangeText={setEventDate}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#9d8f86"
-                style={[styles.input, styles.inlineInput]}
-                value={eventDate}
-              />
-              <TextInput
-                onChangeText={setLocation}
-                placeholder="장소"
-                placeholderTextColor="#9d8f86"
-                style={[styles.input, styles.inlineInput]}
-                value={location}
-              />
-            </View>
-            <TextInput
-              onChangeText={setNewRoomCode}
-              placeholder="입장코드"
-              placeholderTextColor="#9d8f86"
-              secureTextEntry
-              style={styles.input}
-              value={newRoomCode}
-            />
-            <Pressable
-              disabled={creating}
-              onPress={handleCreateRoom}
-              style={styles.createButton}>
-              <Text style={styles.createButtonText}>
-                {creating ? '만드는 중...' : '단톡방 만들기'}
-              </Text>
-            </Pressable>
-          </View>
-
-          <Text style={styles.sectionTitle}>오늘의 이벤트 단톡방</Text>
+          <Text style={styles.sectionTitle}>오늘의 단톡방</Text>
+          {usingTutorialFallback ? (
+            <Text style={styles.fallbackNotice}>
+              단톡방 목록을 잠시 불러오지 못해 튜토리얼 방을 보여드려요.
+            </Text>
+          ) : null}
         </View>
 
-        {loading ? (
-          <ActivityIndicator color="#ff6b6b" style={styles.loader} />
-        ) : rooms.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyTitle}>아직 만들어진 방이 없습니다.</Text>
-            <Text style={styles.emptyText}>첫 방을 만들어 현장 정보를 모아보세요.</Text>
-          </View>
-        ) : (
-          <View style={styles.roomList}>
-            {rooms.map(item => (
-              <View key={item.id} style={styles.roomCard}>
-                <Text style={styles.roomTitle}>{item.title}</Text>
-                <Text style={styles.roomMeta}>
-                  {item.eventDate} · {item.location}
-                </Text>
-                <Text style={styles.roomMembers}>참여 {item.memberCount}명</Text>
-                {selectedRoomId === item.id ? (
-                  <View style={styles.joinBox}>
-                    <TextInput
-                      onChangeText={setEntryCode}
-                      placeholder="입장코드"
-                      placeholderTextColor="#9d8f86"
-                      secureTextEntry
-                      style={styles.input}
-                      value={entryCode}
-                    />
-                    <Pressable
-                      onPress={() => {
-                        handleJoinRoom(item);
-                      }}
-                      style={styles.joinButton}>
-                      <Text style={styles.joinButtonText}>입장하기</Text>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <Pressable
-                    onPress={() => setSelectedRoomId(item.id)}
-                    style={styles.joinButton}>
-                    <Text style={styles.joinButtonText}>입장코드 입력</Text>
-                  </Pressable>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
+        <EventRoomList
+          rooms={rooms}
+          loading={loading}
+          selectedRoomId={roomJoin.selectedRoomId}
+          entryCode={roomJoin.entryCode}
+          onEntryCodeChange={roomJoin.setEntryCode}
+          onSelectRoom={roomJoin.setSelectedRoomId}
+          onJoinRoom={roomJoin.handleJoinRoom}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -235,134 +126,28 @@ export function EventRoomsScreen({navigation, route}: Props) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f7f1ea',
+    backgroundColor: colors.background,
     flex: 1,
   },
   content: {
-    padding: 20,
-    paddingBottom: 32,
+    padding: layout.screenPadding,
+    paddingBottom: layout.screenBottomPadding,
   },
   header: {
-    gap: 14,
-    marginBottom: 14,
-  },
-  title: {
-    color: '#241b16',
-    fontSize: 28,
-    fontWeight: '900',
-  },
-  description: {
-    color: '#5f5047',
-    fontSize: 15,
-    lineHeight: 22,
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
-    color: '#241b16',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '900',
   },
-  createBox: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 22,
-    borderWidth: 1,
-    gap: 10,
-    padding: 16,
-  },
-  input: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 15,
-    borderWidth: 1,
-    color: '#241b16',
-    fontSize: 14,
-    paddingHorizontal: 13,
-    paddingVertical: 11,
-  },
-  inlineFields: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  inlineInput: {
-    flex: 1,
-  },
-  createButton: {
-    alignItems: 'center',
-    backgroundColor: '#241b16',
-    borderRadius: 15,
-    paddingVertical: 13,
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  loader: {
-    marginTop: 18,
-  },
-  roomList: {
-    gap: 12,
-  },
-  roomCard: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 7,
-    padding: 16,
-  },
-  roomTitle: {
-    color: '#241b16',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  roomMeta: {
-    color: '#5f5047',
-    fontSize: 14,
-  },
-  roomMembers: {
-    color: '#b05f3c',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  joinBox: {
-    gap: 8,
-    marginTop: 4,
-  },
-  joinButton: {
-    alignItems: 'center',
-    backgroundColor: '#ff6b6b',
-    borderRadius: 15,
-    marginTop: 4,
-    paddingVertical: 13,
-  },
-  joinButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  emptyBox: {
-    alignItems: 'center',
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 6,
-    padding: 20,
+  fallbackNotice: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
   },
   emptyState: {
-    alignItems: 'center',
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  emptyTitle: {
-    color: '#241b16',
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  emptyText: {
-    color: '#6d5e55',
-    fontSize: 14,
   },
 });

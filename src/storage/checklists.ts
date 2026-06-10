@@ -36,6 +36,21 @@ async function upsertChecklist(checklist: Checklist): Promise<void> {
   await writeChecklists(checklists);
 }
 
+async function upsertChecklistByRemoteId(checklist: Checklist): Promise<void> {
+  const checklists = await readChecklists();
+  const existingIndex = checklist.remoteId
+    ? checklists.findIndex(item => item.remoteId === checklist.remoteId)
+    : checklists.findIndex(item => item.id === checklist.id);
+
+  if (existingIndex >= 0) {
+    checklists[existingIndex] = checklist;
+  } else {
+    checklists.unshift(checklist);
+  }
+
+  await writeChecklists(checklists);
+}
+
 export async function getAllChecklists(): Promise<Checklist[]> {
   return readChecklists();
 }
@@ -66,12 +81,12 @@ export async function saveChecklistDraft(
   return nextChecklist;
 }
 
-export async function saveChecklistLocalOnly(
+export async function saveChecklistDeviceSaved(
   checklist: Checklist,
 ): Promise<Checklist> {
   const nextChecklist: Checklist = {
     ...checklist,
-    saveState: 'localOnly',
+    saveState: 'deviceSaved',
     updatedAt: new Date().toISOString(),
   };
 
@@ -93,6 +108,25 @@ export async function saveChecklistSynced(
 
   await upsertChecklist(nextChecklist);
   return nextChecklist;
+}
+
+export async function saveChecklistSyncFailed(
+  checklist: Checklist,
+): Promise<Checklist> {
+  const nextChecklist: Checklist = {
+    ...checklist,
+    saveState: 'syncFailed',
+    updatedAt: new Date().toISOString(),
+  };
+
+  await upsertChecklist(nextChecklist);
+  return nextChecklist;
+}
+
+export async function saveChecklistRestoredFromAccount(
+  checklist: Checklist,
+): Promise<void> {
+  await upsertChecklistByRemoteId(checklist);
 }
 
 export async function setPendingAccountSaveChecklistId(

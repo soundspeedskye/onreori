@@ -1,0 +1,18 @@
+import {
+  EVENT_URL_PREVIEW_ALLOWED_HOST_ENTRIES,
+  EVENT_URL_PREVIEW_FETCH_HEADERS,
+  EVENT_URL_PREVIEW_HTTPS_ONLY_MESSAGE,
+} from '../../../src/utils/eventUrlPreviewParser.ts';
+
+export const MAX_HTML_BYTES = 500_000;
+export const MAX_REDIRECTS = 5;
+export const FETCH_TIMEOUT_MS = 8_000;
+export const ALLOWED_HOSTS_ENV = 'EVENT_URL_PREVIEW_ALLOWED_HOSTS';
+export const DEFAULT_ALLOWED_HOST_ENTRIES = EVENT_URL_PREVIEW_ALLOWED_HOST_ENTRIES;
+export const HTTPS_ONLY_MESSAGE = EVENT_URL_PREVIEW_HTTPS_ONLY_MESSAGE;
+export const PREVIEW_FETCH_HEADERS = {
+  ...EVENT_URL_PREVIEW_FETCH_HEADERS,
+  'user-agent':
+    'Mozilla/5.0 (compatible; onreori-event-url-preview/1.0)',
+};
+export const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);

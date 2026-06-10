@@ -19,6 +19,8 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = onreori/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = onreori/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = onreori/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1B7A0C012CA4000000000001 /* KakaoMap.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = KakaoMap.Debug.xcconfig; sourceTree = "<group>"; };
+		1B7A0C022CA4000000000002 /* KakaoMap.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = KakaoMap.Release.xcconfig; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-onreori.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-onreori.debug.xcconfig"; path = "Target Support Files/Pods-onreori/Pods-onreori.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-onreori.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-onreori.release.xcconfig"; path = "Target Support Files/Pods-onreori/Pods-onreori.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-onreori.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-onreori.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +53,15 @@
 			name = onreori;
 			sourceTree = "<group>";
 		};
+		1B7A0C032CA4000000000003 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				1B7A0C012CA4000000000001 /* KakaoMap.Debug.xcconfig */,
+				1B7A0C022CA4000000000002 /* KakaoMap.Release.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -71,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07FAE1A68108700A75B9A /* onreori */,
+				1B7A0C032CA4000000000003 /* Config */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -106,6 +118,7 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "onreori" */;
 			buildPhases = (
 				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				1B7A0C042CA4000000000004 /* Validate Kakao Maps app key */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -191,14 +204,32 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		1B7A0C042CA4000000000004 /* Validate Kakao Maps app key */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Validate Kakao Maps app key";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nif [ -z \"${KAKAO_NATIVE_APP_KEY:-}\" ]; then\n  echo \"error: KAKAO_NATIVE_APP_KEY is required for Kakao Maps. Provide it as an xcodebuild build setting or in ios/Config/KakaoMap.local.xcconfig.\" >&2\n  exit 1\nfi\nif printf '%s' \"$KAKAO_NATIVE_APP_KEY\" | grep -q '[$][(]'; then\n  echo \"error: KAKAO_NATIVE_APP_KEY is unresolved. Provide it as an xcodebuild build setting or in ios/Config/KakaoMap.local.xcconfig.\" >&2\n  exit 1\nfi\n";
 		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -230,9 +261,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -255,11 +290,14 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-onreori.debug.xcconfig */;
+			baseConfigurationReference = 1B7A0C012CA4000000000001 /* KakaoMap.Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8RB2KMFLF7;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = onreori/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -273,8 +311,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.onreori.ios;
 				PRODUCT_NAME = onreori;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -285,11 +324,14 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-onreori.release.xcconfig */;
+			baseConfigurationReference = 1B7A0C022CA4000000000002 /* KakaoMap.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8RB2KMFLF7;
 				INFOPLIST_FILE = onreori/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -302,8 +344,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.onreori.ios;
 				PRODUCT_NAME = onreori;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -344,7 +387,6 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -426,7 +468,6 @@
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

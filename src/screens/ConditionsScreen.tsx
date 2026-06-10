@@ -1,16 +1,14 @@
 import React, {useMemo, useState} from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {colors, layout, radii, spacing} from '../theme/tokens';
 
-import {ConditionToggle} from '../components/ConditionToggle';
+import {ConditionToggle} from '../components/templates/ConditionToggle';
+import {BottomActionBar} from '../components/ui/BottomActionBar';
+import {Button} from '../components/ui/Button';
+import {Card} from '../components/ui/Card';
+import {EmptyState} from '../components/ui/EmptyState';
 import {
   conditions,
   createChecklistFromTemplate,
@@ -18,6 +16,7 @@ import {
 } from '../data/templates';
 import {saveChecklistDraft} from '../storage/checklists';
 import type {ConditionId, RootStackParamList} from '../types';
+import {ALERT_MESSAGES, showAlert} from '../utils/appAlert';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conditions'>;
 
@@ -38,7 +37,7 @@ export function ConditionsScreen({navigation, route}: Props) {
 
   const handleCreateChecklist = async () => {
     if (!template) {
-      Alert.alert('템플릿을 찾지 못했습니다.');
+      showAlert({title: ALERT_MESSAGES.notFound});
       return;
     }
 
@@ -51,9 +50,7 @@ export function ConditionsScreen({navigation, route}: Props) {
   if (!template) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>템플릿을 찾지 못했습니다.</Text>
-        </View>
+        <EmptyState title="템플릿을 찾지 못했습니다." style={styles.emptyState} />
       </SafeAreaView>
     );
   }
@@ -61,19 +58,19 @@ export function ConditionsScreen({navigation, route}: Props) {
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerCard}>
+        <Card style={styles.headerCard}>
           <Text style={styles.icon}>{template.icon}</Text>
           <View style={styles.headerCopy}>
             <Text style={styles.title}>{template.title}</Text>
             <Text style={styles.description}>{template.description}</Text>
           </View>
-        </View>
+        </Card>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>상황 선택</Text>
           <Text style={styles.sectionDescription}>
-            여러 조건을 같이 켜면 해당되는 추천 준비물만 포함해 체크리스트를
-            만듭니다.
+            선택한 상황은 체크리스트에 함께 기록됩니다. 목록은 상황과
+            상관없이 전체 항목으로 만듭니다.
           </Text>
         </View>
 
@@ -91,93 +88,64 @@ export function ConditionsScreen({navigation, route}: Props) {
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable onPress={handleCreateChecklist} style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>체크리스트 만들기</Text>
-        </Pressable>
-      </View>
+      <BottomActionBar>
+        <Button onPress={handleCreateChecklist} title="체크리스트 만들기" />
+      </BottomActionBar>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    backgroundColor: colors.background,
     flex: 1,
   },
   content: {
-    gap: 20,
-    padding: 20,
-    paddingBottom: 120,
+    gap: spacing.screen,
+    padding: layout.screenPadding,
+    paddingBottom: layout.bottomActionScrollPadding,
   },
   headerCard: {
     alignItems: 'center',
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 24,
-    borderWidth: 1,
+    borderRadius: radii.xl,
     flexDirection: 'row',
-    gap: 16,
-    padding: 18,
+    gap: spacing.lg,
+    padding: spacing.lg,
   },
   icon: {
     fontSize: 38,
   },
   headerCopy: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   title: {
-    color: '#241b16',
+    color: colors.text,
     fontSize: 20,
     fontWeight: '800',
   },
   description: {
-    color: '#5f5047',
+    color: colors.muted,
     fontSize: 14,
     lineHeight: 20,
   },
   sectionHeader: {
-    gap: 6,
+    gap: spacing.sm,
   },
   sectionTitle: {
-    color: '#241b16',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700',
   },
   sectionDescription: {
-    color: '#6d5e55',
+    color: colors.muted,
     fontSize: 14,
     lineHeight: 20,
   },
   toggleList: {
-    gap: 12,
-  },
-  footer: {
-    backgroundColor: '#f7f1ea',
-    borderTopColor: '#eadccd',
-    borderTopWidth: 1,
-    padding: 16,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#ff6b6b',
-    borderRadius: 16,
-    paddingVertical: 16,
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    gap: spacing.md,
   },
   emptyState: {
-    alignItems: 'center',
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  emptyTitle: {
-    color: '#241b16',
-    fontSize: 18,
-    fontWeight: '700',
   },
 });

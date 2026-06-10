@@ -1,51 +1,45 @@
 import React from 'react';
-import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {ScrollView, StyleSheet, View} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {colors, layout, radii, spacing} from '../theme/tokens';
 
-import {eventCategories} from '../data/eventCategories';
-import type {EventCategory, RootStackParamList} from '../types';
+import {CategoryCard} from '../components/categories/CategoryCard';
+import {Button} from '../components/ui/Button';
+import {ScreenHeader} from '../components/ui/ScreenHeader';
+import { eventCategories } from '../data/eventCategories';
+import type { EventCategory, RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CategoryHome'>;
 
-export function CategoryHomeScreen({navigation}: Props) {
+export function CategoryHomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View style={styles.headerCopy}>
-              <Text style={styles.title}>어떤 팬 이벤트인가요?</Text>
-              <Text style={styles.description}>
-                체크리스트는 로그인 없이 바로 만들고, 현장 단톡방은 로그인 후
-                입장코드로 참여해요.
-              </Text>
-            </View>
-            <Pressable
+        <ScreenHeader
+          title="어떤 이벤트인가요?"
+          description="현장에 있는 팬들과 실시간으로 소통해요."
+          trailing={
+            <Button
               onPress={() => navigation.navigate('MyPage')}
-              style={styles.myButton}>
-              <Text style={styles.myButtonText}>MY</Text>
-            </Pressable>
-          </View>
-        </View>
+              style={styles.myButton}
+              textStyle={styles.myButtonText}
+              title="MY"
+              variant="dark"
+            />
+          }
+          style={styles.header}
+        />
 
         <View style={styles.categoryList}>
           {eventCategories.map((item: EventCategory) => (
-            <Pressable
+            <CategoryCard
               key={item.id}
+              category={item}
               onPress={() =>
-                navigation.navigate('CategoryDetail', {categoryId: item.id})
+                navigation.navigate('CategoryDetail', { categoryId: item.id })
               }
-              style={styles.categoryCard}>
-              <View style={styles.iconWrap}>
-                <Text style={styles.icon}>{item.icon}</Text>
-              </View>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.cardDescription}>{item.description}</Text>
-                <Text style={styles.cardMeta}>{item.roomLabel}</Text>
-              </View>
-            </Pressable>
+            />
           ))}
         </View>
       </ScrollView>
@@ -55,90 +49,29 @@ export function CategoryHomeScreen({navigation}: Props) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f7f1ea',
+    backgroundColor: colors.background,
     flex: 1,
   },
   content: {
-    padding: 20,
-    paddingBottom: 32,
+    padding: layout.screenPadding,
+    paddingBottom: layout.screenBottomPadding,
   },
   header: {
-    marginBottom: 18,
-  },
-  headerTop: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 8,
-  },
-  title: {
-    color: '#241b16',
-    fontSize: 28,
-    fontWeight: '900',
-    lineHeight: 34,
-  },
-  description: {
-    color: '#5f5047',
-    fontSize: 15,
-    lineHeight: 22,
+    marginBottom: spacing.lg,
   },
   myButton: {
-    alignItems: 'center',
-    backgroundColor: '#241b16',
-    borderRadius: 14,
+    borderRadius: radii.md,
     height: 44,
-    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
     width: 44,
   },
   myButtonText: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '900',
   },
   categoryList: {
-    gap: 14,
-  },
-  categoryCard: {
-    backgroundColor: '#fffaf5',
-    borderColor: '#eadccd',
-    borderRadius: 22,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 14,
-    padding: 16,
-  },
-  iconWrap: {
-    alignItems: 'center',
-    backgroundColor: '#ffe4d6',
-    borderRadius: 18,
-    height: 62,
-    justifyContent: 'center',
-    width: 62,
-  },
-  icon: {
-    fontSize: 30,
-  },
-  cardContent: {
-    flex: 1,
-    gap: 5,
-  },
-  cardTitle: {
-    color: '#241b16',
-    fontSize: 19,
-    fontWeight: '800',
-  },
-  cardDescription: {
-    color: '#5f5047',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  cardMeta: {
-    color: '#b05f3c',
-    fontSize: 12,
-    fontWeight: '800',
-    marginTop: 2,
+    gap: spacing.lg,
   },
 });
