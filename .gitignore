@@ -43,7 +43,10 @@ yarn-error.log
 
 # Local environment/config
 .env
+.env.*
+!.env.example
 supabase/.temp/
+ios/Config/KakaoMap.local.xcconfig
 ios/Config/*.local.xcconfig
 
 # fastlane
