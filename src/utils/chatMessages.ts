@@ -3,7 +3,9 @@ import {filterMessagesByHashtag} from './hashtags';
 
 export type ChatMessagePresentation = {
   isMine: boolean;
+  dateLabel: string;
   showNickname: boolean;
+  showDateSeparator: boolean;
   showTime: boolean;
   timeLabel: string;
 };
@@ -28,6 +30,35 @@ export function getChatMessageMinuteKey(createdAt: string): string {
   return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
+export function getChatMessageDateKey(createdAt: string): string {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return createdAt.slice(0, 10);
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+export function formatChatMessageDate(createdAt: string): string {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return createdAt.slice(0, 10);
+  }
+
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  }).format(date);
+}
+
 export function formatChatMessageTime(createdAt: string): string {
   const date = new Date(createdAt);
 
@@ -49,7 +80,12 @@ export function getChatMessagePresentation(
   const message = messages[index];
   const previousMessage = index > 0 ? messages[index - 1] : undefined;
   const isMine = message.userId === currentUserId;
-  const sameAuthor = previousMessage?.userId === message.userId;
+  const messageDateKey = getChatMessageDateKey(message.createdAt);
+  const previousMessageDateKey = previousMessage
+    ? getChatMessageDateKey(previousMessage.createdAt)
+    : undefined;
+  const sameDate = previousMessageDateKey === messageDateKey;
+  const sameAuthor = sameDate && previousMessage?.userId === message.userId;
   const sameMinute =
     sameAuthor &&
     previousMessage !== undefined &&
@@ -58,7 +94,9 @@ export function getChatMessagePresentation(
 
   return {
     isMine,
+    dateLabel: formatChatMessageDate(message.createdAt),
     showNickname: !isMine && !sameAuthor,
+    showDateSeparator: !previousMessage || !sameDate,
     showTime: !sameAuthor || !sameMinute,
     timeLabel: formatChatMessageTime(message.createdAt),
   };

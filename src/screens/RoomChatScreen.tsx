@@ -34,6 +34,9 @@ const keyboardStickyOffset = {
   opened: 0,
 } as const;
 
+/**
+ * 단톡방 메시지 목록, 해시태그 필터, 텍스트/이미지 전송, 튜토리얼 응답을 연결한다.
+ */
 export function RoomChatScreen({navigation, route}: Props) {
   const {user} = useAuth();
   const roomId = route.params.roomId;

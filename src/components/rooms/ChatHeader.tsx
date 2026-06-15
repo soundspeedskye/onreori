@@ -1,21 +1,21 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import {colors, spacing} from '../../theme/tokens';
+import { colors, spacing } from '../../theme/tokens';
 
 type ChatHeaderProps = {
   title: string;
   tutorialRoom: boolean;
 };
 
-export function ChatHeader({title, tutorialRoom}: ChatHeaderProps) {
+export function ChatHeader({ title, tutorialRoom }: ChatHeaderProps) {
   return (
     <View style={styles.header}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>
         {tutorialRoom
           ? '오늘의오리가 단톡방 사용법을 안내해요.'
-          : '입장코드로 들어온 사람들과만 대화해요.'}
+          : '현장에 계신가요? 실시간 정보를 공유해주세요.'}
       </Text>
     </View>
   );

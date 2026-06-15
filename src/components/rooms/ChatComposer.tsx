@@ -20,6 +20,8 @@ export function ChatComposer({
   onSendImage,
   onSendText,
 }: ChatComposerProps) {
+  const isSendDisabled = sending || body.trim().length === 0;
+
   return (
     <View style={styles.composer}>
       <Button
@@ -37,7 +39,7 @@ export function ChatComposer({
         value={body}
       />
       <Button
-        disabled={sending}
+        disabled={isSendDisabled}
         onPress={onSendText}
         style={styles.sendButton}
         textStyle={styles.smallButtonText}

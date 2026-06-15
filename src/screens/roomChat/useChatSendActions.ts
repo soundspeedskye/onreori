@@ -29,7 +29,7 @@ export function useChatSendActions({
   const [sending, setSending] = useState(false);
 
   const handleSendText = async () => {
-    if (!user || sending) {
+    if (!user || sending || body.trim().length === 0) {
       return;
     }
 

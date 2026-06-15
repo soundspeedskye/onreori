@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {ActivityIndicator, FlatList, StyleSheet, Text, View} from 'react-native';
 
 import {colors, radii, spacing} from '../../theme/tokens';
@@ -27,25 +27,48 @@ export function ChatMessageList({
   onClearHashtagFilter,
 }: ChatMessageListProps) {
   const listRef = useRef<FlatList<ChatMessage>>(null);
+  const didInitialScrollRef = useRef(false);
+
+  const scrollToBottom = useCallback((animated: boolean) => {
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToEnd({animated});
+    });
+  }, []);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => listRef.current?.scrollToEnd({animated: true}), 50);
+    if (loading || messages.length === 0) {
+      didInitialScrollRef.current = false;
     }
-  }, [messages.length]);
+  }, [loading, messages.length]);
+
+  const handleContentSizeChange = useCallback(() => {
+    if (loading || messages.length === 0) {
+      return;
+    }
+
+    const animated = didInitialScrollRef.current;
+    scrollToBottom(animated);
+    didInitialScrollRef.current = true;
+  }, [loading, messages.length, scrollToBottom]);
 
   if (loading) {
     return <ActivityIndicator color={colors.brand} style={styles.loader} />;
   }
 
   const renderMessage = ({item, index}: {item: ChatMessage; index: number}) => {
-    const presentation = getChatMessagePresentation(
-      messages,
-      index,
-      currentUserId,
-    );
+    const {dateLabel, showDateSeparator, ...presentation} =
+      getChatMessagePresentation(
+        messages,
+        index,
+        currentUserId,
+      );
 
-    return <ChatMessageBubble message={item} {...presentation} />;
+    return (
+      <View style={styles.messageItem}>
+        {showDateSeparator ? <DateSeparator label={dateLabel} /> : null}
+        <ChatMessageBubble message={item} {...presentation} />
+      </View>
+    );
   };
 
   return (
@@ -64,6 +87,7 @@ export function ChatMessageList({
         data={messages}
         keyExtractor={item => item.id}
         renderItem={renderMessage}
+        onContentSizeChange={handleContentSizeChange}
         ListEmptyComponent={
           botTyping ? null : (
             <View style={styles.emptyBox}>
@@ -83,6 +107,16 @@ export function ChatMessageList({
   );
 }
 
+function DateSeparator({label}: {label: string}) {
+  return (
+    <View style={styles.dateSeparator}>
+      <View style={styles.dateLine} />
+      <Text style={styles.dateText}>{label}</Text>
+      <View style={styles.dateLine} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   loader: {
     flex: 1,
@@ -99,6 +133,25 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.lg,
     paddingBottom: spacing.xl,
+  },
+  messageItem: {
+    gap: spacing.sm,
+  },
+  dateSeparator: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginVertical: spacing.sm,
+  },
+  dateLine: {
+    backgroundColor: colors.border,
+    flex: 1,
+    height: 1,
+  },
+  dateText: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '800',
   },
   emptyBox: {
     alignItems: 'center',
