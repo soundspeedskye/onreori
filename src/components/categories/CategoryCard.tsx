@@ -4,6 +4,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {EventCategory} from '../../types';
 import {Card} from '../ui/Card';
+import {PixelIcon, getPixelIconNameForEmoji} from '../ui/PixelIcon';
 
 type CategoryCardProps = {
   category: EventCategory;
@@ -11,10 +12,16 @@ type CategoryCardProps = {
 };
 
 export function CategoryCard({category, onPress}: CategoryCardProps) {
+  const pixelIconName = getPixelIconNameForEmoji(category.icon);
+
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.iconWrap}>
-        <Text style={styles.icon}>{category.icon}</Text>
+        {pixelIconName ? (
+          <PixelIcon name={pixelIconName} size={34} />
+        ) : (
+          <Text style={styles.icon}>{category.icon}</Text>
+        )}
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>{category.title}</Text>

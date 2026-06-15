@@ -20,6 +20,9 @@ import {useMyRooms} from './myPage/useMyRooms';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
 
+/**
+ * 로그인 상태에 따라 게스트 안내 또는 계정의 체크리스트와 단톡방 이력을 보여준다.
+ */
 export function MyPageScreen({navigation}: Props) {
   const {user, signOut} = useAuth();
   const [activeTab, setActiveTab] = useState<MyPageTab>('checklists');

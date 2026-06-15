@@ -12,6 +12,9 @@ import type { EventCategory, RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CategoryHome'>;
 
+/**
+ * 이벤트 카테고리 목록을 보여주고 선택한 카테고리 상세 또는 마이페이지로 연결한다.
+ */
 export function CategoryHomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>

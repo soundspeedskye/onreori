@@ -8,13 +8,22 @@ type ChipTone = 'brand' | 'action';
 type ChipProps = {
   label?: string;
   children?: React.ReactNode;
+  numberOfLines?: number;
   tone?: ChipTone;
   style?: StyleProp<TextStyle>;
 };
 
-export function Chip({label, children, tone = 'brand', style}: ChipProps) {
+export function Chip({
+  label,
+  children,
+  numberOfLines,
+  tone = 'brand',
+  style,
+}: ChipProps) {
   return (
-    <Text style={[styles.base, styles[tone], style]}>
+    <Text
+      numberOfLines={numberOfLines}
+      style={[styles.base, styles[tone], style]}>
       {children ?? label}
     </Text>
   );

@@ -5,20 +5,32 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {colors, radii, spacing} from '../theme/tokens';
 
 import {Button} from '../components/ui/Button';
+import {PixelIcon} from '../components/ui/PixelIcon';
 import type { RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
+/**
+ * 앱의 첫 진입 화면으로 핵심 사용 맥락을 보여주고 카테고리 홈으로 이동시킨다.
+ */
 export function LandingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
         <View style={styles.visual}>
-          <Text style={styles.visualIcon}>🎟️</Text>
-          <Text style={[styles.floatingIcon, styles.topLeft]}>☕</Text>
-          <Text style={[styles.floatingIcon, styles.topRight]}>🛍️</Text>
-          <Text style={[styles.floatingIcon, styles.bottomLeft]}>🎤</Text>
-          <Text style={[styles.floatingIcon, styles.bottomRight]}>💬</Text>
+          <PixelIcon name="ticket" size={80} />
+          <View style={[styles.floatingIcon, styles.topLeft]}>
+            <PixelIcon name="coffee" size={32} />
+          </View>
+          <View style={[styles.floatingIcon, styles.topRight]}>
+            <PixelIcon name="bag" size={32} />
+          </View>
+          <View style={[styles.floatingIcon, styles.bottomLeft]}>
+            <PixelIcon name="mic" size={32} />
+          </View>
+          <View style={[styles.floatingIcon, styles.bottomRight]}>
+            <PixelIcon name="chat" size={32} />
+          </View>
         </View>
 
         <View style={styles.copy}>
@@ -62,17 +74,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
   },
-  visualIcon: {
-    fontSize: 80,
-    textAlign: 'center',
-  },
   floatingIcon: {
+    alignItems: 'center',
     backgroundColor: colors.surfaceMuted,
     borderRadius: radii.xl,
-    fontSize: 26,
-    overflow: 'hidden',
-    padding: spacing.md,
+    height: 54,
+    justifyContent: 'center',
     position: 'absolute',
+    width: 54,
   },
   topLeft: {
     left: 26,

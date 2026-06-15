@@ -4,6 +4,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import {colors, radii, spacing} from '../../theme/tokens';
 import {Card} from '../ui/Card';
 import {Chip} from '../ui/Chip';
+import {PixelIconForEmoji} from '../ui/PixelIcon';
 
 type ChecklistHeroCardProps = {
   icon: string;
@@ -25,7 +26,11 @@ export function ChecklistHeroCard({
   return (
     <Card style={styles.card}>
       <View style={styles.top}>
-        <Text style={styles.icon}>{icon}</Text>
+        <PixelIconForEmoji
+          emoji={icon}
+          fallbackTextStyle={styles.icon}
+          size={42}
+        />
         <View style={styles.copy}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.meta}>{meta}</Text>

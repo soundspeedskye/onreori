@@ -1,31 +1,37 @@
-import React, {useMemo, useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {colors, layout, radii, spacing} from '../theme/tokens';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { colors, layout, radii, spacing } from '../theme/tokens';
 
-import {ConditionToggle} from '../components/templates/ConditionToggle';
-import {BottomActionBar} from '../components/ui/BottomActionBar';
-import {Button} from '../components/ui/Button';
-import {Card} from '../components/ui/Card';
-import {EmptyState} from '../components/ui/EmptyState';
+import { ConditionToggle } from '../components/templates/ConditionToggle';
+import { BottomActionBar } from '../components/ui/BottomActionBar';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
+import { PixelIconForEmoji } from '../components/ui/PixelIcon';
 import {
   conditions,
   createChecklistFromTemplate,
   getTemplateById,
 } from '../data/templates';
-import {saveChecklistDraft} from '../storage/checklists';
-import type {ConditionId, RootStackParamList} from '../types';
-import {ALERT_MESSAGES, showAlert} from '../utils/appAlert';
+import { saveChecklistDraft } from '../storage/checklists';
+import type { ConditionId, RootStackParamList } from '../types';
+import { ALERT_MESSAGES, showAlert } from '../utils/appAlert';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conditions'>;
 
-export function ConditionsScreen({navigation, route}: Props) {
+/**
+ * 체크리스트 템플릿에 적용할 상황 조건을 선택하고 로컬 초안을 생성한다.
+ */
+export function ConditionsScreen({ navigation, route }: Props) {
   const template = useMemo(
     () => getTemplateById(route.params.templateId),
     [route.params.templateId],
   );
-  const [selectedConditions, setSelectedConditions] = useState<ConditionId[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<ConditionId[]>(
+    [],
+  );
 
   const toggleCondition = (conditionId: ConditionId, enabled: boolean) => {
     setSelectedConditions(current =>
@@ -37,20 +43,23 @@ export function ConditionsScreen({navigation, route}: Props) {
 
   const handleCreateChecklist = async () => {
     if (!template) {
-      showAlert({title: ALERT_MESSAGES.notFound});
+      showAlert({ title: ALERT_MESSAGES.notFound });
       return;
     }
 
     const checklist = createChecklistFromTemplate(template, selectedConditions);
 
     await saveChecklistDraft(checklist);
-    navigation.replace('Checklist', {checklistId: checklist.id});
+    navigation.replace('Checklist', { checklistId: checklist.id });
   };
 
   if (!template) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <EmptyState title="템플릿을 찾지 못했습니다." style={styles.emptyState} />
+        <EmptyState
+          title="템플릿을 찾지 못했습니다."
+          style={styles.emptyState}
+        />
       </SafeAreaView>
     );
   }
@@ -59,7 +68,11 @@ export function ConditionsScreen({navigation, route}: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.headerCard}>
-          <Text style={styles.icon}>{template.icon}</Text>
+          <PixelIconForEmoji
+            emoji={template.icon}
+            fallbackTextStyle={styles.icon}
+            size={42}
+          />
           <View style={styles.headerCopy}>
             <Text style={styles.title}>{template.title}</Text>
             <Text style={styles.description}>{template.description}</Text>
@@ -69,8 +82,7 @@ export function ConditionsScreen({navigation, route}: Props) {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>상황 선택</Text>
           <Text style={styles.sectionDescription}>
-            선택한 상황은 체크리스트에 함께 기록됩니다. 목록은 상황과
-            상관없이 전체 항목으로 만듭니다.
+            공연 당일의 예상 컨디션을 선택해주세요.
           </Text>
         </View>
 

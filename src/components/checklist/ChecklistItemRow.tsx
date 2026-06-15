@@ -5,6 +5,7 @@ import {colors, radii, spacing} from '../../theme/tokens';
 import type {ChecklistItem} from '../../types';
 import {Card} from '../ui/Card';
 import {Chip} from '../ui/Chip';
+import {PixelIcon} from '../ui/PixelIcon';
 
 type ChecklistItemRowProps = {
   canDelete?: boolean;
@@ -26,7 +27,9 @@ export function ChecklistItemRow({
       accessibilityState={{checked: item.checked}}
       onPress={onToggle}
       style={styles.row}>
-      <Text style={styles.checkbox}>{item.checked ? '☑︎' : '☐'}</Text>
+      <View style={styles.checkbox}>
+        <PixelIcon name={item.checked ? 'checkOn' : 'checkOff'} size={28} />
+      </View>
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <View style={styles.titleRow}>
@@ -69,10 +72,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   checkbox: {
-    color: colors.brand,
-    fontSize: 26,
-    lineHeight: 28,
+    height: 30,
     marginTop: 2,
+    width: 30,
   },
   content: {
     flex: 1,
