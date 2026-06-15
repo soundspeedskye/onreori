@@ -11,26 +11,26 @@ index 089242c..ee6478c 100644
    s.source       = { :git => "https://github.com/jiggag/react-native-kakao-maps.git", :tag => s.version.to_s }
 -  s.source_files  = "ios/*.{h,m}"
 +  s.source_files  = "ios/*.{h,m,mm}"
- 
+
 -  s.vendored_frameworks = 'ios/DaumMap.embeddedframework/DaumMap.framework'
 -  s.resources = ['ios/DaumMap.embeddedframework/Resources/*.png']
    s.dependency "React"
 +  s.dependency "KakaoMapsSDK", "2.12.11"
- 
+
  end
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle b/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle
 index 8c9b87a..c226f65 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle
 +++ b/node_modules/@jiggag/react-native-kakao-maps/android/build.gradle
 @@ -1,7 +1,8 @@
- 
+
  buildscript {
      repositories {
 -        jcenter()
 +        google()
 +        mavenCentral()
      }
- 
+
      dependencies {
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapFragment.java
 index 38d074a..9bece53 100644
@@ -41,15 +41,15 @@ index 38d074a..9bece53 100644
  import java.util.ArrayList;
  import java.util.HashMap;
 -import java.util.Map;
- 
+
  import androidx.fragment.app.Fragment;
- 
+
  import com.facebook.react.bridge.Arguments;
  import com.facebook.react.bridge.ReactContext;
  import com.facebook.react.bridge.WritableMap;
 -import com.facebook.react.common.MapBuilder;
  import com.facebook.react.uimanager.events.RCTEventEmitter;
- 
+
  public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuthenticationResultListener, MapView.MapViewEventListener {
 @@ -34,11 +32,21 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
      ViewGroup mapViewContainer;
@@ -65,7 +65,7 @@ index 38d074a..9bece53 100644
 +        mapOptions = bundle != null ? bundle : new Bundle();
 +        createMapView();
 +    }
- 
+
      private void createMapView() {
 +        if (mapLayout == null) {
 +            return;
@@ -75,9 +75,9 @@ index 38d074a..9bece53 100644
              mMapView = mapLayout.getMapView();
              mMapView.setDaumMapApiKey(this.getString(R.string.kakao_app_key));
 @@ -49,22 +57,29 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
- 
+
          mMapView.removeAllPOIItems();
- 
+
 +        Bundle options = mapOptions != null ? mapOptions : new Bundle();
 +
          if (mapCenterPoint == null) {
@@ -89,7 +89,7 @@ index 38d074a..9bece53 100644
          } else {
              mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(mapCenterPoint.latitude, mapCenterPoint.longitude), true);
          }
- 
+
 -        ArrayList<HashMap<String, Object>> markerList = (ArrayList<HashMap<String, Object>>) getArguments().get(Constants.PARAM_MARKER_LIST);
 -        String markerImageUrl = getArguments().getString(Constants.PARAM_MARKER_IMAGE_URL);
 -        String markerImageName = getArguments().getString(Constants.PARAM_MARKER_NAME);
@@ -98,7 +98,7 @@ index 38d074a..9bece53 100644
 +        String markerImageName = options.getString(Constants.PARAM_MARKER_NAME);
          int markerImageResourceId = markerImageName != null ? this.getResources().getIdentifier(markerImageName, "drawable", getActivity().getPackageName()) : 0;
 +        int updateVersion = ++markerUpdateVersion;
- 
+
          new Thread(() -> {
 -            getBitmapFromUrl(markerImageUrl);
 -            createMarker(markerList, markerImage, markerImageResourceId);
@@ -110,11 +110,11 @@ index 38d074a..9bece53 100644
 +            });
          }).start();
      }
- 
+
 @@ -163,19 +178,9 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
                  .receiveEvent(getId(), "topChange", event);
      }
- 
+
 -    private Map getExportedCustomBubblingEventTypeConstants() {
 -        return MapBuilder.builder().put(
 -                "topChange",
@@ -131,12 +131,12 @@ index 38d074a..9bece53 100644
 -            return;
 +            return null;
          }
- 
+
          try {
 @@ -185,10 +190,11 @@ public class KakaoMapFragment extends Fragment implements MapView.OpenAPIKeyAuth
              connection.connect();
              InputStream input = connection.getInputStream();
- 
+
 -            markerImage = BitmapFactory.decodeStream(input);
 +            return BitmapFactory.decodeStream(input);
          } catch (IOException e) {
@@ -144,14 +144,14 @@ index 38d074a..9bece53 100644
          }
 +        return null;
      }
- 
+
      private void createMarker(ArrayList<HashMap<String, Object>> markerList, Bitmap markerImage, int markerResourceId) {
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java
 index d226222..3922c58 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java
 +++ b/node_modules/@jiggag/react-native-kakao-maps/android/src/main/java/com/jiggag/rnkakaomaps/KakaoMapManager.java
 @@ -28,6 +28,10 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
- 
+
      private ReactApplicationContext reactContext;
      private KakaoMapFragment fragment;
 +    private boolean fragmentAttached = false;
@@ -164,7 +164,7 @@ index d226222..3922c58 100644
 @@ -55,6 +59,16 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
          return MapBuilder.of("create", COMMAND_CREATE);
      }
- 
+
 +    @Nullable
 +    @Override
 +    public Map<String, Object> getExportedCustomBubblingEventTypeConstants() {
@@ -181,7 +181,7 @@ index d226222..3922c58 100644
 @@ -69,6 +83,21 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
          }
      }
- 
+
 +    @Override
 +    public void onDropViewInstance(@NonNull FrameLayout root) {
 +        stopLayout();
@@ -207,7 +207,7 @@ index d226222..3922c58 100644
 +        fragmentAttached = false;
          bundleFragment();
      }
- 
+
 @@ -110,6 +140,10 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
              return;
          }
@@ -221,7 +221,7 @@ index d226222..3922c58 100644
          bundle.putDouble(Constants.PARAM_LNG, paramLng);
 @@ -118,24 +152,43 @@ public class KakaoMapManager extends ViewGroupManager<FrameLayout> {
          bundle.putParcelableArrayList(Constants.PARAM_MARKER_LIST, markerList);
- 
+
          fragment.reactContext = reactContext;
 -        fragment.setArguments(bundle);
 +        fragment.updateMap(bundle);
@@ -237,7 +237,7 @@ index d226222..3922c58 100644
 -        fragment.onResume();
 +        fragmentAttached = true;
      }
- 
+
      private void setupLayout(View view) {
 -        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
 +        stopLayout();
@@ -268,34 +268,71 @@ index d226222..3922c58 100644
 +        layoutCallback = null;
 +        layoutView = null;
      }
- 
+
      private void manuallyLayoutChildren(View view) {
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/index.d.ts b/node_modules/@jiggag/react-native-kakao-maps/index.d.ts
+index 97f0a29..93a2169 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/index.d.ts
++++ b/node_modules/@jiggag/react-native-kakao-maps/index.d.ts
+@@ -18,6 +18,7 @@ interface MapNativeEvent {
+ }
+
+ interface Params {
++  fitToMarkers?: boolean;
+   markerImageName?: string;
+   markerImageUrl?: string;
+   markerList: Maker[];
+diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/KakaoMapManager.m b/node_modules/@jiggag/react-native-kakao-maps/ios/KakaoMapManager.m
+index 2ec301d..c7ff83a 100644
+--- a/node_modules/@jiggag/react-native-kakao-maps/ios/KakaoMapManager.m
++++ b/node_modules/@jiggag/react-native-kakao-maps/ios/KakaoMapManager.m
+@@ -10,6 +10,7 @@ @implementation KakaoMapManager
+
+ RCT_EXPORT_VIEW_PROPERTY(markerList, NSArray)
+ RCT_EXPORT_VIEW_PROPERTY(centerPoint, NSDictionary)
++RCT_EXPORT_VIEW_PROPERTY(fitToMarkers, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(markerImageUrl, NSString)
+ RCT_EXPORT_VIEW_PROPERTY(markerImageName, NSString)
+ RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock)
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h
-index e7c27e9..63e2036 100644
+index e7c27e9..2c2018b 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h
 +++ b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.h
-@@ -1,5 +1,6 @@
+@@ -1,10 +1,12 @@
  #import <UIKit/UIKit.h>
 -#import <DaumMap/MTMapView.h>
 +#import <KakaoMapsSDK/KakaoMapsSDK.h>
 +#import <KakaoMapsSDK/KakaoMapsSDK-Swift.h>
  #import <React/RCTComponent.h>
- 
+
  @interface MapViewController : UIView
+
+ @property(nonatomic, assign, nonnull) NSArray *markerList;
++@property(nonatomic, assign) BOOL fitToMarkers;
+ @property(nonatomic, assign) double lat;
+ @property(nonatomic, assign) double lng;
+ @property(nonatomic, assign, nonnull) NSString *markerImageUrl;
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
-index fc6a668..b30c412 100644
+index fc6a668..a8103c6 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
 +++ b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
-@@ -1,99 +1,287 @@
+@@ -1,99 +1,684 @@
  #import "MapViewController.h"
- 
++#import <float.h>
++#import <TargetConditionals.h>
+
 -@interface MapViewController () {
 -  MTMapView *_mapView;
 +static NSString *const OnreoriMapViewName = @"mapview";
 +static NSString *const OnreoriMapViewInfoName = @"map";
 +static NSString *const OnreoriMapAppName = @"openmap";
 +static NSString *const OnreoriMarkerLayerID = @"onreori-marker-layer";
-+static NSString *const OnreoriDefaultPoiStyleID = @"label_default_style";
++static NSString *const OnreoriDefaultPoiStyleID = @"onreori_map_pin";
++static NSTimeInterval const OnreoriMapReadyTimeoutSeconds = 12.0;
++static NSInteger const OnreoriDefaultZoomLevel = 15;
++static double const OnreoriFitPaddingRatio = 0.18;
++static double const OnreoriMinimumFitLatitudePadding = 0.001;
++static double const OnreoriMinimumFitLongitudePadding = 0.001;
 +
 +@interface MapViewController () <MapControllerDelegate, KakaoMapEventDelegate>
 +@end
@@ -303,47 +340,117 @@ index fc6a668..b30c412 100644
 +@implementation MapViewController {
 +  KMViewContainer *_mapContainer;
 +  KMController *_mapController;
++  BOOL _mapUnavailable;
++  BOOL _mapUnavailableEmitted;
    NSArray *__markerList;
    NSString *__markerImageUrl;
    NSString *__markerImageName;
++  NSTimer *_mapReadyTimeout;
 +  BOOL _mapReady;
 +  BOOL _enginePrepared;
++  BOOL _enginePrepareRequested;
 +  BOOL _enginePrepareScheduled;
++  BOOL _fitToMarkers;
  }
- 
+
 -@end
 +static void InitializeKakaoMapsSDKIfNeeded(void) {
 +  static dispatch_once_t onceToken;
 +  dispatch_once(&onceToken, ^{
++#if TARGET_OS_SIMULATOR
++    if ([KMViewContainer respondsToSelector:@selector(setUseGL:)]) {
++      [KMViewContainer setUseGL:YES];
++    }
++#endif
++
 +    NSString *appKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"KAKAO_APP_KEY"];
 +    if (appKey.length == 0) {
 +      appKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"KAKAO_NATIVE_APP_KEY"];
 +    }
- 
--@implementation MapViewController
++
 +    if (appKey.length > 0 && ![appKey hasPrefix:@"$("]) {
 +      [SDKInitializer InitSDKWithAppKey:appKey phase:KAPhaseReal];
 +    }
 +  });
 +}
- 
--NSArray *createMarker(NSArray *markerList, NSString *markerImageUrl, NSString *markerImageName) {
--  NSMutableArray *pointList = [[NSMutableArray alloc] init];
++
 +static MapPoint *CreateMapPoint(double lat, double lng) {
 +  return [[MapPoint alloc] initWithLongitude:lng latitude:lat];
 +}
- 
++
++static double CoordinateValue(NSDictionary *point, NSString *key) {
++  id value = point[key];
++  return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : 0;
++}
+
+-@implementation MapViewController
++static double ExpandedCoordinatePadding(double span, double minimumPadding) {
++  return MAX(span * OnreoriFitPaddingRatio, minimumPadding);
++}
++
++static UIColor *ColorFromRGB(NSUInteger rgb) {
++  return [UIColor colorWithRed:((rgb >> 16) & 0xFF) / 255.0
++                         green:((rgb >> 8) & 0xFF) / 255.0
++                          blue:(rgb & 0xFF) / 255.0
++                         alpha:1.0];
++}
++
++static UIImage *CreateOnreoriMarkerImage(void) {
++  CGSize size = CGSizeMake(22, 27);
++  UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
++  format.opaque = NO;
++  format.scale = UIScreen.mainScreen.scale;
+
+-NSArray *createMarker(NSArray *markerList, NSString *markerImageUrl, NSString *markerImageName) {
+-  NSMutableArray *pointList = [[NSMutableArray alloc] init];
++  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size format:format];
++  return [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
++    CGContextScaleCTM(context.CGContext, 0.5, 0.5);
+
 -  for (NSDictionary *point in markerList) {
 -    MTMapPOIItem* item = [MTMapPOIItem poiItem];
 -    item.itemName = point[@"markerName"];
 -    item.mapPoint = [MTMapPoint mapPointWithGeoCoord:MTMapPointGeoMake([point[@"lat"] doubleValue], [point[@"lng"] doubleValue])];
 -    item.showAnimationType = MTMapPOIItemShowAnimationTypeSpringFromGround;
-+static double CoordinateValue(NSDictionary *point, NSString *key) {
-+  id value = point[key];
-+  return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : 0;
-+}
- 
++    UIBezierPath *pinPath = [UIBezierPath bezierPath];
++    [pinPath moveToPoint:CGPointMake(22, 2)];
++    [pinPath addCurveToPoint:CGPointMake(4, 20)
++               controlPoint1:CGPointMake(12.06, 2)
++               controlPoint2:CGPointMake(4, 10.06)];
++    [pinPath addCurveToPoint:CGPointMake(22, 52)
++               controlPoint1:CGPointMake(4, 34.2)
++               controlPoint2:CGPointMake(22, 52)];
++    [pinPath addCurveToPoint:CGPointMake(40, 20)
++               controlPoint1:CGPointMake(22, 52)
++               controlPoint2:CGPointMake(40, 34.2)];
++    [pinPath addCurveToPoint:CGPointMake(22, 2)
++               controlPoint1:CGPointMake(40, 10.06)
++               controlPoint2:CGPointMake(31.94, 2)];
++    [pinPath closePath];
++    [ColorFromRGB(0x5B36B8) setFill];
++    [pinPath fill];
+
 -    item.markerType = markerImageUrl != nil || markerImageName != nil ? MTMapPOIItemMarkerTypeCustomImage : MTMapPOIItemMarkerTypeBluePin;
++    UIBezierPath *highlightPath = [UIBezierPath bezierPath];
++    [highlightPath moveToPoint:CGPointMake(22, 52)];
++    [highlightPath addCurveToPoint:CGPointMake(38.67, 27.7)
++                     controlPoint1:CGPointMake(22, 52)
++                     controlPoint2:CGPointMake(34.37, 39.76)];
++    [highlightPath addCurveToPoint:CGPointMake(22, 52)
++                     controlPoint1:CGPointMake(35.84, 36.97)
++                     controlPoint2:CGPointMake(26.47, 48.22)];
++    [highlightPath closePath];
++    [[ColorFromRGB(0x3A2474) colorWithAlphaComponent:0.24] setFill];
++    [highlightPath fill];
+
+-    if (markerImageUrl != nil) {
+-      item.customImage = [[[UIImage alloc] init] initWithData: [NSData dataWithContentsOfURL: [NSURL URLWithString: markerImageUrl]]];
++    UIBezierPath *centerPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(14, 12, 16, 16)];
++    [UIColor.whiteColor setFill];
++    [centerPath fill];
++  }];
++}
++
 +- (instancetype)init
 +{
 +  self = [super init];
@@ -351,69 +458,197 @@ index fc6a668..b30c412 100644
 +    _lat = 37.59523;
 +    _lng = 127.08600;
 +    __markerList = @[];
- 
--    if (markerImageUrl != nil) {
--      item.customImage = [[[UIImage alloc] init] initWithData: [NSData dataWithContentsOfURL: [NSURL URLWithString: markerImageUrl]]];
--    }
--    if (markerImageName != nil) {
--      item.customImageName = markerImageName;
--    }
++
 +    InitializeKakaoMapsSDKIfNeeded();
 +
 +    _mapContainer = [[KMViewContainer alloc] initWithFrame:self.bounds];
 +    _mapContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 +    [self addSubview:_mapContainer];
- 
--    [pointList addObject:item];
++
 +    _mapController = [[KMController alloc] initWithViewContainer:_mapContainer];
 +    _mapController.delegate = self;
 +    [self prepareEngineIfNeeded];
-   }
++  }
 +  return self;
 +}
- 
--  return pointList;
++
 +- (void)dealloc
 +{
++  [self stopMapReadyTimeout];
 +  [_mapController pauseEngine];
 +  [_mapController resetEngine];
- }
- 
--- (void)setMarkerImageName:(NSString *)markerImageName {
-+- (void)prepareEngineIfNeeded
++}
++
++- (BOOL)hasRenderableSize
++{
++  return self.bounds.size.width > 0.5 && self.bounds.size.height > 0.5;
++}
++
++- (CGRect)mapBounds
++{
++  return CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
++}
++
++- (void)updateMapContainerLayout
++{
++  if (![self hasRenderableSize]) {
++    return;
++  }
++
++  CGRect bounds = [self mapBounds];
++  if (_mapUnavailable) {
++    return;
++  }
++
++  if (!CGRectEqualToRect(_mapContainer.frame, bounds)) {
++    _mapContainer.frame = bounds;
++  }
++
++  UIView *renderView = _mapContainer.renderView;
++  if (renderView != nil) {
++    if (!CGRectEqualToRect(renderView.frame, _mapContainer.bounds)) {
++      renderView.frame = _mapContainer.bounds;
+     }
+-    if (markerImageName != nil) {
+-      item.customImageName = markerImageName;
++  }
++
++  KakaoMap *map = self.map;
++  if (_mapReady && map != nil) {
++    map.viewRect = bounds;
++  }
++}
++
++- (void)startMapReadyTimeoutIfNeeded
++{
++  if (_mapReadyTimeout != nil || _mapReady || _mapUnavailable) {
++    return;
++  }
++
++  _mapReadyTimeout = [NSTimer timerWithTimeInterval:OnreoriMapReadyTimeoutSeconds
++                                             target:self
++                                           selector:@selector(handleMapReadyTimeout:)
++                                           userInfo:nil
++                                            repeats:NO];
++  [[NSRunLoop mainRunLoop] addTimer:_mapReadyTimeout forMode:NSRunLoopCommonModes];
++}
++
++- (void)stopMapReadyTimeout
++{
++  [_mapReadyTimeout invalidate];
++  _mapReadyTimeout = nil;
++}
++
++- (void)handleMapReadyTimeout:(NSTimer *)timer
++{
++  _mapReadyTimeout = nil;
++
++  if ([self completeMapReadyIfAvailableWithReason:@"ready timeout guard"]) {
++    return;
++  }
++
++  if (!_mapUnavailable && !_mapReady) {
++    [self reportMapUnavailableWithReason:@"Kakao map view was not added after engine activation"];
++  }
++}
++
++- (void)activateEngineIfReady
 +{
 +  if (
-+    _enginePrepared ||
-+    _enginePrepareScheduled ||
-+    _mapController.isEnginePrepared ||
++    _mapUnavailable ||
++    !_enginePrepared ||
++    self.window == nil ||
 +    _mapController.isEngineActive ||
-+    self.bounds.size.width <= 0 ||
-+    self.bounds.size.height <= 0 ||
-+    _mapContainer.bounds.size.width <= 0 ||
-+    _mapContainer.bounds.size.height <= 0
++    ![self hasRenderableSize]
 +  ) {
 +    return;
 +  }
++
++  [self updateMapContainerLayout];
++  NSLog(@"[KakaoMapView] activate engine");
++  [_mapController activateEngine];
++}
++
++- (void)didMoveToWindow
++{
++  [super didMoveToWindow];
++
++  if (self.window == nil) {
++    [self stopMapReadyTimeout];
++    if (_mapController.isEngineActive) {
++      [_mapController pauseEngine];
++    }
++    return;
++  }
++
++  if (_mapUnavailable) {
++    [self updateMapContainerLayout];
++    return;
++  }
++
++  [self updateMapContainerLayout];
++  [self prepareEngineIfNeeded];
++  [self activateEngineIfReady];
++}
++
++- (void)prepareEngineIfNeeded
++{
++  if (
++    _mapUnavailable ||
++    self.window == nil ||
++    _enginePrepareRequested ||
++    _enginePrepareScheduled ||
++    _mapController.isEnginePrepared ||
++    _mapController.isEngineActive ||
++    ![self hasRenderableSize]
++  ) {
++    return;
++  }
++
++  [self updateMapContainerLayout];
 +
 +  _enginePrepareScheduled = YES;
 +  dispatch_async(dispatch_get_main_queue(), ^{
 +    self->_enginePrepareScheduled = NO;
 +
 +    if (
-+      self->_enginePrepared ||
++      self->_mapUnavailable ||
++      self.window == nil ||
++      self->_enginePrepareRequested ||
 +      self->_mapController.isEnginePrepared ||
 +      self->_mapController.isEngineActive ||
-+      self.bounds.size.width <= 0 ||
-+      self.bounds.size.height <= 0 ||
-+      self->_mapContainer.bounds.size.width <= 0 ||
-+      self->_mapContainer.bounds.size.height <= 0
++      ![self hasRenderableSize]
 +    ) {
 +      return;
-+    }
+     }
+
+-    [pointList addObject:item];
++    [self updateMapContainerLayout];
 +
 +    BOOL prepared = [self->_mapController prepareEngine];
-+    self->_enginePrepared = prepared || self->_mapController.isEnginePrepared;
++    if (prepared || self->_mapController.isEnginePrepared) {
++      self->_enginePrepareRequested = YES;
++      [self startMapReadyTimeoutIfNeeded];
++    } else {
++      self->_enginePrepareRequested = NO;
++    }
 +  });
++}
++
++- (void)reportMapUnavailableWithReason:(NSString *)reason
++{
++  if (_mapUnavailable) {
++    return;
+   }
+
+-  return pointList;
++  _mapUnavailable = YES;
++  [self stopMapReadyTimeout];
++  [_mapController pauseEngine];
++  _mapContainer.hidden = YES;
++
++  NSLog(@"[KakaoMapView] unavailable: %@", reason);
++  [self emitMapUnavailableWithReason:reason];
 +}
 +
 +- (KakaoMap *)map
@@ -421,25 +656,45 @@ index fc6a668..b30c412 100644
 +  return (KakaoMap *)[_mapController getView:OnreoriMapViewName];
 +}
 +
++- (BOOL)completeMapReadyIfAvailableWithReason:(NSString *)reason
++{
++  if (_mapUnavailable || _mapReady) {
++    return _mapReady;
++  }
++
++  KakaoMap *map = self.map;
++  if (map == nil) {
++    return NO;
++  }
++
++  _mapReady = YES;
++  [self stopMapReadyTimeout];
++  map.eventDelegate = self;
++  [self updateMapContainerLayout];
++  [self refreshMarkers];
++  [self applyCurrentCamera];
++
++  NSLog(@"[KakaoMapView] map ready via %@", reason);
++  return YES;
++}
++
 +- (void)layoutSubviews
 +{
 +  [super layoutSubviews];
-+  _mapContainer.frame = self.bounds;
-+  [_mapContainer layoutIfNeeded];
++  [self updateMapContainerLayout];
 +  [self prepareEngineIfNeeded];
-+
-+  if (self.map != nil) {
-+    self.map.viewRect = self.bounds;
-+  }
-+}
-+
++  [self activateEngineIfReady];
++  [self completeMapReadyIfAvailableWithReason:@"layoutSubviews"];
+ }
+
+-- (void)setMarkerImageName:(NSString *)markerImageName {
 +- (void)setMarkerImageName:(NSString *)markerImageName
 +{
    __markerImageName = markerImageName;
 -  [self load];
 +  [self refreshMarkers];
  }
- 
+
 -- (void)setMarkerImageUrl:(NSString *)markerImageUrl {
 +- (void)setMarkerImageUrl:(NSString *)markerImageUrl
 +{
@@ -447,7 +702,7 @@ index fc6a668..b30c412 100644
 -  [self load];
 +  [self refreshMarkers];
  }
- 
+
 -- (void)setMarkerList:(NSArray *)markerList {
 -  __markerList = markerList;
 -  [self load];
@@ -455,8 +710,9 @@ index fc6a668..b30c412 100644
 +{
 +  __markerList = markerList ?: @[];
 +  [self refreshMarkers];
++  [self applyCurrentCamera];
  }
- 
+
 -- (void)setCenterPoint:(NSDictionary *)centerPoint {
 +- (void)setCenterPoint:(NSDictionary *)centerPoint
 +{
@@ -471,32 +727,81 @@ index fc6a668..b30c412 100644
    }
 -  [self load];
 +
-+  [self moveMapToCurrentCenter];
++  [self applyCurrentCamera];
  }
- 
+
 -- (void)load {
 -  if (_mapView == nil) {
-+- (void)moveMapToCurrentCenter
++- (void)setFitToMarkers:(BOOL)fitToMarkers
 +{
-+  KakaoMap *map = self.map;
-+  if (!_mapReady || map == nil) {
++  _fitToMarkers = fitToMarkers;
++  [self applyCurrentCamera];
++}
++
++- (void)applyCurrentCamera
++{
++  if (_fitToMarkers && [self moveMapToMarkerBounds]) {
      return;
    }
- 
+
 -  [_mapView removeAllPOIItems];
 -  [_mapView addPOIItems: createMarker(__markerList, __markerImageUrl, __markerImageName)];
 -  [_mapView setMapCenterPoint: [MTMapPoint mapPointWithGeoCoord:MTMapPointGeoMake(_lat, _lng)] animated:YES];
--
++  [self moveMapToCurrentCenter];
++}
++
++- (AreaRect *)markerAreaRect
++{
++  if (__markerList.count < 2) {
++    return nil;
++  }
++
++  BOOL hasCoordinate = NO;
++  BOOL hasCoordinateSpan = NO;
++  double minLat = DBL_MAX;
++  double maxLat = -DBL_MAX;
++  double minLng = DBL_MAX;
++  double maxLng = -DBL_MAX;
++  double firstLat = 0;
++  double firstLng = 0;
+
 -  [self addSubview: _mapView];
-+  NSInteger zoomLevel = map.zoomLevel > 0 ? map.zoomLevel : 15;
-+  CameraUpdate *cameraUpdate = [CameraUpdate makeWithTarget:CreateMapPoint(_lat, _lng)
-+                                                  zoomLevel:zoomLevel
-+                                                    mapView:map];
-+  [map moveCamera:cameraUpdate callback:nil];
++  for (NSDictionary *point in __markerList) {
++    if (![point isKindOfClass:[NSDictionary class]]) {
++      continue;
++    }
++
++    double lat = CoordinateValue(point, @"lat");
++    double lng = CoordinateValue(point, @"lng");
++
++    if (!hasCoordinate) {
++      firstLat = lat;
++      firstLng = lng;
++      hasCoordinate = YES;
++    } else if (firstLat != lat || firstLng != lng) {
++      hasCoordinateSpan = YES;
++    }
++
++    minLat = MIN(minLat, lat);
++    maxLat = MAX(maxLat, lat);
++    minLng = MIN(minLng, lng);
++    maxLng = MAX(maxLng, lng);
++  }
++
++  if (!hasCoordinate || !hasCoordinateSpan) {
++    return nil;
++  }
++
++  double latPadding = ExpandedCoordinatePadding(maxLat - minLat, OnreoriMinimumFitLatitudePadding);
++  double lngPadding = ExpandedCoordinatePadding(maxLng - minLng, OnreoriMinimumFitLongitudePadding);
++  MapPoint *southWest = CreateMapPoint(minLat - latPadding, minLng - lngPadding);
++  MapPoint *northEast = CreateMapPoint(maxLat + latPadding, maxLng + lngPadding);
++
++  return [[AreaRect alloc] initWithSouthWest:southWest northEast:northEast];
  }
- 
+
 -- (instancetype)init
-+- (void)refreshMarkers
++- (BOOL)moveMapToMarkerBounds
  {
 -  self = [super init];
 -  if (self && _mapView == nil) {
@@ -504,12 +809,104 @@ index fc6a668..b30c412 100644
 -    _mapView.delegate = self;
 -    _mapView.baseMapType = MTMapTypeStandard;
 -    [_mapView fitMapViewAreaToShowAllPOIItems];
++  if (_mapUnavailable) {
++    return NO;
++  }
+
+-    [self load];
 +  KakaoMap *map = self.map;
-+  if (!_mapReady || map == nil) {
++  if ((!_mapReady && ![self completeMapReadyIfAvailableWithReason:@"move marker bounds"]) || map == nil) {
++    return NO;
+   }
+-  return self;
++
++  map = self.map;
++  if (map == nil) {
++    return NO;
++  }
++
++  AreaRect *areaRect = [self markerAreaRect];
++  if (areaRect == nil) {
++    return NO;
++  }
++
++  CameraUpdate *cameraUpdate = [CameraUpdate makeWithArea:areaRect levelLimit:OnreoriDefaultZoomLevel];
++  [map moveCamera:cameraUpdate callback:^{
++    [self emitChangeForMap:map];
++  }];
++  return YES;
+ }
+
+-- (void)mapView:(MTMapView*)mapView finishedMapMoveAnimation:(MTMapPoint*)mapCenterPoint
++- (void)moveMapToCurrentCenter
+ {
++  if (_mapUnavailable) {
 +    return;
 +  }
- 
--    [self load];
++
++  KakaoMap *map = self.map;
++  if ((!_mapReady && ![self completeMapReadyIfAvailableWithReason:@"move center"]) || map == nil) {
++    return;
++  }
++
++  map = self.map;
++  if (map == nil) {
++    return;
++  }
++
++  NSInteger zoomLevel = map.zoomLevel > 0 ? map.zoomLevel : OnreoriDefaultZoomLevel;
++  CameraUpdate *cameraUpdate = [CameraUpdate makeWithTarget:CreateMapPoint(_lat, _lng)
++                                                  zoomLevel:zoomLevel
++                                                    mapView:map];
++  [map moveCamera:cameraUpdate callback:^{
++    [self emitChangeForMap:map];
++  }];
++}
++
++- (NSString *)markerPoiStyleID
++{
++  return __markerImageName.length > 0 ? __markerImageName : OnreoriDefaultPoiStyleID;
++}
++
++- (void)registerMarkerPoiStyleWithManager:(LabelManager *)manager styleID:(NSString *)styleID
++{
++  [manager removePoiStyle:styleID];
++
++  struct PoiTransition transition = {
++    TransitionTypeNone,
++    TransitionTypeNone
++  };
++  PoiIconStyle *iconStyle =
++    [[PoiIconStyle alloc] initWithSymbol:CreateOnreoriMarkerImage()
++                             anchorPoint:CGPointMake(0.5, 1.0)
++                              transition:transition
++              enableEntranceTransition:NO
++                  enableExitTransition:NO
++                                  badges:nil];
++  PerLevelPoiStyle *levelStyle =
++    [[PerLevelPoiStyle alloc] initWithIconStyle:iconStyle
++                                        padding:0
++                                          level:0];
++  PoiStyle *style = [[PoiStyle alloc] initWithStyleID:styleID styles:@[levelStyle]];
++  [manager addPoiStyle:style];
++}
++
++- (void)refreshMarkers
++{
++  if (_mapUnavailable) {
++    return;
++  }
++
++  KakaoMap *map = self.map;
++  if ((!_mapReady && ![self completeMapReadyIfAvailableWithReason:@"refresh markers"]) || map == nil) {
++    return;
++  }
++
++  map = self.map;
++  if (map == nil) {
++    return;
++  }
++
 +  LabelManager *manager = [map getLabelManager];
 +  LabelLayer *layer = [manager getLabelLayerWithLayerID:OnreoriMarkerLayerID];
 +  if (layer == nil) {
@@ -518,26 +915,27 @@ index fc6a668..b30c412 100644
 +                                 competitionType:CompetitionTypeNone
 +                                 competitionUnit:CompetitionUnitPoi
 +                                      orderType:OrderingTypeRank
-+                                         zOrder:0];
++                                         zOrder:1000];
 +    layer = [manager addLabelLayerWithOption:options];
-   }
--  return self;
++  }
 +
 +  [layer clearAllItems];
++  NSString *styleID = [self markerPoiStyleID];
++  [self registerMarkerPoiStyleWithManager:manager styleID:styleID];
 +
 +  [__markerList enumerateObjectsUsingBlock:^(NSDictionary *point, NSUInteger index, BOOL *stop) {
 +    double lat = CoordinateValue(point, @"lat");
 +    double lng = CoordinateValue(point, @"lng");
 +    NSString *poiID = [NSString stringWithFormat:@"onreori-marker-%lu", (unsigned long)index];
-+    PoiOptions *poiOptions = [[PoiOptions alloc] initWithStyleID:OnreoriDefaultPoiStyleID poiID:poiID];
++    PoiOptions *poiOptions = [[PoiOptions alloc] initWithStyleID:styleID poiID:poiID];
++    poiOptions.rank = NSIntegerMax - (NSInteger)index;
 +    Poi *poi = [layer addPoiWithOption:poiOptions at:CreateMapPoint(lat, lng) callback:nil];
 +    [poi show];
 +  }];
- }
- 
--- (void)mapView:(MTMapView*)mapView finishedMapMoveAnimation:(MTMapPoint*)mapCenterPoint
++}
++
 +- (void)emitChangeForMap:(KakaoMap *)map
- {
++{
 +  if (_onChange == nil || map == nil) {
 +    return;
 +  }
@@ -555,35 +953,64 @@ index fc6a668..b30c412 100644
 +    @"lng": @(coordinate.longitude)
    });
  }
- 
+
++- (void)emitMapUnavailableWithReason:(NSString *)reason
++{
++  if (_onChange == nil || _mapUnavailableEmitted) {
++    return;
++  }
++
++  _mapUnavailableEmitted = YES;
++  _onChange(@{
++    @"status": @"error",
++    @"message": @"Kakao 지도를 불러오지 못했습니다.",
++    @"reason": reason ?: @"unknown"
++  });
++}
++
 +#pragma mark - MapControllerDelegate
 +
 +- (void)authenticationSucceeded
 +{
 +  _enginePrepared = YES;
-+  if (!_mapController.isEngineActive) {
-+    [_mapController activateEngine];
-+  }
++  NSLog(@"[KakaoMapView] authentication succeeded");
++  [self startMapReadyTimeoutIfNeeded];
++  [self activateEngineIfReady];
 +}
 +
 +- (void)authenticationFailed:(NSInteger)errorCode desc:(NSString *)desc
 +{
 +  _enginePrepared = NO;
++  _enginePrepareRequested = NO;
 +  _enginePrepareScheduled = NO;
 +  NSLog(@"[KakaoMapView] authentication failed: %ld %@", (long)errorCode, desc);
++  [self reportMapUnavailableWithReason:[NSString stringWithFormat:@"authentication failed: %ld %@", (long)errorCode, desc]];
 +}
 +
 +- (void)addViews
 +{
++  if (_mapUnavailable) {
++    return;
++  }
++
++  if (![self hasRenderableSize]) {
++    [self setNeedsLayout];
++    return;
++  }
++
++  [self updateMapContainerLayout];
++  [self startMapReadyTimeoutIfNeeded];
++
 +  MapviewInfo *mapViewInfo =
 +    [[MapviewInfo alloc] initWithViewName:OnreoriMapViewName
 +                                  appName:OnreoriMapAppName
 +                             viewInfoName:OnreoriMapViewInfoName
 +                          defaultPosition:CreateMapPoint(_lat, _lng)
-+                             defaultLevel:15
++                             defaultLevel:OnreoriDefaultZoomLevel
 +                                  enabled:YES];
 +
-+  [_mapController addView:mapViewInfo viewSize:self.bounds.size];
++  NSLog(@"[KakaoMapView] addViews with size: %@", NSStringFromCGSize(_mapContainer.bounds.size));
++  [_mapController addView:mapViewInfo viewSize:_mapContainer.bounds.size];
 +}
 +
 +- (void)addViewSucceeded:(NSString *)viewName viewInfoName:(NSString *)viewInfoName
@@ -592,24 +1019,21 @@ index fc6a668..b30c412 100644
 +    return;
 +  }
 +
-+  _mapReady = YES;
-+  self.map.eventDelegate = self;
-+  self.map.viewRect = self.bounds;
-+  [self refreshMarkers];
-+  [self moveMapToCurrentCenter];
++  NSLog(@"[KakaoMapView] add view succeeded: %@ %@", viewName, viewInfoName);
++  [self completeMapReadyIfAvailableWithReason:@"addViewSucceeded"];
++  [self activateEngineIfReady];
 +}
 +
 +- (void)addViewFailed:(NSString *)viewName viewInfoName:(NSString *)viewInfoName
 +{
 +  _enginePrepared = NO;
 +  NSLog(@"[KakaoMapView] add view failed: %@ %@", viewName, viewInfoName);
++  [self reportMapUnavailableWithReason:[NSString stringWithFormat:@"add view failed: %@ %@", viewName, viewInfoName]];
 +}
 +
 +- (void)containerDidResized:(CGSize)size
 +{
-+  if (self.map != nil) {
-+    self.map.viewRect = CGRectMake(0, 0, size.width, size.height);
-+  }
++  [self updateMapContainerLayout];
 +}
 +
 +- (void)viewWillDestroyed:(ViewBase *)view

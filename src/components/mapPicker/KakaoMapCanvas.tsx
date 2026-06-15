@@ -1,8 +1,9 @@
-import React, {useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   StyleProp,
   StyleSheet,
   Platform,
+  Text,
   useWindowDimensions,
   View,
   ViewStyle,
@@ -16,12 +17,14 @@ import type {
 } from '../../screens/mapPicker/useMapCenterSelection';
 
 const MAP_PIN_IMAGE_NAME = 'onreori_map_pin';
+const MAP_LOAD_TIMEOUT_MS = 9000;
 
 type KakaoMapViewWithStyleProps = {
   centerPoint: {
     lat: number;
     lng: number;
   };
+  fitToMarkers?: boolean;
   height: number;
   markerList: Array<{
     lat: number;
@@ -43,6 +46,7 @@ type AndroidKakaoMapViewModule = {
 };
 
 type KakaoMapCanvasProps = {
+  focusVersion: number;
   nativeCenter: Coordinate;
   place: PlaceSelection | null;
   onMapChange: (event: KakaoMapChangeEvent) => void;
@@ -61,11 +65,15 @@ function AndroidKakaoMapView(props: KakaoMapViewWithStyleProps) {
 }
 
 export function KakaoMapCanvas({
+  focusVersion,
   nativeCenter,
   place,
   onMapChange,
 }: KakaoMapCanvasProps) {
   const {height, width} = useWindowDimensions();
+  const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const centerPoint = useMemo(
     () => ({
       lat: nativeCenter.latitude,
@@ -86,12 +94,63 @@ export function KakaoMapCanvas({
         : [],
     [place],
   );
+  const clearLoadTimeout = useCallback(() => {
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+      loadTimeoutRef.current = null;
+    }
+  }, []);
+  const handleNativeMapChange = useCallback(
+    (event: KakaoMapChangeEvent) => {
+      const {nativeEvent} = event;
+
+      if (nativeEvent.status === 'error') {
+        clearLoadTimeout();
+        setMapError(nativeEvent.reason ?? nativeEvent.message ?? 'unknown');
+        return;
+      }
+
+      if (nativeEvent.lat === undefined || nativeEvent.lng === undefined) {
+        return;
+      }
+
+      clearLoadTimeout();
+      setMapReady(true);
+      setMapError(null);
+      onMapChange(event);
+    },
+    [clearLoadTimeout, onMapChange],
+  );
+
+  useEffect(() => {
+    clearLoadTimeout();
+    setMapError(null);
+    setMapReady(false);
+
+    loadTimeoutRef.current = setTimeout(() => {
+      setMapError('Kakao map ready event timed out.');
+    }, MAP_LOAD_TIMEOUT_MS);
+
+    return clearLoadTimeout;
+  }, [
+    clearLoadTimeout,
+    focusVersion,
+    nativeCenter.latitude,
+    nativeCenter.longitude,
+  ]);
+
+  useEffect(() => {
+    if (mapReady) {
+      clearLoadTimeout();
+    }
+  }, [clearLoadTimeout, mapReady]);
+
   const mapProps = {
     centerPoint,
     height: Math.max(1, height),
     markerImageName: MAP_PIN_IMAGE_NAME,
     markerList,
-    onChange: onMapChange,
+    onChange: handleNativeMapChange,
     style: styles.map,
     width: Math.max(1, width),
   };
@@ -99,14 +158,22 @@ export function KakaoMapCanvas({
   return (
     <View style={styles.mapContainer}>
       {Platform.OS === 'android' ? (
-        <AndroidKakaoMapView {...mapProps} />
+        <AndroidKakaoMapView key={focusVersion} {...mapProps} />
       ) : (
-        <LegacyKakaoMapView {...mapProps} />
+        <LegacyKakaoMapView key={focusVersion} {...mapProps} />
       )}
       <View pointerEvents="none" style={styles.centerMarker}>
         <View style={styles.centerMarkerVertical} />
         <View style={styles.centerMarkerHorizontal} />
       </View>
+      {mapError ? (
+        <View pointerEvents="none" style={styles.mapUnavailable}>
+          <Text style={styles.mapUnavailableTitle}>
+            Kakao 지도를 불러오지 못했습니다
+          </Text>
+          <Text style={styles.mapUnavailableText}>{mapError}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -117,6 +184,27 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  mapUnavailable: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    gap: 8,
+    inset: 0,
+    justifyContent: 'center',
+    padding: 24,
+    position: 'absolute',
+  },
+  mapUnavailableText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    textAlign: 'center',
+  },
+  mapUnavailableTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '900',
+    textAlign: 'center',
   },
   centerMarker: {
     alignItems: 'center',

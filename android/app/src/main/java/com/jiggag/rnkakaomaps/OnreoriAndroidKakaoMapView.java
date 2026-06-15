@@ -40,6 +40,7 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
     private static final double INIT_LAT = 37.537229;
     private static final double INIT_LNG = 127.005515;
     private static final int INIT_ZOOM_LEVEL = 15;
+    private static final int FIT_MARKER_PADDING_DP = 24;
     private static final String PARAM_LAT = "lat";
     private static final String PARAM_LNG = "lng";
     private static final String PARAM_MARKER_NAME = "markerName";
@@ -56,6 +57,7 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
     private boolean mapStarted = false;
     private boolean isDisposed = false;
     private boolean layoutCallbackActive = false;
+    private boolean fitToMarkers = false;
     private double paramLat = INIT_LAT;
     private double paramLng = INIT_LNG;
     @Nullable
@@ -79,6 +81,7 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
     public void setMarkerList(@Nullable ReadableArray markerList) {
         this.markerList = markerList != null ? markerList.toArrayList() : null;
         updateMarkers();
+        applyCurrentCamera();
     }
 
     public void setCenterPoint(@Nullable ReadableMap centerPoint) {
@@ -102,8 +105,17 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
         }
 
         if (centerChanged) {
-            moveToCurrentCenter();
+            applyCurrentCamera();
         }
+    }
+
+    public void setFitToMarkers(boolean fitToMarkers) {
+        if (this.fitToMarkers == fitToMarkers) {
+            return;
+        }
+
+        this.fitToMarkers = fitToMarkers;
+        applyCurrentCamera();
     }
 
     public void setMarkerImageName(@Nullable String markerImageName) {
@@ -229,6 +241,7 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
             @Override
             public void onMapError(Exception error) {
                 Log.e(LOG_TAG, "MapView error", error);
+                emitMapError("Kakao map lifecycle error.", error.getMessage());
             }
         };
     }
@@ -242,6 +255,7 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
                         (map, cameraPosition, gestureType) -> emitCameraPosition(cameraPosition)
                 );
                 updateMarkers();
+                applyCurrentCamera();
                 emitCameraPosition(readyMap.getCameraPosition());
             }
 
@@ -266,6 +280,76 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
         }
 
         map.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(paramLat, paramLng)));
+    }
+
+    private void applyCurrentCamera() {
+        if (fitToMarkers && moveToMarkerBounds()) {
+            return;
+        }
+
+        moveToCurrentCenter();
+    }
+
+    private boolean moveToMarkerBounds() {
+        KakaoMap map = kakaoMap;
+        if (map == null) {
+            return false;
+        }
+
+        ArrayList<LatLng> points = getMarkerPositions();
+        if (points.size() < 2 || !hasCoordinateSpan(points)) {
+            return false;
+        }
+
+        LatLng[] pointArray = points.toArray(new LatLng[0]);
+        map.moveCamera(CameraUpdateFactory.fitMapPoints(pointArray, getFitMarkerPaddingPx()));
+        return true;
+    }
+
+    private ArrayList<LatLng> getMarkerPositions() {
+        ArrayList<LatLng> points = new ArrayList<>();
+        if (markerList == null || markerList.isEmpty()) {
+            return points;
+        }
+
+        for (int i = 0; i < markerList.size(); i++) {
+            Object marker = markerList.get(i);
+            if (!(marker instanceof HashMap)) {
+                continue;
+            }
+
+            HashMap<?, ?> markerMap = (HashMap<?, ?>) marker;
+            Double lat = getDouble(markerMap.get(PARAM_LAT));
+            Double lng = getDouble(markerMap.get(PARAM_LNG));
+
+            if (lat == null || lng == null) {
+                continue;
+            }
+
+            points.add(LatLng.from(lat, lng));
+        }
+
+        return points;
+    }
+
+    private boolean hasCoordinateSpan(ArrayList<LatLng> points) {
+        LatLng first = points.get(0);
+        for (int i = 1; i < points.size(); i++) {
+            LatLng point = points.get(i);
+            if (
+                    Double.compare(first.getLatitude(), point.getLatitude()) != 0 ||
+                    Double.compare(first.getLongitude(), point.getLongitude()) != 0
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int getFitMarkerPaddingPx() {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(FIT_MARKER_PADDING_DP * density);
     }
 
     private void updateMarkers() {
@@ -378,6 +462,27 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
                         position.getLatitude(),
                         position.getLongitude(),
                         zoomLevel
+                )
+        );
+    }
+
+    private void emitMapError(@NonNull String message, @Nullable String reason) {
+        EventDispatcher eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(
+                reactContext,
+                getId()
+        );
+
+        if (eventDispatcher == null) {
+            return;
+        }
+
+        eventDispatcher.dispatchEvent(
+                new OnreoriKakaoMapChangeEvent(
+                        UIManagerHelper.getSurfaceId(this),
+                        getId(),
+                        "error",
+                        message,
+                        reason
                 )
         );
     }

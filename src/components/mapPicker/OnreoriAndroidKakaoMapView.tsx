@@ -17,6 +17,7 @@ type KakaoMapMarker = KakaoMapPoint & {
 
 export type OnreoriAndroidKakaoMapViewProps = ViewProps & {
   centerPoint: KakaoMapPoint;
+  fitToMarkers?: boolean;
   height: number;
   markerImageName?: string;
   markerImageUrl?: string;

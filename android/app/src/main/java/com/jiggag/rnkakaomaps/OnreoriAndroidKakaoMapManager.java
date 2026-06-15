@@ -53,6 +53,11 @@ public class OnreoriAndroidKakaoMapManager extends ViewGroupManager<OnreoriAndro
         view.setCenterPoint(centerPoint);
     }
 
+    @ReactProp(name = "fitToMarkers", defaultBoolean = false)
+    public void setFitToMarkers(OnreoriAndroidKakaoMapView view, boolean fitToMarkers) {
+        view.setFitToMarkers(fitToMarkers);
+    }
+
     @ReactProp(name = "markerImageName")
     public void setMarkerImageName(OnreoriAndroidKakaoMapView view, @Nullable String markerImageName) {
         view.setMarkerImageName(markerImageName);

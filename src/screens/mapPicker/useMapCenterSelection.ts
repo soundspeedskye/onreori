@@ -10,9 +10,12 @@ export type Coordinate = {
 
 export type KakaoMapChangeEvent = {
   nativeEvent: {
-    lat: number;
-    lng: number;
-    zoomLevel: number;
+    lat?: number;
+    lng?: number;
+    message?: string;
+    reason?: string;
+    status?: 'error';
+    zoomLevel?: number;
   };
 };
 
@@ -25,9 +28,18 @@ export function useMapCenterSelection() {
   const currentCenterRef = useRef<Coordinate>(SEOUL_COORDINATE);
   const [nativeCenter, setNativeCenter] = useState(SEOUL_COORDINATE);
   const [searchCenter, setSearchCenter] = useState(SEOUL_COORDINATE);
+  const [mapFocusVersion, setMapFocusVersion] = useState(0);
   const [place, setPlace] = useState<PlaceSelection | null>(null);
 
   const handleMapChange = ({nativeEvent}: KakaoMapChangeEvent) => {
+    if (
+      nativeEvent.status === 'error' ||
+      nativeEvent.lat === undefined ||
+      nativeEvent.lng === undefined
+    ) {
+      return;
+    }
+
     const nextCenter = {
       latitude: nativeEvent.lat,
       longitude: nativeEvent.lng,
@@ -41,6 +53,7 @@ export function useMapCenterSelection() {
     const selectedCenter = currentCenterRef.current;
 
     setNativeCenter(selectedCenter);
+    setMapFocusVersion(version => version + 1);
     setPlace({
       provider: 'kakao',
       name: '선택한 장소',
@@ -59,6 +72,7 @@ export function useMapCenterSelection() {
     currentCenterRef.current = selectedCenter;
     setSearchCenter(selectedCenter);
     setNativeCenter(selectedCenter);
+    setMapFocusVersion(version => version + 1);
     setPlace({
       provider: 'kakao',
       name: searchPlace.name,
@@ -66,13 +80,14 @@ export function useMapCenterSelection() {
       roadAddress: searchPlace.roadAddress,
       latitude: searchPlace.latitude,
       longitude: searchPlace.longitude,
-      source: 'search',
+      source: searchPlace.resultType === 'address' ? 'address' : 'search',
     });
   };
 
   return {
     nativeCenter,
     searchCenter,
+    mapFocusVersion,
     place,
     handleMapChange,
     handleSelectCenter,

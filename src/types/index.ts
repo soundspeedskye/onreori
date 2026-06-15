@@ -91,7 +91,41 @@ export type PlaceSelection = {
   roadAddress?: string;
   latitude: number;
   longitude: number;
-  source: 'center' | 'pin' | 'search';
+  source: 'center' | 'pin' | 'search' | 'address';
+};
+
+export type CafeRouteVisibility = 'private' | 'shared';
+
+export type CafeRouteStop = PlaceSelection & {
+  id: string;
+  order: number;
+  benefitNote?: string;
+  memo?: string;
+  createdAt: string;
+};
+
+export type CafeRouteLinkedRoom = {
+  roomId: string;
+  title: string;
+  status?: RoomStatus;
+  activeFromAt: string;
+  activeUntilAt: string;
+  closedAt?: string;
+  deletedAt?: string;
+  linkedAt: string;
+};
+
+export type CafeRoute = {
+  id: string;
+  ownerId?: string;
+  categoryId: string;
+  title: string;
+  subjectName?: string;
+  visibility: CafeRouteVisibility;
+  linkedRoom?: CafeRouteLinkedRoom;
+  stops: CafeRouteStop[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type EventUrlPreview = {
@@ -166,9 +200,16 @@ export type RootStackParamList = {
   CategoryDetail: { categoryId: string };
   Conditions: { templateId: string };
   Checklist: { checklistId: string };
+  CafeRoutes: {
+    categoryId: string;
+    routeId?: string;
+    selectedPlace?: PlaceSelection;
+  };
   Auth: { redirect?: AuthRedirect } | undefined;
   EventRooms: { categoryId: string; selectedPlace?: PlaceSelection };
-  MapPicker: { categoryId: string; returnTo: 'EventRooms' };
+  MapPicker:
+    | { categoryId: string; returnTo: 'EventRooms' }
+    | { categoryId: string; returnTo: 'CafeRoutes'; routeId?: string };
   RoomChat: { roomId: string; title: string; categoryId?: string };
   MyPage: undefined;
   ShareCard: { checklistId: string };
