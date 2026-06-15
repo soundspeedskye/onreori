@@ -1,10 +1,10 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import {colors, radii, spacing} from '../../theme/tokens';
-import {Button} from '../ui/Button';
-import {Card} from '../ui/Card';
-import {TextField} from '../ui/TextField';
+import { colors, radii, spacing } from '../../theme/tokens';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { TextField } from '../ui/TextField';
 
 type ChecklistAddItemFormProps = {
   name: string;
@@ -25,11 +25,15 @@ export function ChecklistAddItemForm({
     <Card style={styles.addCard}>
       <Text style={styles.sectionTitle}>아이템 추가</Text>
       <View style={styles.addFields}>
-        <TextField onChangeText={onNameChange} placeholder="item" value={name} />
+        <TextField
+          onChangeText={onNameChange}
+          placeholder="아이템"
+          value={name}
+        />
         <TextField
           multiline
           onChangeText={onDescriptionChange}
-          placeholder="description"
+          placeholder="설명"
           style={styles.descriptionInput}
           value={description}
         />

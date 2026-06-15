@@ -5,6 +5,7 @@ import {colors, radii, spacing} from '../../theme/tokens';
 import type {Checklist} from '../../types';
 import {Card} from '../ui/Card';
 import {Chip} from '../ui/Chip';
+import {PixelIcon, getPixelIconNameForEmoji} from '../ui/PixelIcon';
 
 type ShareChecklistPreviewProps = {
   checklist: Checklist;
@@ -22,12 +23,17 @@ export function ShareChecklistPreview({
   previewLimit = 5,
 }: ShareChecklistPreviewProps) {
   const previewItems = checklist.items.slice(0, previewLimit);
+  const checklistIconName = getPixelIconNameForEmoji(checklist.icon);
 
   return (
-    <View style={styles.previewWrap}>
+    <View collapsable={false} style={styles.previewWrap}>
       <Card style={styles.previewCard}>
         <View style={styles.previewHeader}>
-          <Text style={styles.previewIcon}>{checklist.icon}</Text>
+          {checklistIconName ? (
+            <PixelIcon name={checklistIconName} size={46} />
+          ) : (
+            <Text style={styles.previewIcon}>{checklist.icon}</Text>
+          )}
           <Text style={styles.previewTitle}>{checklist.title}</Text>
           <Text style={styles.previewMeta}>
             진행률 {checkedCount}/{totalCount}
@@ -46,9 +52,13 @@ export function ShareChecklistPreview({
 
         <Card style={styles.previewList}>
           {previewItems.map(item => (
-            <Text key={item.id} style={styles.previewItem}>
-              {item.checked ? '☑︎' : '☐'} {item.name}
-            </Text>
+            <View key={item.id} style={styles.previewItemRow}>
+              <PixelIcon
+                name={item.checked ? 'checkOn' : 'checkOff'}
+                size={20}
+              />
+              <Text style={styles.previewItem}>{item.name}</Text>
+            </View>
           ))}
         </Card>
       </Card>
@@ -99,8 +109,14 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.lg,
   },
+  previewItemRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
   previewItem: {
     color: colors.text,
+    flex: 1,
     fontSize: 15,
     lineHeight: 20,
   },

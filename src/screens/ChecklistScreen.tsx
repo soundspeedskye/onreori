@@ -18,6 +18,9 @@ import {useChecklistState} from './checklist/useChecklistState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checklist'>;
 
+/**
+ * 저장된 체크리스트를 불러와 항목 편집, 계정 동기화, 공유 카드 이동을 처리한다.
+ */
 export function ChecklistScreen({navigation, route}: Props) {
   const {user} = useAuth();
   const {

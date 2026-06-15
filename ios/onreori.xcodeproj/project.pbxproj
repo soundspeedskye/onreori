@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0C80B921A6F3F58F76C31292 /* libPods-onreori.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-onreori.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9A4BA294CB7A1DE3DE2DD393 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		C60AF89B5EBD49D005308023 /* libPods-onreori.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BE815F045BDD55EF21FA790 /* libPods-onreori.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,11 +21,11 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = onreori/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1B7A0C012CA4000000000001 /* KakaoMap.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = KakaoMap.Debug.xcconfig; sourceTree = "<group>"; };
 		1B7A0C022CA4000000000002 /* KakaoMap.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = KakaoMap.Release.xcconfig; sourceTree = "<group>"; };
-		3B4392A12AC88292D35C810B /* Pods-onreori.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-onreori.debug.xcconfig"; path = "Target Support Files/Pods-onreori/Pods-onreori.debug.xcconfig"; sourceTree = "<group>"; };
-		5709B34CF0A7D63546082F79 /* Pods-onreori.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-onreori.release.xcconfig"; path = "Target Support Files/Pods-onreori/Pods-onreori.release.xcconfig"; sourceTree = "<group>"; };
-		5DCACB8F33CDC322A6C60F78 /* libPods-onreori.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-onreori.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2403F45A6AEEED912320D0BA /* Pods-onreori.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-onreori.release.xcconfig"; path = "Target Support Files/Pods-onreori/Pods-onreori.release.xcconfig"; sourceTree = "<group>"; };
+		2BE815F045BDD55EF21FA790 /* libPods-onreori.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-onreori.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = onreori/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = onreori/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B51156ED087A4504ECA5D382 /* Pods-onreori.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-onreori.debug.xcconfig"; path = "Target Support Files/Pods-onreori/Pods-onreori.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -34,7 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C80B921A6F3F58F76C31292 /* libPods-onreori.a in Frameworks */,
+				C60AF89B5EBD49D005308023 /* libPods-onreori.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,7 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5DCACB8F33CDC322A6C60F78 /* libPods-onreori.a */,
+				2BE815F045BDD55EF21FA790 /* libPods-onreori.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -104,8 +104,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				3B4392A12AC88292D35C810B /* Pods-onreori.debug.xcconfig */,
-				5709B34CF0A7D63546082F79 /* Pods-onreori.release.xcconfig */,
+				B51156ED087A4504ECA5D382 /* Pods-onreori.debug.xcconfig */,
+				2403F45A6AEEED912320D0BA /* Pods-onreori.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -117,14 +117,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "onreori" */;
 			buildPhases = (
-				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				038D78E1C6790C4538C4E612 /* [CP] Check Pods Manifest.lock */,
 				1B7A0C042CA4000000000004 /* Validate Kakao Maps app key */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
-				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
+				FB3A58827E3427A3EF3BF8E0 /* [CP] Embed Pods Frameworks */,
+				8CC926F621C65D4A88782CFF /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -196,42 +196,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"\\\"$WITH_ENVIRONMENT\\\" \\\"$REACT_NATIVE_XCODE\\\"\"\n";
 		};
-		00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		1B7A0C042CA4000000000004 /* Validate Kakao Maps app key */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Validate Kakao Maps app key";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\nif [ -z \"${KAKAO_NATIVE_APP_KEY:-}\" ]; then\n  echo \"error: KAKAO_NATIVE_APP_KEY is required for Kakao Maps. Provide it as an xcodebuild build setting or in ios/Config/KakaoMap.local.xcconfig.\" >&2\n  exit 1\nfi\nif printf '%s' \"$KAKAO_NATIVE_APP_KEY\" | grep -q '[$][(]'; then\n  echo \"error: KAKAO_NATIVE_APP_KEY is unresolved. Provide it as an xcodebuild build setting or in ios/Config/KakaoMap.local.xcconfig.\" >&2\n  exit 1\nfi\n";
-		};
-		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
+		038D78E1C6790C4538C4E612 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,7 +218,21 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
+		1B7A0C042CA4000000000004 /* Validate Kakao Maps app key */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Validate Kakao Maps app key";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nif [ -z \"${KAKAO_NATIVE_APP_KEY:-}\" ]; then\n  echo \"error: KAKAO_NATIVE_APP_KEY is required for Kakao Maps. Provide it as an xcodebuild build setting or in ios/Config/KakaoMap.local.xcconfig.\" >&2\n  exit 1\nfi\nif printf '%s' \"$KAKAO_NATIVE_APP_KEY\" | grep -q '[$][(]'; then\n  echo \"error: KAKAO_NATIVE_APP_KEY is unresolved. Provide it as an xcodebuild build setting or in ios/Config/KakaoMap.local.xcconfig.\" >&2\n  exit 1\nfi\n";
+		};
+		8CC926F621C65D4A88782CFF /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -261,17 +240,30 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			outputPaths = (
-			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FB3A58827E3427A3EF3BF8E0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-onreori/Pods-onreori-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

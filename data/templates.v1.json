@@ -50,7 +50,7 @@
       "category": "EVENT_DAY",
       "icon": "🎤",
       "theme": "orchid_gold",
-      "description": "입장/관람/대기 상황을 기준으로 필수 + 의외템 포함 체크리스트",
+      "description": "입장/관람/대기 상황을 기준 체크리스트",
       "items": [
         {
           "id": "ticket_qr",
