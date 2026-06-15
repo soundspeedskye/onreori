@@ -1,5 +1,10 @@
 import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
+import {
+  getKoreanEventRoomAvailability,
+  isKoreanEventRoomDateActiveNow,
+} from './date';
+import {getRoomCreationActiveWindowMessage} from './eventRoomPolicy';
 
 export type RoomCreationConfig = {
   titleLabel: string;
@@ -56,8 +61,18 @@ export function validateRoomCreationDraft(
     return ALERT_MESSAGES.requiredInput;
   }
 
-  if (!draft.eventDate?.trim()) {
+  const eventDate = draft.eventDate?.trim();
+
+  if (!eventDate) {
     return ALERT_MESSAGES.requiredSelection;
+  }
+
+  if (!getKoreanEventRoomAvailability(eventDate)) {
+    return ALERT_MESSAGES.requiredSelection;
+  }
+
+  if (!isKoreanEventRoomDateActiveNow(eventDate)) {
+    return getRoomCreationActiveWindowMessage();
   }
 
   if (config.requiresPlace && !draft.location?.trim()) {

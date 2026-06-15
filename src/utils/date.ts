@@ -98,3 +98,16 @@ export function getKoreanEventRoomAvailability(eventDate: string):
     activeUntilAt,
   };
 }
+
+export function isKoreanEventRoomDateActiveNow(
+  eventDate: string,
+  nowIso = new Date().toISOString(),
+): boolean {
+  const availability = getKoreanEventRoomAvailability(eventDate);
+
+  if (!availability) {
+    return false;
+  }
+
+  return availability.activeFromAt <= nowIso && nowIso < availability.activeUntilAt;
+}

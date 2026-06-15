@@ -1,10 +1,15 @@
 import {ALERT_MESSAGES} from '../../constants/alertMessages';
 import type {AuthUser, ChatMessage, EventRoom} from '../../types';
-import {KOREAN_EVENT_TIME_ZONE} from '../../utils/date';
+import {
+  getKoreanEventRoomAvailability,
+  KOREAN_EVENT_TIME_ZONE,
+  isKoreanEventRoomDateActiveNow,
+} from '../../utils/date';
 import {
   getEventRoomAvailability,
   isEventRoomActiveAt,
 } from '../../utils/eventRoomVisibility';
+import {getRoomCreationActiveWindowMessage} from '../../utils/eventRoomPolicy';
 import {extractHashtags} from '../../utils/hashtags';
 import {createLocalId} from '../../utils/localId';
 import type {
@@ -24,6 +29,7 @@ import {
   writePreviewRooms,
 } from './previewStore';
 import {splitMyRooms} from './roomCollections';
+import {isTutorialRoomId} from './tutorial';
 
 async function appendPreviewMessage(
   roomId: string,
@@ -34,9 +40,13 @@ async function appendPreviewMessage(
 }
 
 async function assertPreviewRoomIsActive(roomId: string): Promise<void> {
+  if (isTutorialRoomId(roomId)) {
+    return;
+  }
+
   const room = await getPreviewRoom(roomId);
 
-  if (room && !isEventRoomActiveAt(room)) {
+  if (!room || !isEventRoomActiveAt(room)) {
     throw new Error(ALERT_MESSAGES.unavailable);
   }
 }
@@ -71,8 +81,18 @@ export async function createPreviewRoom(
   params: CreateRoomParams,
 ): Promise<EventRoom> {
   const now = new Date().toISOString();
+  const eventDate = params.eventDate.trim();
+
+  if (!getKoreanEventRoomAvailability(eventDate)) {
+    throw new Error(ALERT_MESSAGES.requiredSelection);
+  }
+
+  if (!isKoreanEventRoomDateActiveNow(eventDate, now)) {
+    throw new Error(getRoomCreationActiveWindowMessage());
+  }
+
   const availability = getEventRoomAvailability({
-    eventDate: params.eventDate.trim(),
+    eventDate,
     activeFromAt: undefined,
     activeUntilAt: undefined,
   });
@@ -80,7 +100,7 @@ export async function createPreviewRoom(
     id: createLocalId('room'),
     categoryId: params.categoryId,
     title: params.title.trim(),
-    eventDate: params.eventDate.trim() || now.slice(0, 10),
+    eventDate,
     location: params.location.trim() || '장소 미정',
     eventUrl: params.eventUrl,
     locationName: params.locationName,
@@ -126,6 +146,7 @@ export async function joinPreviewRoomWithCode(
 export async function listPreviewMessages(
   roomId: string,
 ): Promise<ChatMessage[]> {
+  await assertPreviewRoomIsActive(roomId);
   return readPreviewMessages(roomId);
 }
 

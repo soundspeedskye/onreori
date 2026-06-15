@@ -2,6 +2,11 @@ import {ALERT_MESSAGES} from '../../constants/alertMessages';
 import {supabase} from '../../config/supabase';
 import type {AuthUser, ChatMessage, EventRoom} from '../../types';
 import {KOREAN_EVENT_TIME_ZONE} from '../../utils/date';
+import {
+  getRoomCreationActiveWindowMessage,
+  isRoomCreationActiveWindowError,
+  isRoomCreationDateInputError,
+} from '../../utils/eventRoomPolicy';
 import {extractHashtags} from '../../utils/hashtags';
 import type {
   ChatMessageRow,
@@ -36,11 +41,14 @@ export async function listRemoteRoomsByCategory(
   categoryId: string,
 ): Promise<EventRoom[]> {
   const client = requireSupabase();
+  const nowIso = new Date().toISOString();
   const {data, error} = await client
     .from('event_rooms')
     .select(ROOM_SELECT)
     .eq('category_id', categoryId)
     .eq('status', 'active')
+    .lte('active_from_at', nowIso)
+    .gt('active_until_at', nowIso)
     .order('event_date', {ascending: true});
 
   if (error) {
@@ -91,7 +99,14 @@ export async function createRemoteRoom(
   });
 
   if (error || !data) {
-    throw new Error(error?.message ?? ALERT_MESSAGES.createFailed);
+    const message = error?.message;
+    throw new Error(
+      message && isRoomCreationDateInputError(message)
+        ? ALERT_MESSAGES.requiredSelection
+        : message && isRoomCreationActiveWindowError(message)
+        ? getRoomCreationActiveWindowMessage()
+        : message ?? ALERT_MESSAGES.createFailed,
+    );
   }
 
   return mapEventRoomRow(data);

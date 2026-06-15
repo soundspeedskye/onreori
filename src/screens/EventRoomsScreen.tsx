@@ -20,6 +20,9 @@ import {useRoomJoinAction} from './eventRooms/useRoomJoinAction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EventRooms'>;
 
+/**
+ * 카테고리별 이벤트 단톡방 목록, 방 생성 폼, 입장 코드 기반 참여 흐름을 조립한다.
+ */
 export function EventRoomsScreen({navigation, route}: Props) {
   const {user} = useAuth();
   const category = getEventCategoryById(route.params.categoryId);
