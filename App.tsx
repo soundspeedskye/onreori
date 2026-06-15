@@ -8,6 +8,7 @@ import {colors} from './src/theme/tokens';
 
 import { AuthProvider } from './src/auth/AuthContext';
 import { AuthScreen } from './src/screens/AuthScreen';
+import { CafeRoutesScreen } from './src/screens/CafeRoutesScreen';
 import { CategoryDetailScreen } from './src/screens/CategoryDetailScreen';
 import { CategoryHomeScreen } from './src/screens/CategoryHomeScreen';
 import { ChecklistScreen } from './src/screens/ChecklistScreen';
@@ -74,6 +75,11 @@ function App() {
                 name="Checklist"
                 component={ChecklistScreen}
                 options={{ title: '체크리스트' }}
+              />
+              <Stack.Screen
+                name="CafeRoutes"
+                component={CafeRoutesScreen}
+                options={{ title: '생일카페 루트' }}
               />
               <Stack.Screen
                 name="Auth"

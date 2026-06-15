@@ -7,11 +7,16 @@ import {colors, layout, radii, spacing} from '../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import {Card} from '../components/ui/Card';
 import {EmptyState} from '../components/ui/EmptyState';
+import {PixelIconForEmoji} from '../components/ui/PixelIcon';
+import {isCafeEventCategory} from '../constants/eventCategories';
 import { getEventCategoryById } from '../data/eventCategories';
 import type { RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CategoryDetail'>;
 
+/**
+ * 선택한 이벤트 카테고리에서 체크리스트, 카페 루트, 단톡방 기능으로 분기한다.
+ */
 export function CategoryDetailScreen({ navigation, route }: Props) {
   const category = getEventCategoryById(route.params.categoryId);
   const { user } = useAuth();
@@ -42,7 +47,11 @@ export function CategoryDetailScreen({ navigation, route }: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <View style={styles.content}>
         <Card style={styles.heroCard}>
-          <Text style={styles.icon}>{category.icon}</Text>
+          <PixelIconForEmoji
+            emoji={category.icon}
+            fallbackTextStyle={styles.icon}
+            size={54}
+          />
           <Text style={styles.title}>{category.title}</Text>
         </Card>
 
@@ -59,6 +68,19 @@ export function CategoryDetailScreen({ navigation, route }: Props) {
               준비물을 체크하고 이미지로 기기에 저장해요.
             </Text>
           </Card>
+
+          {isCafeEventCategory(category.id) ? (
+            <Card
+              onPress={() =>
+                navigation.navigate('CafeRoutes', {categoryId: category.id})
+              }
+              style={styles.actionCard}>
+              <Text style={styles.actionTitle}>생일카페 루트 만들기</Text>
+              <Text style={styles.actionDescription}>
+                특전 취향에 맞춰 카페를 고르고 내 동선을 저장해요.
+              </Text>
+            </Card>
+          ) : null}
 
           <Card onPress={openRooms} style={styles.actionCard}>
             <Text style={styles.actionTitle}>오늘의 이벤트 단톡방</Text>

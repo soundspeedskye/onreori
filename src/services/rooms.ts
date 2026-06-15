@@ -7,6 +7,7 @@ export type {
 export {
   createRoom,
   joinRoomWithCode,
+  listLinkableRoomsByCategory,
   listMessages,
   listMyRooms,
   listRoomsByCategory,

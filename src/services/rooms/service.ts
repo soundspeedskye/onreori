@@ -52,6 +52,16 @@ export async function listRoomsByCategory(
   }
 }
 
+export async function listLinkableRoomsByCategory(
+  categoryId: string,
+): Promise<EventRoom[]> {
+  if (!shouldUseRemoteRooms()) {
+    return listPreviewRoomsByCategory(categoryId);
+  }
+
+  return listRemoteRoomsByCategory(categoryId);
+}
+
 export async function listMyRooms(user: AuthUser): Promise<MyRooms> {
   if (!shouldUseRemoteRooms()) {
     return listPreviewMyRooms(user);
