@@ -36,9 +36,20 @@ function getLegacyPublicChatMediaPath(value: string): string | undefined {
     return undefined;
   }
 
-  const storagePath = value.slice(markerIndex + publicPathMarker.length);
+  const storagePathWithSuffix = value.slice(
+    markerIndex + publicPathMarker.length,
+  );
+  const suffixIndex = storagePathWithSuffix.search(/[?#]/);
+  const storagePath =
+    suffixIndex === -1
+      ? storagePathWithSuffix
+      : storagePathWithSuffix.slice(0, suffixIndex);
 
-  return storagePath ? decodeURIComponent(storagePath) : undefined;
+  try {
+    return storagePath ? decodeURIComponent(storagePath) : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function resolveChatMediaUrl(

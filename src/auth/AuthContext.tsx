@@ -29,6 +29,41 @@ const PREVIEW_USER_KEY = '@onreori/previewUser';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function isStoredAuthUser(value: unknown): value is AuthUser {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const candidate = value as Partial<Record<keyof AuthUser, unknown>>;
+
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.email === 'string' &&
+    typeof candidate.nickname === 'string'
+  );
+}
+
+async function readPreviewUser(): Promise<AuthUser | null> {
+  const storedUser = await AsyncStorage.getItem(PREVIEW_USER_KEY);
+
+  if (!storedUser) {
+    return null;
+  }
+
+  try {
+    const parsedUser = JSON.parse(storedUser);
+
+    if (isStoredAuthUser(parsedUser)) {
+      return parsedUser;
+    }
+  } catch {
+    // Drop malformed preview sessions so app startup can recover.
+  }
+
+  await AsyncStorage.removeItem(PREVIEW_USER_KEY);
+  return null;
+}
+
 function toAuthUser(
   id: string,
   email: string | undefined,
@@ -52,9 +87,9 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
 
     async function loadSession() {
       if (!isSupabaseConfigured || !supabase) {
-        const storedUser = await AsyncStorage.getItem(PREVIEW_USER_KEY);
+        const storedUser = await readPreviewUser();
         if (active && storedUser) {
-          setUser(JSON.parse(storedUser) as AuthUser);
+          setUser(storedUser);
         }
         if (active) {
           setLoading(false);

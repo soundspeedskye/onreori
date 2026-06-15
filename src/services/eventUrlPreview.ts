@@ -9,6 +9,28 @@ import {
   parseEventUrlPreviewHtml,
 } from '../utils/eventUrlPreviewParser';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function toOptionalString(value: unknown) {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined;
+}
+
+function toStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
+function toPreviewConfidence(value: unknown): EventUrlPreview['confidence'] {
+  return value === 'high' || value === 'medium' || value === 'low'
+    ? value
+    : 'low';
+}
+
 function hasPreviewInfo(preview: EventUrlPreview) {
   return Boolean(
     preview.title ||
@@ -33,6 +55,27 @@ function toAppEventUrlPreview(preview: ParsedEventUrlPreview): EventUrlPreview {
     dateCandidates: preview.dateCandidates,
     locationCandidates: preview.locationCandidates,
     confidence: preview.confidence,
+  };
+}
+
+function normalizeEventUrlPreview(
+  value: unknown,
+  fallbackUrl: string,
+): EventUrlPreview {
+  if (!isRecord(value)) {
+    return createLowConfidencePreview(fallbackUrl);
+  }
+
+  const title = toOptionalString(value.title);
+  const description = toOptionalString(value.description);
+
+  return {
+    url: toOptionalString(value.url) ?? fallbackUrl,
+    ...(title ? {title} : {}),
+    ...(description ? {description} : {}),
+    dateCandidates: toStringArray(value.dateCandidates),
+    locationCandidates: toStringArray(value.locationCandidates),
+    confidence: toPreviewConfidence(value.confidence),
   };
 }
 
@@ -86,7 +129,7 @@ export async function fetchEventUrlPreview(
     throw new Error(error.message);
   }
 
-  const preview = data as EventUrlPreview;
+  const preview = normalizeEventUrlPreview(data, trimmedUrl);
   if (shouldTryClientSideTicketPreview(trimmedUrl, preview)) {
     return fetchClientSideTicketPreview(trimmedUrl).catch(() => preview);
   }

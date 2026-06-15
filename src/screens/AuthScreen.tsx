@@ -13,6 +13,9 @@ import {useAuthRedirect} from './auth/useAuthRedirect';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Auth'>;
 
+/**
+ * 로그인과 회원가입을 처리하고 인증 후 요청된 목적 화면으로 리다이렉트한다.
+ */
 export function AuthScreen({navigation, route}: Props) {
   const {signIn, signUp, serverConfigured} = useAuth();
   const [mode, setMode] = useState<AuthFormMode>('signIn');
