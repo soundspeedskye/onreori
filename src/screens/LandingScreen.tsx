@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 import {colors, radii, spacing} from '../theme/tokens';
 
 import {Button} from '../components/ui/Button';
@@ -14,6 +15,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
  * 앱의 첫 진입 화면으로 핵심 사용 맥락을 보여주고 카테고리 홈으로 이동시킨다.
  */
 export function LandingScreen({ navigation }: Props) {
+  const {t} = useTranslation('categories');
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
@@ -35,15 +38,15 @@ export function LandingScreen({ navigation }: Props) {
 
         <View style={styles.copy}>
           <Text style={styles.eyebrow}>Fan day planner</Text>
-          <Text style={styles.title}>가볍고 확실하게</Text>
+          <Text style={styles.title}>{t('landing.title')}</Text>
           <Text style={styles.description}>
-            준비물을 챙기고, 현장 정보를 실시간으로 공유해보세요.
+            {t('landing.description')}
           </Text>
         </View>
 
         <Button
           onPress={() => navigation.replace('CategoryHome')}
-          title="시작하기"
+          title={t('landing.start')}
           style={styles.primaryButton}
           textStyle={styles.primaryButtonText}
         />

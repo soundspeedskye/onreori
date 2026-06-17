@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 import {
   CameraRoll,
   iosReadGalleryPermission,
@@ -26,7 +27,10 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { getChecklistById } from '../storage/checklists';
 import type { Checklist, RootStackParamList } from '../types';
 import { ALERT_MESSAGES, showAlert } from '../utils/appAlert';
-import { getSelectedConditionLabels } from '../utils/checklistPresentation';
+import {
+  getLocalizedChecklist,
+  getSelectedConditionLabels,
+} from '../utils/checklistTemplateTranslations';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ShareCard'>;
 type ExportAction = 'save' | 'share';
@@ -100,6 +104,8 @@ async function requestPhotoSavePermission() {
  * 체크리스트 공유 카드를 캡처해 사진첩 저장 또는 시스템 공유 시트로 내보낸다.
  */
 export function ShareCardScreen({ route }: Props) {
+  const {t} = useTranslation('shareCard');
+  const {t: tTemplates} = useTranslation('checklistTemplates');
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
   const [exportAction, setExportAction] = useState<ExportAction | null>(null);
@@ -116,8 +122,14 @@ export function ShareCardScreen({ route }: Props) {
 
   const selectedConditionLabels = useMemo(
     () =>
-      checklist ? getSelectedConditionLabels(checklist.selectedConditions) : [],
-    [checklist],
+      checklist
+        ? getSelectedConditionLabels(checklist.selectedConditions, tTemplates)
+        : [],
+    [checklist, tTemplates],
+  );
+  const localizedChecklist = useMemo(
+    () => (checklist ? getLocalizedChecklist(checklist, tTemplates) : null),
+    [checklist, tTemplates],
   );
 
   const checkedCount =
@@ -132,7 +144,7 @@ export function ShareCardScreen({ route }: Props) {
 
   const captureShareCard = async () => {
     if (!shareCardRef.current) {
-      throw new Error('공유 카드를 준비하지 못했습니다.');
+      throw new Error(t('prepareFailed'));
     }
 
     const imageUri = await shareCardRef.current.capture();
@@ -145,11 +157,13 @@ export function ShareCardScreen({ route }: Props) {
     }
 
     return [
-      `${checklist.icon} ${checklist.title}`,
-      `진행률: ${checkedCount}/${totalCount}`,
+      `${checklist.icon} ${localizedChecklist?.title ?? checklist.title}`,
+      t('messageProgress', {checkedCount, totalCount}),
       selectedConditionLabels.length > 0
-        ? `상황: ${selectedConditionLabels.join(', ')}`
-        : '상황: 기본 템플릿',
+        ? t('messageConditions', {
+            conditions: selectedConditionLabels.join(', '),
+          })
+        : t('messageDefaultConditions'),
     ].join('\n');
   };
 
@@ -166,8 +180,8 @@ export function ShareCardScreen({ route }: Props) {
 
       if (!hasPermission) {
         showAlert({
-          title: '사진 접근 권한이 필요합니다.',
-          message: '공유 카드를 사진첩에 저장하려면 권한을 허용해 주세요.',
+          title: t('photoPermissionTitle'),
+          message: t('photoPermissionMessage'),
         });
         return;
       }
@@ -175,7 +189,7 @@ export function ShareCardScreen({ route }: Props) {
       const imageUri = await captureShareCard();
       await CameraRoll.saveAsset(imageUri, { type: 'photo' });
       setExportMenuVisible(false);
-      showAlert({ title: '사진첩에 저장했습니다.' });
+      showAlert({ title: t('savedToLibrary') });
     } catch {
       showAlert({ title: ALERT_MESSAGES.saveFailed });
     } finally {
@@ -198,7 +212,7 @@ export function ShareCardScreen({ route }: Props) {
       await Share.open({
         failOnCancel: false,
         message: getShareMessage(),
-        title: checklist.title,
+        title: localizedChecklist?.title ?? checklist.title,
         type: IMAGE_MIME_TYPE,
         url: imageUri,
       });
@@ -215,7 +229,7 @@ export function ShareCardScreen({ route }: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="공유 카드를 불러오지 못했습니다."
+          title={t('loadFailed')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -236,7 +250,7 @@ export function ShareCardScreen({ route }: Props) {
           style={styles.captureTarget}
         >
           <ShareChecklistPreview
-            checklist={checklist}
+            checklist={localizedChecklist ?? checklist}
             checkedCount={checkedCount}
             selectedConditionLabels={selectedConditionLabels}
             totalCount={totalCount}
@@ -247,7 +261,7 @@ export function ShareCardScreen({ route }: Props) {
       <BottomActionBar>
         <Button
           onPress={() => setExportMenuVisible(true)}
-          title="내보내기"
+          title={t('export')}
           variant="dark"
         />
       </BottomActionBar>
@@ -268,14 +282,14 @@ export function ShareCardScreen({ route }: Props) {
                 disabled={Boolean(exportAction)}
                 loading={exportAction === 'save'}
                 onPress={handleSaveImage}
-                title="사진첩에 저장"
+                title={t('saveToLibrary')}
                 variant="secondary"
               />
               <Button
                 disabled={Boolean(exportAction)}
                 loading={exportAction === 'share'}
                 onPress={handleShareImage}
-                title="공유"
+                title={t('share')}
                 variant="dark"
               />
             </View>

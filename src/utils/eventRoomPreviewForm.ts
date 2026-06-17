@@ -1,4 +1,5 @@
 import {ALERT_MESSAGES} from '../constants/alertMessages';
+import {i18n} from '../i18n';
 
 export type AppliedPreviewValues = {
   eventDate?: string;
@@ -9,9 +10,9 @@ export type AppliedPreviewValues = {
 type PreviewField = keyof AppliedPreviewValues;
 
 const EVENT_URL_PREVIEW_FIELD_LABELS: Record<PreviewField, string> = {
-  title: '제목',
-  eventDate: '날짜',
-  location: '장소',
+  title: 'title',
+  eventDate: 'eventDate',
+  location: 'location',
 };
 
 const EVENT_URL_PREVIEW_FIELDS: PreviewField[] = [
@@ -41,24 +42,27 @@ export function getEventUrlPreviewLoadAlert(
   if (missingFields.length === EVENT_URL_PREVIEW_FIELDS.length) {
     return {
       title: ALERT_MESSAGES.loadFailed,
-      message:
-        '자동으로 불러올 수 있는 정보가 없습니다. 제목, 날짜, 장소를 직접 입력해 주세요.',
+      message: i18n.t('preview.noAutoInfo', {ns: 'rooms'}),
     };
   }
 
   if (missingFields.length > 0) {
     const missingLabels = missingFields
       .map(field => EVENT_URL_PREVIEW_FIELD_LABELS[field])
+      .map(labelKey => i18n.t(`preview.fields.${labelKey}`, {ns: 'rooms'}))
       .join(', ');
 
     return {
       title: ALERT_MESSAGES.partialLoad,
-      message: `${missingLabels}는 직접 입력해 주세요.`,
+      message: i18n.t('preview.missingFields', {
+        fields: missingLabels,
+        ns: 'rooms',
+      }),
     };
   }
 
   return {
     title: ALERT_MESSAGES.checkInput,
-    message: '불러온 정보가 정확한지 확인해 주세요. 필요한 경우 수정할 수 있습니다.',
+    message: i18n.t('preview.confirmLoadedInfo', {ns: 'rooms'}),
   };
 }

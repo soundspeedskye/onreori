@@ -46,7 +46,7 @@
   "templates": [
     {
       "id": "concert_basic",
-      "title": "콘서트/팬콘 기본 체크리스트",
+      "title": "콘서트/팬콘 체크리스트",
       "category": "EVENT_DAY",
       "icon": "🎤",
       "theme": "orchid_gold",
@@ -189,7 +189,7 @@
     },
     {
       "id": "popup_store_basic",
-      "title": "팝업/전시 기본 체크리스트",
+      "title": "팝업/전시 체크리스트",
       "category": "POPUP",
       "icon": "🛍️",
       "theme": "orchid_gold",
@@ -297,7 +297,7 @@
     },
     {
       "id": "birthday_cafe_basic",
-      "title": "생카/카페 이벤트 기본 체크리스트",
+      "title": "생카/카페 이벤트 체크리스트",
       "category": "CAFE_EVENT",
       "icon": "☕",
       "theme": "orchid_gold",

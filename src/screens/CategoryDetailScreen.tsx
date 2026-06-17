@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 import {colors, layout, radii, spacing} from '../theme/tokens';
 
 import { useAuth } from '../auth/AuthContext';
@@ -18,6 +19,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'CategoryDetail'>;
  * 선택한 이벤트 카테고리에서 체크리스트, 카페 루트, 단톡방 기능으로 분기한다.
  */
 export function CategoryDetailScreen({ navigation, route }: Props) {
+  const {t} = useTranslation('categories');
+  const {t: tRooms} = useTranslation('rooms');
   const category = getEventCategoryById(route.params.categoryId);
   const { user } = useAuth();
 
@@ -25,7 +28,7 @@ export function CategoryDetailScreen({ navigation, route }: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="카테고리를 찾지 못했습니다."
+          title={tRooms('categoryNotFound')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -63,9 +66,11 @@ export function CategoryDetailScreen({ navigation, route }: Props) {
               })
             }
             style={styles.actionCard}>
-            <Text style={styles.actionTitle}>체크리스트 만들기</Text>
+            <Text style={styles.actionTitle}>
+              {t('actions.checklistTitle')}
+            </Text>
             <Text style={styles.actionDescription}>
-              준비물을 체크하고 이미지로 기기에 저장해요.
+              {t('actions.checklistDescription')}
             </Text>
           </Card>
 
@@ -75,17 +80,19 @@ export function CategoryDetailScreen({ navigation, route }: Props) {
                 navigation.navigate('CafeRoutes', {categoryId: category.id})
               }
               style={styles.actionCard}>
-              <Text style={styles.actionTitle}>생일카페 루트 만들기</Text>
+              <Text style={styles.actionTitle}>
+                {t('actions.cafeRoutesTitle')}
+              </Text>
               <Text style={styles.actionDescription}>
-                특전 취향에 맞춰 카페를 고르고 내 동선을 저장해요.
+                {t('actions.cafeRoutesDescription')}
               </Text>
             </Card>
           ) : null}
 
           <Card onPress={openRooms} style={styles.actionCard}>
-            <Text style={styles.actionTitle}>오늘의 이벤트 단톡방</Text>
+            <Text style={styles.actionTitle}>{t('actions.roomsTitle')}</Text>
             <Text style={styles.actionDescription}>
-              현장에 있는 팬들과 정보를 실시간으로 공유해요.
+              {t('actions.roomsDescription')}
             </Text>
           </Card>
         </View>

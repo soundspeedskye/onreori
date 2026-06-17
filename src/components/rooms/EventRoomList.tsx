@@ -1,5 +1,6 @@
 import React from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, layout, radii, spacing} from '../../theme/tokens';
 import type {EventRoom} from '../../types';
@@ -26,6 +27,8 @@ export function EventRoomList({
   onSelectRoom,
   onJoinRoom,
 }: EventRoomListProps) {
+  const {t} = useTranslation('rooms');
+
   if (loading) {
     return <ActivityIndicator color={colors.brand} style={styles.loader} />;
   }
@@ -33,8 +36,8 @@ export function EventRoomList({
   if (rooms.length === 0) {
     return (
       <EmptyState
-        title="아직 만들어진 방이 없습니다."
-        description="첫 방을 만들어 현장 정보를 모아보세요."
+        title={t('emptyTitle')}
+        description={t('emptyDescription')}
         style={styles.emptyBox}
       />
     );

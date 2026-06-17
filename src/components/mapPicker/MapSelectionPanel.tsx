@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, spacing} from '../../theme/tokens';
 import type {PlaceSelection} from '../../types';
@@ -23,18 +24,19 @@ export function MapSelectionPanel({
   onDisplayNameChange,
   onConfirm,
 }: MapSelectionPanelProps) {
+  const {t} = useTranslation('map');
   const canEditDisplayName =
     place?.source === 'address' || place?.source === 'center';
   const placeMeta = place
     ? place.roadAddress ??
       place.address ??
       `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`
-    : '지도 중심 위치를 등록하세요.';
+    : t('registerCenterMeta');
 
   return (
     <View style={styles.panel}>
       <Text numberOfLines={2} style={styles.title}>
-        {displayName.trim() || place?.name || '장소를 선택하세요'}
+        {displayName.trim() || place?.name || t('selectPlaceTitle')}
       </Text>
       <Text numberOfLines={1} style={styles.meta}>
         {placeMeta}
@@ -45,8 +47,8 @@ export function MapSelectionPanel({
           maxLength={40}
           placeholder={
             place.source === 'address'
-              ? '카페명을 직접 입력하세요'
-              : '장소명을 직접 입력하세요'
+              ? t('cafeNamePlaceholder')
+              : t('placeNamePlaceholder')
           }
           style={styles.nameInput}
           value={displayName}
@@ -55,14 +57,14 @@ export function MapSelectionPanel({
       ) : null}
       <Button
         onPress={onSelectCenter}
-        title="지도 중심 등록"
+        title={t('registerCenter')}
         variant="secondary"
       />
       <Button
         disabled={!place || confirming}
         loading={confirming}
         onPress={onConfirm}
-        title="장소 등록"
+        title={t('registerPlace')}
         variant="dark"
       />
     </View>

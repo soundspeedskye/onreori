@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {Checklist} from '../../types';
@@ -22,6 +23,7 @@ export function ShareChecklistPreview({
   totalCount,
   previewLimit = 5,
 }: ShareChecklistPreviewProps) {
+  const {t} = useTranslation('checklist');
   const previewItems = checklist.items.slice(0, previewLimit);
   const checklistIconName = getPixelIconNameForEmoji(checklist.icon);
 
@@ -36,7 +38,7 @@ export function ShareChecklistPreview({
           )}
           <Text style={styles.previewTitle}>{checklist.title}</Text>
           <Text style={styles.previewMeta}>
-            진행률 {checkedCount}/{totalCount}
+            {t('progress', {checkedCount, totalCount})}
           </Text>
         </View>
 
@@ -46,7 +48,7 @@ export function ShareChecklistPreview({
               <Chip key={label} label={label} />
             ))
           ) : (
-            <Chip label="기본 템플릿" />
+            <Chip label={t('defaultTemplate')} />
           )}
         </View>
 

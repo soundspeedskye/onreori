@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, radii, spacing} from '../../theme/tokens';
 
@@ -10,20 +11,25 @@ type MyPageTabsProps = {
   onChangeTab: (tab: MyPageTab) => void;
 };
 
-const tabs: Array<{id: MyPageTab; label: string; accessibilityLabel: string}> = [
-  {
-    id: 'checklists',
-    label: '내 체크리스트',
-    accessibilityLabel: '내 체크리스트 탭',
-  },
-  {
-    id: 'rooms',
-    label: '내 단톡방',
-    accessibilityLabel: '내 단톡방 탭',
-  },
-];
-
 export function MyPageTabs({activeTab, onChangeTab}: MyPageTabsProps) {
+  const {t} = useTranslation('myPage');
+  const tabs: Array<{
+    id: MyPageTab;
+    label: string;
+    accessibilityLabel: string;
+  }> = [
+    {
+      id: 'checklists',
+      label: t('checklistsTab'),
+      accessibilityLabel: t('checklistsTabAccessibility'),
+    },
+    {
+      id: 'rooms',
+      label: t('roomsTab'),
+      accessibilityLabel: t('roomsTabAccessibility'),
+    },
+  ];
+
   return (
     <View style={styles.tabList}>
       {tabs.map(tab => (

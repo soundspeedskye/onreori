@@ -1,4 +1,4 @@
-import type {AuthUser, EventRoom} from '../../types';
+import type {AuthUser, EventRoom, SupportedLanguageCode} from '../../types';
 
 export type ChatMessageRow = {
   id: unknown;
@@ -25,6 +25,8 @@ export type EventRoomRow = {
   latitude?: unknown;
   longitude?: unknown;
   subject_name?: unknown;
+  primary_language?: unknown;
+  language_codes?: unknown;
   status?: unknown;
   event_timezone?: unknown;
   active_from_at?: unknown;
@@ -64,6 +66,8 @@ export type CreateRoomParams = {
   latitude?: number;
   longitude?: number;
   subjectName?: string;
+  primaryLanguage?: SupportedLanguageCode;
+  languageCodes?: SupportedLanguageCode[];
   user: AuthUser;
 };
 

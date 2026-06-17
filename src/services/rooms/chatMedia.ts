@@ -1,3 +1,4 @@
+import {ALERT_MESSAGES} from '../../constants/alertMessages';
 import {isSupabaseConfigured, supabase} from '../../config/supabase';
 
 const CHAT_MEDIA_BUCKET = 'chat-media';
@@ -89,7 +90,7 @@ export async function uploadChatImage(params: {
   now: number;
 }): Promise<string> {
   if (!supabase) {
-    throw new Error('Supabase 설정이 필요합니다.');
+    throw new Error(ALERT_MESSAGES.supabaseRequired);
   }
 
   const response = await fetch(params.imageUri);

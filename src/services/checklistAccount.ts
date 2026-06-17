@@ -165,7 +165,7 @@ export async function restoreChecklistFromAccount(
   user: AuthUser,
 ): Promise<Checklist> {
   if (!isSupabaseConfigured || !supabase) {
-    throw new Error('Supabase 설정이 필요합니다.');
+    throw new Error(ALERT_MESSAGES.supabaseRequired);
   }
 
   const {data: checklistRow, error: checklistError} = await supabase

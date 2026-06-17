@@ -9,6 +9,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import type {KakaoMapChangeEvent} from '../../screens/mapPicker/useMapCenterSelection';
 import {colors, radii} from '../../theme/tokens';
@@ -89,6 +90,7 @@ function getRouteMapSignature(stops: CafeRouteStop[]) {
 }
 
 export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
+  const {t} = useTranslation('map');
   const [layoutWidth, setLayoutWidth] = useState<number | null>(null);
   const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -216,7 +218,7 @@ export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
       {mapError ? (
         <View pointerEvents="none" style={styles.mapUnavailable}>
           <Text style={styles.mapUnavailableTitle}>
-            Kakao 지도를 불러오지 못했습니다
+            {t('mapLoadFailed')}
           </Text>
           <Text style={styles.mapUnavailableText}>{mapError}</Text>
         </View>

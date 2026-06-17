@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, radii, spacing} from '../../theme/tokens';
 import {Button} from '../ui/Button';
@@ -20,6 +21,7 @@ export function ChatComposer({
   onSendImage,
   onSendText,
 }: ChatComposerProps) {
+  const {t} = useTranslation('rooms');
   const isSendDisabled = sending || body.trim().length === 0;
 
   return (
@@ -29,12 +31,12 @@ export function ChatComposer({
         onPress={onSendImage}
         style={styles.photoButton}
         textStyle={styles.smallButtonText}
-        title="사진"
+        title={t('photo')}
         variant="dark"
       />
       <TextField
         onChangeText={onBodyChange}
-        placeholder="현장 정보를 공유해보세요"
+        placeholder={t('composerPlaceholder')}
         style={styles.input}
         value={body}
       />
@@ -43,7 +45,7 @@ export function ChatComposer({
         onPress={onSendText}
         style={styles.sendButton}
         textStyle={styles.smallButtonText}
-        title={sending ? '...' : '전송'}
+        title={sending ? '...' : t('send')}
       />
     </View>
   );

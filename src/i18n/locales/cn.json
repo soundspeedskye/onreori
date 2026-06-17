@@ -1,0 +1,586 @@
+{
+  "common": {
+    "actions": {
+      "done": "完成",
+      "login": "登录",
+      "signOut": "退出登录"
+    },
+    "states": {
+      "loading": "加载中..."
+    },
+    "alerts": {
+      "failed": "失败。",
+      "createFailed": "创建失败。",
+      "loadFailed": "无法加载。",
+      "partialLoad": "只加载了部分信息。",
+      "saveFailed": "保存失败。",
+      "syncFailed": "同步失败。",
+      "sendFailed": "发送失败。",
+      "notFound": "未找到。",
+      "openFailed": "无法打开。",
+      "requiredInput": "请输入信息。",
+      "requiredSelection": "请选择项目。",
+      "checkInput": "请检查输入的信息。",
+      "unavailable": "当前无法使用。",
+      "retry": "请重试。",
+      "supabaseRequired": "需要 Supabase 配置。"
+    }
+  },
+  "navigation": {
+    "appName": "onreori",
+    "category": "分类",
+    "conditions": "选择场景",
+    "checklist": "清单",
+    "cafeRoutes": "生日咖啡路线",
+    "auth": "登录",
+    "eventRooms": "活动聊天室",
+    "mapPicker": "选择地点",
+    "roomChat": "聊天室",
+    "myPage": "我的页面",
+    "shareCard": "分享卡片"
+  },
+  "language": {
+    "title": "应用语言",
+    "description": "选择应用中使用的语言。",
+    "selectorLabel": "选择应用语言",
+    "conversationLanguages": "对话语言",
+    "allLanguages": "全部"
+  },
+  "categories": {
+    "homeTitle": "这是什么类型的活动？",
+    "homeDescription": "和现场的粉丝实时交流。",
+    "eventDay": {
+      "title": "演唱会/Fancon",
+      "description": "一次整理入场、排队和观演准备。",
+      "roomLabel": "场馆实时信息共享"
+    },
+    "popup": {
+      "title": "快闪/展览",
+      "description": "一次整理预约、排队和周边购买。",
+      "roomLabel": "队伍/库存状态共享"
+    },
+    "cafeEvent": {
+      "title": "生日咖啡活动",
+      "description": "一次整理咖啡路线、特典和交换准备。",
+      "roomLabel": "特典/路线状态共享"
+    },
+    "actions": {
+      "checklistTitle": "创建清单",
+      "checklistDescription": "勾选准备物品并保存为图片到设备。",
+      "cafeRoutesTitle": "创建生日咖啡路线",
+      "cafeRoutesDescription": "按特典偏好选择咖啡店并保存路线。",
+      "roomsTitle": "今日活动聊天室",
+      "roomsDescription": "和现场的粉丝实时共享信息。"
+    },
+    "landing": {
+      "title": "轻松且可靠",
+      "description": "准备物品，并实时共享现场信息。",
+      "start": "开始"
+    }
+  },
+  "conditions": {
+    "templateNotFound": "未找到模板。",
+    "sectionTitle": "选择场景",
+    "sectionDescription": "请选择活动当天的预计情况。",
+    "createChecklist": "创建清单"
+  },
+  "checklist": {
+    "loadFailed": "无法加载清单。",
+    "completedMeta": "{{checkedCount}}/{{totalCount}} 完成",
+    "addItemTitle": "添加项目",
+    "itemPlaceholder": "项目",
+    "descriptionPlaceholder": "说明",
+    "addItem": "添加",
+    "savingToAccount": "保存中...",
+    "saveToAccount": "保存到我的账户",
+    "syncing": "同步中...",
+    "retrySync": "重新同步",
+    "shareCard": "分享卡片",
+    "noConditions": "未选择附加条件",
+    "progress": "进度 {{checkedCount}}/{{totalCount}}",
+    "defaultTemplate": "默认模板",
+    "essential": "必需",
+    "custom": "手动添加",
+    "checkAccessibility": "勾选{{itemName}}",
+    "deleteAccessibilityHint": "删除此项目。",
+    "deleteAccessibility": "删除{{itemName}}",
+    "localSavedRetrySync": "本地更改已保存。请重新同步。",
+    "saved": "已保存。",
+    "customSection": "附加项目",
+    "customTip": "这是手动添加的项目。",
+    "saveStates": {
+      "draft": "临时保存",
+      "localOnly": "临时保存",
+      "deviceSaved": "已保存到设备",
+      "synced": "已保存到账户",
+      "syncFailed": "需要同步到账户"
+    }
+  },
+  "auth": {
+    "signInTitle": "登录",
+    "signUpTitle": "注册",
+    "description": "只有登录用户可以进入活动聊天室并保存到我的账户。",
+    "previewNotice": "Supabase 尚未配置，当前使用本地预览登录。",
+    "nicknamePlaceholder": "昵称",
+    "emailPlaceholder": "邮箱",
+    "passwordPlaceholder": "密码",
+    "signInAction": "登录",
+    "signUpAction": "注册并继续",
+    "switchToSignUp": "没有账户？注册",
+    "switchToSignIn": "已有账户？登录",
+    "confirmEmailBeforeLogin": "请完成确认邮件后再登录。"
+  },
+  "rooms": {
+    "createTitle": "创建房间",
+    "categoryRoomTitle": "{{categoryTitle}}聊天室",
+    "categoryNotFound": "未找到分类。",
+    "todayRooms": "今日聊天室",
+    "tutorialFallbackNotice": "暂时无法加载聊天室列表，先为你显示教程房间。",
+    "titleLabel": "房间标题",
+    "titlePlaceholder": "房间标题",
+    "artistTitleLabel": "艺人/成员名",
+    "artistTitlePlaceholder": "例：Minji",
+    "popupTitlePlaceholder": "例：圣水快闪库存房",
+    "eventDayTitlePlaceholder": "例：KSPO 第2天等候房",
+    "cafeRoomTitle": "{{title}}生日咖啡信息房",
+    "createdTitle": "已创建。",
+    "createdInactiveNotice": "此聊天室会在活动前{{beforeCount}}天到活动后{{afterCount}}天显示在今日聊天室中。",
+    "datePlaceholder": "选择日期",
+    "placePlaceholder": "地点",
+    "unknownPlace": "地点未定",
+    "choosePlaceOnMap": "在地图上选择地点",
+    "selectedPlaceFallback": "已选择的地点",
+    "eventUrlPlaceholder": "官方公告、预订或指南链接",
+    "eventUrlHttpsOnly": "只能使用 https:// 地址。",
+    "fetchEventUrlPreview": "从链接获取信息",
+    "fetchingEventUrlPreview": "获取中...",
+    "entryCodePlaceholder": "入场码",
+    "createRoom": "创建聊天室",
+    "creatingRoom": "创建中...",
+    "emptyTitle": "还没有创建房间。",
+    "emptyDescription": "创建第一个房间来收集现场信息。",
+    "memberCount": "{{count}}人参与",
+    "startTutorial": "开始教程",
+    "join": "进入",
+    "enterEntryCode": "输入入场码",
+    "tutorialRoomDescription": "今日小鸭会介绍聊天室的使用方法。",
+    "chatRoomDescription": "你在现场吗？请分享实时信息。",
+    "tutorial": {
+      "botNickname": "今日小鸭",
+      "roomTitle": "教程聊天室",
+      "eventDate": "始终开放",
+      "location": "Onreori 使用方法",
+      "welcomeBodies": [
+        "你好！我是今日小鸭。",
+        "这里是可以自由分享现场情况的聊天室。"
+      ],
+      "replyBodies": [
+        "请用友善的话语交流。",
+        "现场信息请只分享已经确认的内容。",
+        "越是紧急，越建议留下简短准确的信息。",
+        "上传照片或位置前，请确认没有露出他人的个人信息。",
+        "有问题可以轻松提问，知道的信息也请温和回答。"
+      ]
+    },
+    "emptyMessages": "还没有消息。",
+    "botTyping": "今日小鸭正在输入...",
+    "photo": "照片",
+    "composerPlaceholder": "分享现场信息",
+    "send": "发送",
+    "hashtagFilterPlaceholder": "搜索咖啡店名或#标签",
+    "clearFilter": "清除",
+    "preview": {
+      "fields": {
+        "title": "标题",
+        "eventDate": "日期",
+        "location": "地点"
+      },
+      "noAutoInfo": "没有可自动加载的信息。请手动输入标题、日期和地点。",
+      "missingFields": "请手动输入{{fields}}。",
+      "confirmLoadedInfo": "请确认加载的信息是否准确。需要时可以修改。"
+    },
+    "activeWindow": "聊天室只能在活动前{{beforeCount}}天到活动后{{afterCount}}天创建。"
+  },
+  "map": {
+    "registerCenterMeta": "请登记地图中心位置。",
+    "selectPlaceTitle": "请选择地点",
+    "cafeNamePlaceholder": "请手动输入咖啡店名",
+    "placeNamePlaceholder": "请手动输入地点名",
+    "registerCenter": "登记地图中心",
+    "registerPlace": "登记地点",
+    "addressLocation": "地址位置",
+    "searchPlaceholder": "搜索地点或地址",
+    "searching": "搜索中",
+    "addressBadge": "地址",
+    "selectedPlaceName": "已选择的地点",
+    "mapLoadFailed": "无法加载 Kakao 地图",
+    "searchErrors": {
+      "default": "无法搜索地点。",
+      "loginRequired": "地点搜索需要登录。",
+      "missingKakaoKey": "Supabase 中未设置 Kakao REST API 密钥。",
+      "functionNotDeployed": "地点搜索服务器函数尚未部署。",
+      "rateLimited": "地点搜索请求过多。请稍后重试。",
+      "serverConfig": "请检查地点搜索服务器设置。",
+      "kakaoRequestFailed": "Kakao 地点搜索请求失败。",
+      "connectionFailed": "无法连接到地点搜索服务器。"
+    }
+  },
+  "cafeRoutes": {
+    "defaultTitle": "新生日咖啡路线",
+    "categoryRouteTitle": "{{categoryTitle}}路线",
+    "unavailableCategory": "此功能仅可用于生日咖啡分类。",
+    "title": "生日咖啡路线",
+    "description": "按特典偏好选择咖啡店并保存路线。",
+    "myRoutes": "我的路线",
+    "shared": "可分享",
+    "private": "仅自己",
+    "roomLink": "聊天室关联",
+    "loadingRoutes": "正在加载路线。",
+    "emptyTitle": "还没有创建路线。",
+    "emptyDescription": "按生日咖啡特典偏好创建第一条访问路线。",
+    "createFirstRoute": "创建第一条路线",
+    "selectedRoute": "已选择的路线",
+    "routeNamePlaceholder": "路线名称",
+    "addCafeTitle": "请添加咖啡店",
+    "addCafeDescription": "已选择的地点会以标记显示在实际地图上。",
+    "noCafes": "还没有添加咖啡店。",
+    "cafeCountStatus": "{{count}}家咖啡店 · {{status}}",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "delete": "删除",
+    "addCafe": "添加咖啡店",
+    "saving": "保存中",
+    "saved": "已保存",
+    "optional": "可选",
+    "roomLinkDescription": "只有可分享路线可以关联到生日咖啡聊天室查看。",
+    "linkedInRoom": "在此房间中{{status}}",
+    "unlink": "解除",
+    "loadingRooms": "正在加载可关联的聊天室。",
+    "noLinkableRooms": "当前没有可关联的生日咖啡聊天室。",
+    "memberCountWithDate": "{{count}}人 · {{eventDate}}",
+    "linked": "已关联",
+    "link": "关联",
+    "policyTitle": "政策标准",
+    "policyText": "路线在个人分类中创建，只有可分享路线可以关联到聊天室。聊天室结束后，房间内的分享记录不会再显示，保存的路线副本会保留在我的账户路线中。",
+    "roomStatusCheckFailed": "聊天室状态检查失败",
+    "statuses": {
+      "notLinked": "未关联",
+      "expired": "聊天室已结束",
+      "alwaysActive": "始终关联",
+      "upcoming": "开放前 D-{{count}}",
+      "endingToday": "今日结束",
+      "active": "已关联 D-{{count}}"
+    }
+  },
+  "shareCard": {
+    "prepareFailed": "无法准备分享卡片。",
+    "messageProgress": "进度：{{checkedCount}}/{{totalCount}}",
+    "messageConditions": "场景：{{conditions}}",
+    "messageDefaultConditions": "场景：默认模板",
+    "photoPermissionTitle": "需要照片访问权限。",
+    "photoPermissionMessage": "若要将分享卡片保存到相册，请允许权限。",
+    "savedToLibrary": "已保存到相册。",
+    "loadFailed": "无法加载分享卡片。",
+    "export": "导出",
+    "saveToLibrary": "保存到相册",
+    "share": "分享"
+  },
+  "myPage": {
+    "title": "我的页面",
+    "guestDescription": "登录后可以查看保存的清单和参与的聊天室。",
+    "checklistsTab": "我的清单",
+    "checklistsTabAccessibility": "我的清单标签页",
+    "roomsTab": "我的聊天室",
+    "roomsTabAccessibility": "我的聊天室标签页",
+    "checklistsLoading": "正在加载保存的清单。",
+    "checklistsEmpty": "还没有保存的清单。",
+    "checklistSynced": "已保存到账户",
+    "roomsLoading": "正在加载聊天室记录。",
+    "roomsEmpty": "还没有聊天室记录。",
+    "createdRooms": "我创建的聊天室",
+    "joinedRooms": "我参与的聊天室",
+    "openRoomAccessibility": "打开{{title}}聊天室",
+    "signOut": "退出登录"
+  },
+  "checklistTemplates": {
+    "conditions": {
+      "OUTDOOR_WAITING": {
+        "label": "户外等待",
+        "description": "可能需要在户外排队，请准备防风、防晒或防寒用品。"
+      },
+      "LONG_WAIT": {
+        "label": "长时间等待",
+        "description": "预计等待60分钟以上，请准备体力、电量、水和零食。"
+      },
+      "STANDING": {
+        "label": "站席",
+        "description": "入场或观演可能需要久站，建议轻装并穿舒适鞋子。"
+      },
+      "RAIN": {
+        "label": "雨/雪预报",
+        "description": "建议准备雨伞、雨衣和防水用品。"
+      },
+      "SUMMER": {
+        "label": "夏季/酷暑",
+        "description": "请准备防中暑、汗水、脱妆、便携风扇和防晒用品。"
+      },
+      "WINTER": {
+        "label": "冬季/寒潮",
+        "description": "建议准备暖宝宝、保暖用品和分层穿搭。"
+      },
+      "GIVEAWAY": {
+        "label": "分发/交换计划",
+        "description": "请准备备用购物袋、包装材料、卡套、标签和笔。"
+      },
+      "FOREIGN": {
+        "label": "海外粉丝/韩语不熟",
+        "description": "请准备韩国地图、基本问候、点单等简单沟通内容。"
+      }
+    },
+    "templates": {
+      "concert_basic": {
+        "title": "演唱会/Fancon 基础清单",
+        "description": "以入场、观演和等待情况为基础的清单。",
+        "items": {
+          "ticket_qr": {
+            "name": "预订信息/门票或QR码",
+            "section": "必备",
+            "tip": "网络可能不稳定，建议提前保存截图，确保离线也能查看。"
+          },
+          "id_card": {
+            "name": "身份证件",
+            "section": "必备",
+            "tip": "本人确认、现场领取等场景可能需要。"
+          },
+          "phone": {
+            "name": "手机",
+            "section": "必备",
+            "tip": "入场、联系、地图和拍摄都会用到，请注意电量。"
+          },
+          "battery": {
+            "name": "充电宝",
+            "section": "必备",
+            "tip": "排队、入场和拍照录像会很耗电，请提前准备。"
+          },
+          "cable": {
+            "name": "充电线",
+            "section": "必备",
+            "tip": "请带上适配手机和充电宝的线。"
+          },
+          "transport_card": {
+            "name": "交通卡/交通App",
+            "section": "移动",
+            "tip": "提前确认末班车和换乘路线。"
+          },
+          "payment": {
+            "name": "支付方式（卡/少量现金）",
+            "section": "移动",
+            "tip": "购买周边、吃饭、便利店和交通都可能需要，现金可作为应急小额备用。"
+          },
+          "lightstick": {
+            "name": "应援棒/电池（如需要）",
+            "section": "观演",
+            "tip": "提前确认电池规格（如AAA）或充满电。"
+          },
+          "tote_bag": {
+            "name": "环保袋/购物袋",
+            "section": "购买",
+            "tip": "方便装周边。"
+          },
+          "small_bag": {
+            "name": "轻便包（斜挎/小包）",
+            "section": "观演",
+            "tip": "视场馆携带规定而定，建议只放贵重物品和必需品。"
+          },
+          "water": {
+            "name": "水/饮料",
+            "section": "便利",
+            "tip": "适合长时间等待，请确认场馆携带规定。"
+          },
+          "snack": {
+            "name": "简单零食",
+            "section": "便利",
+            "tip": "体力下降时有帮助，建议选择体积小的零食。"
+          },
+          "wet_tissue": {
+            "name": "湿巾/纸巾",
+            "section": "实用小物",
+            "tip": "可用于擦手、清理污渍、擦汗等多种场景。"
+          },
+          "hand_sanitizer": {
+            "name": "免洗洗手液",
+            "section": "实用小物",
+            "tip": "有助于保持卫生，感觉不干净时可随时使用。"
+          },
+          "comfortable_shoes": {
+            "name": "舒适鞋/鞋垫",
+            "section": "体力",
+            "tip": "适合一整天排队、等待和移动。"
+          },
+          "zip_bag": {
+            "name": "小号密封袋",
+            "section": "实用小物",
+            "tip": "可收纳票据、充电器和小周边，也能防水。"
+          },
+          "portable_fan": {
+            "name": "便携风扇/降温湿巾/遮阳伞",
+            "section": "天气",
+            "tip": "夏季或户外等待时尤其重要。"
+          },
+          "hand_warmers": {
+            "name": "暖宝宝/暖手贴",
+            "section": "天气",
+            "tip": "冬季或户外等待时尤其重要。"
+          },
+          "giveaway_pack": {
+            "name": "分发/交换用包装（卡套/袋子）",
+            "section": "分发/交换",
+            "tip": "可防止小卡弯折。"
+          }
+        }
+      },
+      "popup_store_basic": {
+        "title": "快闪/展览基础清单",
+        "description": "重点覆盖预约、购买、排队和周边保护。",
+        "items": {
+          "reservation_qr": {
+            "name": "预约/入场QR码或通知短信",
+            "section": "必备",
+            "tip": "请保存截图，并把短信或邮件放在容易找到的位置。"
+          },
+          "id_card": {
+            "name": "身份证件",
+            "section": "必备",
+            "tip": "本人确认、现场领取、年龄确认等场景可能需要。"
+          },
+          "payment": {
+            "name": "支付方式（卡/少量现金）",
+            "section": "必备",
+            "tip": "购买周边、吃饭、便利店和交通都可能需要，现金可作为应急小额备用。"
+          },
+          "tote_bag": {
+            "name": "环保袋/购物袋",
+            "section": "购买",
+            "tip": "方便装周边。"
+          },
+          "card_sleeves": {
+            "name": "小卡卡套/保护膜",
+            "section": "周边保护",
+            "tip": "防止弯折和弄脏。"
+          },
+          "wet_tissue": {
+            "name": "湿巾/纸巾",
+            "section": "实用小物",
+            "tip": "可用于擦手、清理污渍、擦汗等多种场景。"
+          },
+          "hand_sanitizer": {
+            "name": "免洗洗手液",
+            "section": "实用小物",
+            "tip": "有助于保持卫生，感觉不干净时可随时使用。"
+          },
+          "water": {
+            "name": "水/饮料",
+            "section": "便利",
+            "tip": "适合长时间等待，请确认场馆携带规定。"
+          },
+          "battery": {
+            "name": "充电宝",
+            "section": "便利",
+            "tip": "排队、入场和拍照录像会很耗电，请提前准备。"
+          },
+          "cable": {
+            "name": "充电线",
+            "section": "便利",
+            "tip": "请带上适配手机和充电宝的线。"
+          },
+          "comfortable_shoes": {
+            "name": "舒适鞋/鞋垫",
+            "section": "体力",
+            "tip": "适合一整天排队、等待和移动。"
+          },
+          "portable_fan": {
+            "name": "便携风扇/降温湿巾/遮阳伞",
+            "section": "天气",
+            "tip": "夏季或户外等待时尤其重要。"
+          },
+          "hand_warmers": {
+            "name": "暖宝宝/暖手贴",
+            "section": "天气",
+            "tip": "冬季或户外等待时尤其重要。"
+          },
+          "basic_phrase_card": {
+            "name": "基础短句备忘（预约/入场/支付）",
+            "section": "海外粉丝",
+            "tip": "例：“我有预约”“这个周边还有库存吗？”“可以刷卡吗？”"
+          }
+        }
+      },
+      "birthday_cafe_basic": {
+        "title": "生日咖啡/咖啡活动基础清单",
+        "description": "适合咖啡店路线、周边收纳、交换和备忘的模板。",
+        "items": {
+          "map_link": {
+            "name": "保存地图链接/地址",
+            "section": "必备",
+            "tip": "可保存到自己常用的 Naver、Kakao 或 Google 地图。"
+          },
+          "payment": {
+            "name": "支付方式（卡/少量现金）",
+            "section": "必备",
+            "tip": "购买周边、吃饭、便利店和交通都可能需要，现金可作为应急小额备用。"
+          },
+          "tote_bag": {
+            "name": "环保袋/购物袋",
+            "section": "移动",
+            "tip": "方便装特典和周边。"
+          },
+          "mini_zipbags": {
+            "name": "小号密封袋",
+            "section": "周边保护",
+            "tip": "可收纳票据、充电器和小周边，也能防水。"
+          },
+          "wet_tissue": {
+            "name": "湿巾/纸巾",
+            "section": "实用小物",
+            "tip": "可用于擦手、清理污渍、擦汗等多种场景。"
+          },
+          "hand_sanitizer": {
+            "name": "免洗洗手液",
+            "section": "实用小物",
+            "tip": "有助于保持卫生，感觉不干净时可随时使用。"
+          },
+          "water": {
+            "name": "水/饮料",
+            "section": "便利",
+            "tip": "适合长时间等待，请确认场馆携带规定。"
+          },
+          "battery": {
+            "name": "充电宝",
+            "section": "便利",
+            "tip": "排队、入场和拍照录像会很耗电，请提前准备。"
+          },
+          "comfortable_shoes": {
+            "name": "舒适鞋/鞋垫",
+            "section": "体力",
+            "tip": "适合一整天排队、等待和移动。"
+          },
+          "portable_fan": {
+            "name": "便携风扇/降温湿巾/遮阳伞",
+            "section": "天气",
+            "tip": "夏季或户外等待时尤其重要。"
+          },
+          "hand_warmers": {
+            "name": "暖宝宝/暖手贴",
+            "section": "天气",
+            "tip": "冬季或户外等待时尤其重要。"
+          },
+          "korean_order_phrase": {
+            "name": "咖啡点单基础短句（备忘/图片）",
+            "section": "海外粉丝",
+            "tip": "例：“请做冰的”“可以打包吗？”“特典在哪里领取？”"
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,6 +3,7 @@ export type {
   MyRooms,
   SendImageMessageParams,
 } from './rooms/contracts';
+export type {TutorialRoomCopy} from './rooms/tutorial';
 
 export {
   createRoom,
@@ -19,6 +20,7 @@ export {
 export {
   createTutorialBotReply,
   ensureTutorialWelcomeMessages,
+  getTutorialRoomCopy,
   getTutorialRoomForCategory,
   isTutorialRoomId,
 } from './rooms/tutorial';

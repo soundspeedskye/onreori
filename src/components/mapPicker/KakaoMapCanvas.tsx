@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors} from '../../theme/tokens';
 import type {PlaceSelection} from '../../types';
@@ -70,6 +71,7 @@ export function KakaoMapCanvas({
   place,
   onMapChange,
 }: KakaoMapCanvasProps) {
+  const {t} = useTranslation('map');
   const {height, width} = useWindowDimensions();
   const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -169,7 +171,7 @@ export function KakaoMapCanvas({
       {mapError ? (
         <View pointerEvents="none" style={styles.mapUnavailable}>
           <Text style={styles.mapUnavailableTitle}>
-            Kakao 지도를 불러오지 못했습니다
+            {t('mapLoadFailed')}
           </Text>
           <Text style={styles.mapUnavailableText}>{mapError}</Text>
         </View>

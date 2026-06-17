@@ -1,5 +1,6 @@
 import React from 'react';
-import {CHECKLIST_SYNCING_LABEL} from '../../utils/checklistPresentation';
+import {useTranslation} from 'react-i18next';
+
 import {BottomActionBar} from '../ui/BottomActionBar';
 import {Button} from '../ui/Button';
 
@@ -20,22 +21,24 @@ export function ChecklistActionBar({
   onRetrySync,
   onOpenShareCard,
 }: ChecklistActionBarProps) {
+  const {t} = useTranslation('checklist');
+
   return (
     <BottomActionBar>
       <Button
         disabled={savingToAccount}
         onPress={onSaveToAccount}
-        title={savingToAccount ? '저장 중...' : '내 계정에 저장'}
+        title={savingToAccount ? t('savingToAccount') : t('saveToAccount')}
       />
       {syncFailed ? (
         <Button
           disabled={syncingToAccount}
           onPress={onRetrySync}
-          title={syncingToAccount ? CHECKLIST_SYNCING_LABEL : '다시 동기화'}
+          title={syncingToAccount ? t('syncing') : t('retrySync')}
           variant="secondary"
         />
       ) : null}
-      <Button onPress={onOpenShareCard} title="공유 카드" variant="dark" />
+      <Button onPress={onOpenShareCard} title={t('shareCard')} variant="dark" />
     </BottomActionBar>
   );
 }

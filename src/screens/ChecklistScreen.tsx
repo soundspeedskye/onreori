@@ -2,6 +2,7 @@ import React from 'react';
 import {ScrollView, StyleSheet} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 
 import {useAuth} from '../auth/AuthContext';
 import {ChecklistActionBar} from '../components/checklist/ChecklistActionBar';
@@ -12,6 +13,7 @@ import {EmptyState} from '../components/ui/EmptyState';
 import {colors, layout, spacing} from '../theme/tokens';
 import type {RootStackParamList} from '../types';
 import {getChecklistSaveStateLabel} from '../utils/checklistPresentation';
+import {getLocalizedChecklistTitle} from '../utils/checklistTemplateTranslations';
 import {useChecklistAccountActions} from './checklist/useChecklistAccountActions';
 import {useChecklistItemActions} from './checklist/useChecklistItemActions';
 import {useChecklistState} from './checklist/useChecklistState';
@@ -22,6 +24,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Checklist'>;
  * 저장된 체크리스트를 불러와 항목 편집, 계정 동기화, 공유 카드 이동을 처리한다.
  */
 export function ChecklistScreen({navigation, route}: Props) {
+  const {t} = useTranslation('checklist');
+  const {t: tTemplates} = useTranslation('checklistTemplates');
   const {user} = useAuth();
   const {
     checklist,
@@ -47,7 +51,7 @@ export function ChecklistScreen({navigation, route}: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="체크리스트를 불러오지 못했습니다."
+          title={t('loadFailed')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -57,14 +61,18 @@ export function ChecklistScreen({navigation, route}: Props) {
   const saveStateLabel = getChecklistSaveStateLabel(checklist.saveState, {
     syncing: accountActions.syncingToAccount,
   });
+  const checklistTitle = getLocalizedChecklistTitle(checklist, tTemplates);
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <ChecklistHeroCard
           icon={checklist.icon}
-          title={checklist.title}
-          meta={`${checkedCount}/${checklist.items.length} 완료`}
+          title={checklistTitle}
+          meta={t('completedMeta', {
+            checkedCount,
+            totalCount: checklist.items.length,
+          })}
           saveStateLabel={saveStateLabel}
           conditionLabels={selectedConditionLabels}
         />

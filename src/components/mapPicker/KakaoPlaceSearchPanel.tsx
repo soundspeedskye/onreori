@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {
   getPlaceSearchErrorMessage,
@@ -24,11 +25,11 @@ type KakaoPlaceSearchPanelProps = {
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-function getResultDetail(place: KakaoPlaceSearchResult) {
+function getResultDetail(place: KakaoPlaceSearchResult, addressLocation: string) {
   if (place.resultType === 'address') {
     const detail = place.roadAddress ?? place.address;
 
-    return detail && detail !== place.name ? detail : '주소 위치';
+    return detail && detail !== place.name ? detail : addressLocation;
   }
 
   return place.roadAddress ?? place.address ?? place.categoryName;
@@ -38,6 +39,7 @@ export function KakaoPlaceSearchPanel({
   center,
   onSelectPlace,
 }: KakaoPlaceSearchPanelProps) {
+  const {t} = useTranslation('map');
   const [query, setQuery] = useState('');
   const [places, setPlaces] = useState<KakaoPlaceSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -159,7 +161,7 @@ export function KakaoPlaceSearchPanel({
       <View style={styles.container}>
         <TextInput
           autoCorrect={false}
-          placeholder="장소 또는 주소 검색"
+          placeholder={t('searchPlaceholder')}
           placeholderTextColor={colors.muted}
           returnKeyType="search"
           style={styles.input}
@@ -168,7 +170,7 @@ export function KakaoPlaceSearchPanel({
           onChangeText={handleChangeQuery}
           onSubmitEditing={handleSubmitQuery}
         />
-        {isLoading ? <Text style={styles.status}>검색 중</Text> : null}
+        {isLoading ? <Text style={styles.status}>{t('searching')}</Text> : null}
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
         {places.length > 0 ? (
           <ScrollView
@@ -186,11 +188,11 @@ export function KakaoPlaceSearchPanel({
                     {place.name}
                   </Text>
                   {place.resultType === 'address' ? (
-                    <Text style={styles.resultBadge}>주소</Text>
+                    <Text style={styles.resultBadge}>{t('addressBadge')}</Text>
                   ) : null}
                 </View>
                 <Text numberOfLines={1} style={styles.resultAddress}>
-                  {getResultDetail(place)}
+                  {getResultDetail(place, t('addressLocation'))}
                 </Text>
               </Pressable>
             ))}

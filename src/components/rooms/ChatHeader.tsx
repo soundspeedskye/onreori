@@ -1,21 +1,31 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
-import { colors, spacing } from '../../theme/tokens';
+import {colors, spacing} from '../../theme/tokens';
+import {RoomLanguageChips} from './RoomLanguageChips';
 
 type ChatHeaderProps = {
   title: string;
   tutorialRoom: boolean;
+  languageCodes: unknown;
 };
 
-export function ChatHeader({ title, tutorialRoom }: ChatHeaderProps) {
+export function ChatHeader({
+  title,
+  tutorialRoom,
+  languageCodes,
+}: ChatHeaderProps) {
+  const {t} = useTranslation('rooms');
+
   return (
     <View style={styles.header}>
       <Text style={styles.title}>{title}</Text>
+      <RoomLanguageChips languageCodes={languageCodes} />
       <Text style={styles.description}>
         {tutorialRoom
-          ? '오늘의오리가 단톡방 사용법을 안내해요.'
-          : '현장에 계신가요? 실시간 정보를 공유해주세요.'}
+          ? t('tutorialRoomDescription')
+          : t('chatRoomDescription')}
       </Text>
     </View>
   );

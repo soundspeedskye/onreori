@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {spacing} from '../../theme/tokens';
 import {Button} from '../ui/Button';
@@ -16,11 +17,13 @@ export function HashtagFilterBar({
   onChange,
   onClear,
 }: HashtagFilterBarProps) {
+  const {t} = useTranslation('rooms');
+
   return (
     <View style={styles.filterBar}>
       <TextField
         onChangeText={onChange}
-        placeholder="카페명 또는 #태그 검색"
+        placeholder={t('hashtagFilterPlaceholder')}
         style={styles.filterInput}
         value={value}
       />
@@ -28,7 +31,7 @@ export function HashtagFilterBar({
         <Button
           onPress={onClear}
           style={styles.clearFilterButton}
-          title="해제"
+          title={t('clearFilter')}
           variant="secondary"
         />
       ) : null}

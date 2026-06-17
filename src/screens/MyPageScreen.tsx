@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 
 import {useAuth} from '../auth/AuthContext';
 import {MyChecklistTab} from '../components/myPage/MyChecklistTab';
@@ -25,6 +26,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
  */
 export function MyPageScreen({navigation}: Props) {
   const {user, signOut} = useAuth();
+  const {t} = useTranslation('common');
   const [activeTab, setActiveTab] = useState<MyPageTab>('checklists');
   const {checklists, loadingChecklists} = useMyChecklists(user);
   const {myRooms, loadingMyRooms} = useMyRooms(user);
@@ -46,6 +48,7 @@ export function MyPageScreen({navigation}: Props) {
       roomId: room.id,
       title: room.title,
       categoryId: room.categoryId,
+      languageCodes: room.languageCodes,
     });
   };
 
@@ -102,12 +105,11 @@ export function MyPageScreen({navigation}: Props) {
             onOpenRoom={openRoom}
           />
         )}
-
         <Button
           onPress={handleSignOut}
           style={styles.signOutButton}
           textStyle={styles.signOutButtonText}
-          title="로그아웃"
+          title={t('actions.signOut')}
           variant="ghost"
         />
       </ScrollView>

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
-import { isCafeEventCategory } from '../../constants/eventCategories';
-import { createRoom } from '../../services/rooms';
-import type { AuthUser, EventCategory, EventRoom } from '../../types';
-import { ALERT_MESSAGES, showAlert, showError } from '../../utils/appAlert';
+import {isCafeEventCategory} from '../../constants/eventCategories';
+import {createRoom} from '../../services/rooms';
+import type {AuthUser, EventCategory, EventRoom} from '../../types';
+import {ALERT_MESSAGES, showAlert, showError} from '../../utils/appAlert';
 import {
   EVENT_ROOM_ACTIVE_DAYS_AFTER_EVENT,
   EVENT_ROOM_ACTIVE_DAYS_BEFORE_EVENT,
@@ -13,8 +14,12 @@ import {
   validateRoomCreationDraft,
   type RoomCreationConfig,
 } from '../../utils/eventRoomForm';
-import { shouldShowRoomInTodayList } from '../../utils/eventRoomVisibility';
-import type { useRoomCreationForm } from './useRoomCreationForm';
+import {
+  getPrimaryRoomLanguage,
+  normalizeRoomLanguageCodes,
+} from '../../utils/eventRoomLanguages';
+import {shouldShowRoomInTodayList} from '../../utils/eventRoomVisibility';
+import type {useRoomCreationForm} from './useRoomCreationForm';
 
 type RoomCreationForm = ReturnType<typeof useRoomCreationForm>;
 
@@ -33,6 +38,7 @@ export function useCreateRoomAction({
   form,
   onVisibleRoomCreated,
 }: UseCreateRoomActionParams) {
+  const {t: tRooms} = useTranslation('rooms');
   const [creating, setCreating] = useState(false);
 
   const handleCreateRoom = async () => {
@@ -57,6 +63,7 @@ export function useCreateRoomAction({
       const selectedPlaceForRoom = creationConfig.requiresPlace
         ? form.selectedPlaceForRoom
         : undefined;
+      const languageCodes = normalizeRoomLanguageCodes(form.languageCodes);
       const room = await createRoom({
         categoryId: category.id,
         title: buildRoomTitle(category.id, form.title),
@@ -73,6 +80,8 @@ export function useCreateRoomAction({
         subjectName: isCafeEventCategory(category.id)
           ? form.title.trim()
           : undefined,
+        primaryLanguage: getPrimaryRoomLanguage(languageCodes),
+        languageCodes,
         entryCode: form.newRoomCode,
         user,
       });
@@ -80,8 +89,11 @@ export function useCreateRoomAction({
         onVisibleRoomCreated(room);
       } else {
         showAlert({
-          title: '생성했습니다.',
-          message: `이 단톡방은 이벤트 ${EVENT_ROOM_ACTIVE_DAYS_BEFORE_EVENT}일 전부터 ${EVENT_ROOM_ACTIVE_DAYS_AFTER_EVENT}일 후까지 오늘의 단톡방에 표시됩니다.`,
+          title: tRooms('createdTitle'),
+          message: tRooms('createdInactiveNotice', {
+            beforeCount: EVENT_ROOM_ACTIVE_DAYS_BEFORE_EVENT,
+            afterCount: EVENT_ROOM_ACTIVE_DAYS_AFTER_EVENT,
+          }),
         });
       }
       form.reset();

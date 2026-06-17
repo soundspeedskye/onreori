@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 import { colors, layout, radii, spacing } from '../theme/tokens';
 
 import { ConditionToggle } from '../components/templates/ConditionToggle';
@@ -18,6 +19,10 @@ import {
 import { saveChecklistDraft } from '../storage/checklists';
 import type { ConditionId, RootStackParamList } from '../types';
 import { ALERT_MESSAGES, showAlert } from '../utils/appAlert';
+import {
+  getLocalizedCondition,
+  getLocalizedTemplate,
+} from '../utils/checklistTemplateTranslations';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Conditions'>;
 
@@ -25,9 +30,19 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Conditions'>;
  * 체크리스트 템플릿에 적용할 상황 조건을 선택하고 로컬 초안을 생성한다.
  */
 export function ConditionsScreen({ navigation, route }: Props) {
+  const {t} = useTranslation('conditions');
+  const {t: tTemplates} = useTranslation('checklistTemplates');
   const template = useMemo(
     () => getTemplateById(route.params.templateId),
     [route.params.templateId],
+  );
+  const localizedTemplate = useMemo(
+    () => (template ? getLocalizedTemplate(template, tTemplates) : undefined),
+    [tTemplates, template],
+  );
+  const localizedConditions = useMemo(
+    () => conditions.map(condition => getLocalizedCondition(condition, tTemplates)),
+    [tTemplates],
   );
   const [selectedConditions, setSelectedConditions] = useState<ConditionId[]>(
     [],
@@ -57,7 +72,7 @@ export function ConditionsScreen({ navigation, route }: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="템플릿을 찾지 못했습니다."
+          title={t('templateNotFound')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -74,20 +89,22 @@ export function ConditionsScreen({ navigation, route }: Props) {
             size={42}
           />
           <View style={styles.headerCopy}>
-            <Text style={styles.title}>{template.title}</Text>
-            <Text style={styles.description}>{template.description}</Text>
+            <Text style={styles.title}>{localizedTemplate?.title}</Text>
+            <Text style={styles.description}>
+              {localizedTemplate?.description}
+            </Text>
           </View>
         </Card>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>상황 선택</Text>
+          <Text style={styles.sectionTitle}>{t('sectionTitle')}</Text>
           <Text style={styles.sectionDescription}>
-            공연 당일의 예상 컨디션을 선택해주세요.
+            {t('sectionDescription')}
           </Text>
         </View>
 
         <View style={styles.toggleList}>
-          {conditions.map(condition => (
+          {localizedConditions.map(condition => (
             <ConditionToggle
               key={condition.id}
               condition={condition}
@@ -101,7 +118,7 @@ export function ConditionsScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <BottomActionBar>
-        <Button onPress={handleCreateChecklist} title="체크리스트 만들기" />
+        <Button onPress={handleCreateChecklist} title={t('createChecklist')} />
       </BottomActionBar>
     </SafeAreaView>
   );

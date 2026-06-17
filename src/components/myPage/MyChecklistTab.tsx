@@ -1,10 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {getTemplateById} from '../../data/templates';
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {RemoteChecklistSummary} from '../../types';
-import {getChecklistSaveStateLabel} from '../../utils/checklistPresentation';
+import {getLocalizedTemplateTitle} from '../../utils/checklistTemplateTranslations';
 import {Card} from '../ui/Card';
 import {EmptyState} from '../ui/EmptyState';
 import {PixelIcon, getPixelIconNameForEmoji} from '../ui/PixelIcon';
@@ -20,10 +21,13 @@ export function MyChecklistTab({
   loadingChecklists,
   onOpenChecklist,
 }: MyChecklistTabProps) {
+  const {t} = useTranslation('myPage');
+  const {t: tTemplates} = useTranslation('checklistTemplates');
+
   if (loadingChecklists) {
     return (
       <EmptyState
-        title="저장된 체크리스트를 불러오는 중입니다."
+        title={t('checklistsLoading')}
         style={styles.emptyBox}
       />
     );
@@ -32,7 +36,7 @@ export function MyChecklistTab({
   if (checklists.length === 0) {
     return (
       <EmptyState
-        title="저장된 체크리스트가 없습니다."
+        title={t('checklistsEmpty')}
         style={styles.emptyBox}
       />
     );
@@ -41,9 +45,13 @@ export function MyChecklistTab({
   return (
     <View style={styles.checklistList}>
       {checklists.map(item => {
-        const iconName =
-          getPixelIconNameForEmoji(getTemplateById(item.templateId)?.icon) ??
-          'checkOn';
+        const template = getTemplateById(item.templateId);
+        const iconName = getPixelIconNameForEmoji(template?.icon) ?? 'checkOn';
+        const checklistTitle = getLocalizedTemplateTitle(
+          item.templateId,
+          template?.title ?? item.title,
+          tTemplates,
+        );
 
         return (
           <Card
@@ -52,10 +60,10 @@ export function MyChecklistTab({
             style={styles.checklistCard}>
             <View style={styles.checklistTitleRow}>
               <PixelIcon name={iconName} size={28} />
-              <Text style={styles.checklistTitle}>{item.title}</Text>
+              <Text style={styles.checklistTitle}>{checklistTitle}</Text>
             </View>
             <Text style={styles.checklistMeta}>
-              {getChecklistSaveStateLabel('synced')}
+              {t('checklistSynced')}
             </Text>
           </Card>
         );

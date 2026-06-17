@@ -16,6 +16,7 @@ import {
 import {useIsFocused} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
 import {useAuth} from '../auth/AuthContext';
 import {CafeRouteMapPreview} from '../components/cafeRoutes/CafeRouteMapPreview';
@@ -26,6 +27,8 @@ import {EmptyState} from '../components/ui/EmptyState';
 import {ScreenHeader} from '../components/ui/ScreenHeader';
 import {TextField} from '../components/ui/TextField';
 import {isCafeEventCategory} from '../constants/eventCategories';
+import {useAppLanguage} from '../i18n/AppLanguageProvider';
+import {getIntlLocale} from '../i18n/languages';
 import {isTutorialRoomId, listLinkableRoomsByCategory} from '../services/rooms';
 import {
   getCafeRoutesByCategory,
@@ -53,6 +56,7 @@ import {
   updateCafeRouteTitle,
   updateCafeRouteVisibility,
 } from '../utils/cafeRoutes';
+import {formatEventRoomDate} from '../utils/eventRoomPresentation';
 import {isEventRoomActiveAt} from '../utils/eventRoomVisibility';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CafeRoutes'>;
@@ -99,7 +103,11 @@ function restoreRouteAfterFailedPersist(
  * 생일카페 루트를 만들고 장소 순서 편집, 공개 여부, 활성 단톡방 연동 상태를 관리한다.
  */
 export function CafeRoutesScreen({navigation, route}: Props) {
+  const {t} = useTranslation('cafeRoutes');
+  const {t: tRooms} = useTranslation('rooms');
   const {user} = useAuth();
+  const {language} = useAppLanguage();
+  const intlLocale = getIntlLocale(language);
   const isFocused = useIsFocused();
   const category = getEventCategoryById(route.params.categoryId);
   const isCafeCategory = isCafeEventCategory(route.params.categoryId);
@@ -229,7 +237,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
 
   const linkStatus = selectedRoute
     ? getCafeRouteRoomLinkStatus(selectedRoute)
-    : {state: 'notLinked' as const, label: '미연동'};
+    : {state: 'notLinked' as const, label: t('statuses.notLinked')};
   const linkedRoomListed =
     selectedRoute?.linkedRoom &&
     rooms.some(room => room.id === selectedRoute.linkedRoom?.roomId);
@@ -245,9 +253,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
   const linkedRoomDisabled =
     linkStatus.state === 'expired' || linkedRoomUnavailable;
   const linkedRoomStatusLabel = linkedRoomStatusUnknown
-    ? '단톡방 상태 확인 실패'
+    ? t('roomStatusCheckFailed')
     : linkedRoomUnavailable
-    ? '단톡방 종료'
+    ? t('statuses.expired')
     : linkStatus.label;
   const isAnyRouteSaving = savingRouteId !== null;
   const isSelectedRouteSaving = selectedRoute
@@ -288,7 +296,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     const nextRoute = createCafeRouteDraft({
       categoryId: route.params.categoryId,
       ownerId: user?.id,
-      title: category ? `${category.title} 루트` : '새 생일카페 루트',
+      title: category
+        ? t('categoryRouteTitle', {categoryTitle: category.title})
+        : t('defaultTitle'),
     });
 
     const persisted = await persistRoute(nextRoute);
@@ -308,6 +318,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     navigation,
     persistRoute,
     route.params.categoryId,
+    t,
     user?.id,
   ]);
 
@@ -416,7 +427,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="카테고리를 찾지 못했습니다."
+          title={tRooms('categoryNotFound')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -427,7 +438,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="생일카페 카테고리에서만 사용할 수 있습니다."
+          title={t('unavailableCategory')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -438,8 +449,8 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader
-          title="생일카페 루트"
-          description="특전 취향에 맞춰 카페를 고르고 내 동선을 저장해요."
+          title={t('title')}
+          description={t('description')}
           trailing={
             <Button
               disabled={isAnyRouteSaving}
@@ -458,46 +469,46 @@ export function CafeRoutesScreen({navigation, route}: Props) {
             <Text numberOfLines={1} style={styles.summaryNumber}>
               {routes.length}
             </Text>
-            <Text style={styles.summaryLabel}>내 루트</Text>
+            <Text style={styles.summaryLabel}>{t('myRoutes')}</Text>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
             <Text numberOfLines={1} style={styles.summaryNumber}>
               {sharedRouteCount}
             </Text>
-            <Text style={styles.summaryLabel}>공유 가능</Text>
+            <Text style={styles.summaryLabel}>{t('shared')}</Text>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
             <Text numberOfLines={2} style={styles.summaryNumber}>
               {linkedRoomStatusLabel}
             </Text>
-            <Text style={styles.summaryLabel}>단톡방 연동</Text>
+            <Text style={styles.summaryLabel}>{t('roomLink')}</Text>
           </View>
         </View>
 
         {loadingRoutes ? (
           <View style={styles.loadingWrap}>
             <ActivityIndicator color={colors.brandMuted} />
-            <Text style={styles.loadingText}>루트를 불러오는 중입니다.</Text>
+            <Text style={styles.loadingText}>{t('loadingRoutes')}</Text>
           </View>
         ) : routes.length === 0 ? (
           <Card style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>아직 만든 루트가 없어요.</Text>
+            <Text style={styles.emptyTitle}>{t('emptyTitle')}</Text>
             <Text style={styles.emptyDescription}>
-              생일카페별 특전 취향에 맞춰 첫 방문 루트를 만들어 보세요.
+              {t('emptyDescription')}
             </Text>
             <Button
               disabled={isAnyRouteSaving}
               loading={isAnyRouteSaving}
-              title="첫 루트 만들기"
+              title={t('createFirstRoute')}
               onPress={handleCreateRoute}
             />
           </Card>
         ) : (
           <>
             <View style={styles.sectionBlock}>
-              <Text style={styles.sectionTitle}>내 루트</Text>
+              <Text style={styles.sectionTitle}>{t('myRoutes')}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -528,7 +539,10 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                           styles.routeTabMeta,
                           isSelected && styles.routeTabMetaSelected,
                         ]}>
-                        카페 {item.stops.length}곳 · {itemStatus.label}
+                        {t('cafeCountStatus', {
+                          count: item.stops.length,
+                          status: itemStatus.label,
+                        })}
                       </Text>
                     </Pressable>
                   );
@@ -541,7 +555,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                 <Card style={styles.builderCard}>
                   <View style={styles.sectionHeading}>
                     <View style={styles.sectionTitleWrap}>
-                      <Text style={styles.eyebrow}>선택한 루트</Text>
+                      <Text style={styles.eyebrow}>{t('selectedRoute')}</Text>
                       <TextField
                         value={selectedRoute.title}
                         onChangeText={title =>
@@ -558,7 +572,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                           )
                         }
                         maxLength={CAFE_ROUTE_TITLE_MAX_LENGTH}
-                        placeholder="루트 이름"
+                        placeholder={t('routeNamePlaceholder')}
                         style={styles.titleInput}
                       />
                     </View>
@@ -571,15 +585,15 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                           : 'brand'
                       }>
                       {selectedRoute.visibility === 'shared'
-                        ? '공유 가능'
-                        : '나만보기'}
+                        ? t('shared')
+                        : t('private')}
                     </Chip>
                   </View>
 
                   <View style={styles.visibilityRow}>
                     <Button
                       disabled={isSelectedRouteSaving}
-                      title="나만보기"
+                      title={t('private')}
                       variant={
                         selectedRoute.visibility === 'private'
                           ? 'dark'
@@ -594,7 +608,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                     />
                     <Button
                       disabled={isSelectedRouteSaving}
-                      title="공유 가능"
+                      title={t('shared')}
                       variant={
                         selectedRoute.visibility === 'shared'
                           ? 'dark'
@@ -611,9 +625,11 @@ export function CafeRoutesScreen({navigation, route}: Props) {
 
                   {selectedRoute.stops.length === 0 ? (
                     <View style={styles.mapEmpty}>
-                      <Text style={styles.mapEmptyTitle}>카페를 추가하세요</Text>
+                      <Text style={styles.mapEmptyTitle}>
+                        {t('addCafeTitle')}
+                      </Text>
                       <Text style={styles.mapEmptyText}>
-                        선택한 장소가 실제 지도 위 마커로 표시됩니다.
+                        {t('addCafeDescription')}
                       </Text>
                     </View>
                   ) : isFocused ? (
@@ -626,7 +642,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                   <View style={styles.stopList}>
                     {selectedRoute.stops.length === 0 ? (
                       <Text style={styles.stopEmptyText}>
-                        아직 추가한 카페가 없습니다.
+                        {t('noCafes')}
                       </Text>
                     ) : (
                       selectedRoute.stops.map(stop => {
@@ -670,7 +686,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                                   isMoveUpDisabled &&
                                     styles.stopActionDisabled,
                                 ]}>
-                                <Text style={styles.stopActionText}>위</Text>
+                                <Text style={styles.stopActionText}>
+                                  {t('moveUp')}
+                                </Text>
                               </Pressable>
                               <Pressable
                                 disabled={isMoveDownDisabled}
@@ -688,7 +706,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                                   isMoveDownDisabled &&
                                     styles.stopActionDisabled,
                                 ]}>
-                                <Text style={styles.stopActionText}>아래</Text>
+                                <Text style={styles.stopActionText}>
+                                  {t('moveDown')}
+                                </Text>
                               </Pressable>
                               <Pressable
                                 disabled={isSelectedRouteSaving}
@@ -702,7 +722,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                                   isSelectedRouteSaving &&
                                     styles.stopActionDisabled,
                                 ]}>
-                                <Text style={styles.stopActionText}>삭제</Text>
+                                <Text style={styles.stopActionText}>
+                                  {t('delete')}
+                                </Text>
                               </Pressable>
                             </View>
                           </View>
@@ -714,7 +736,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                   <View style={styles.actionRow}>
                     <Button
                       disabled={isSelectedRouteSaving}
-                      title="카페 추가"
+                      title={t('addCafe')}
                       variant="secondary"
                       style={styles.actionButton}
                       onPress={handleOpenMapPicker}
@@ -722,7 +744,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                     <Button
                       loading={isSelectedRouteSaving}
                       title={
-                        isSelectedRouteSaving ? '저장 중' : '저장됨'
+                        isSelectedRouteSaving ? t('saving') : t('saved')
                       }
                       disabled
                       style={styles.actionButton}
@@ -734,11 +756,10 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                   <View style={styles.sectionBlock}>
                     <View style={styles.sectionHeading}>
                       <View style={styles.sectionTitleWrap}>
-                        <Text style={styles.eyebrow}>선택 사항</Text>
-                        <Text style={styles.sectionTitle}>단톡방 연동</Text>
+                        <Text style={styles.eyebrow}>{t('optional')}</Text>
+                        <Text style={styles.sectionTitle}>{t('roomLink')}</Text>
                         <Text style={styles.sectionDescription}>
-                          공유 가능한 루트만 생일카페 단톡방에 연결해 조회할 수
-                          있습니다.
+                          {t('roomLinkDescription')}
                         </Text>
                       </View>
                       <Chip
@@ -760,14 +781,16 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                             {selectedRoute.linkedRoom.title}
                           </Text>
                           <Text style={styles.linkedRoomMeta}>
-                            이 방에서 {linkedRoomStatusLabel}
+                            {t('linkedInRoom', {
+                              status: linkedRoomStatusLabel,
+                            })}
                           </Text>
                         </View>
                         {linkedRoomDisabled ? null : (
                           <Button
                             disabled={isSelectedRouteSaving}
                             loading={isSelectedRouteSaving}
-                            title="해제"
+                            title={t('unlink')}
                             variant="secondary"
                             style={styles.unlinkButton}
                             onPress={() =>
@@ -780,11 +803,11 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                       </View>
                     ) : loadingRooms ? (
                       <Text style={styles.sectionDescription}>
-                        연동 가능한 단톡방을 불러오는 중입니다.
+                        {t('loadingRooms')}
                       </Text>
                     ) : rooms.length === 0 ? (
                       <Text style={styles.sectionDescription}>
-                        현재 연동 가능한 생일카페 단톡방이 없습니다.
+                        {t('noLinkableRooms')}
                       </Text>
                     ) : (
                       <View style={styles.roomList}>
@@ -818,11 +841,17 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                                 <Text
                                   style={styles.roomOptionMeta}
                                   numberOfLines={1}>
-                                  {room.memberCount}명 · {room.eventDate}
+                                  {t('memberCountWithDate', {
+                                    count: room.memberCount,
+                                    eventDate: formatEventRoomDate(
+                                      room.eventDate,
+                                      intlLocale,
+                                    ),
+                                  })}
                                 </Text>
                               </View>
                               <Chip numberOfLines={1} style={styles.roomChip}>
-                                {isLinked ? '연동됨' : '연동'}
+                                {isLinked ? t('linked') : t('link')}
                               </Chip>
                             </Pressable>
                           );
@@ -833,12 +862,8 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                 ) : null}
 
                 <Card style={styles.policyCard}>
-                  <Text style={styles.policyTitle}>정책 기준</Text>
-                  <Text style={styles.policyText}>
-                    루트는 개인 카테고리에서 만들고, 공유 가능한 루트만
-                    단톡방에 연결합니다. 단톡방이 종료되면 방 안 공유 기록은
-                    조회되지 않고, 저장한 루트 사본은 내 계정 루트로 남습니다.
-                  </Text>
+                  <Text style={styles.policyTitle}>{t('policyTitle')}</Text>
+                  <Text style={styles.policyText}>{t('policyText')}</Text>
                 </Card>
               </>
             ) : null}

@@ -1,4 +1,9 @@
 import type {ChatMessage, EventRoom} from '../../types';
+import {i18n} from '../../i18n';
+import {
+  type SupportedLanguageCode,
+  normalizeLanguageCode,
+} from '../../i18n/languages';
 import {KOREAN_EVENT_TIME_ZONE} from '../../utils/date';
 import {
   EVENT_ROOM_ALWAYS_ACTIVE_FROM_AT,
@@ -14,30 +19,74 @@ import {
 
 const TUTORIAL_ROOM_ID_PREFIX = 'tutorial-';
 const TUTORIAL_BOT_USER_ID = 'tutorial-bot';
-const TUTORIAL_BOT_NICKNAME = '오늘의오리';
-const TUTORIAL_WELCOME_BODIES = [
-  '안녕하세요! 오늘의오리 입니다.',
-  '이 곳은 현장 상황을 자유롭게 공유할 수 있는 단톡방이에요',
-];
-const TUTORIAL_REPLY_BODIES = [
-  '서로 예쁜 말로 소통해요.',
-  '현장 정보는 확인한 내용만 차분히 공유해요.',
-  '급한 상황일수록 짧고 정확하게 남겨보면 좋아요.',
-  '사진이나 위치를 올릴 땐 다른 사람 개인정보가 보이지 않는지 확인해요.',
-  '궁금한 점은 편하게 묻고, 아는 정보는 따뜻하게 답해줘요.',
-];
+
+export type TutorialRoomCopy = {
+  languageCode: SupportedLanguageCode;
+  botNickname: string;
+  roomTitle: string;
+  eventDate: string;
+  location: string;
+  welcomeBodies: string[];
+  replyBodies: string[];
+};
 
 export function isTutorialRoomId(roomId: string): boolean {
   return roomId.startsWith(TUTORIAL_ROOM_ID_PREFIX);
 }
 
-function getTutorialRoom(categoryId: string): PreviewRoom {
+function getStringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
+export function getTutorialRoomCopy(
+  languageCode?: SupportedLanguageCode,
+): TutorialRoomCopy {
+  const normalizedLanguageCode = normalizeLanguageCode(
+    languageCode ?? i18n.language,
+  );
+  const t = i18n.getFixedT(normalizedLanguageCode, 'rooms');
+  const welcomeBodies = getStringList(
+    t('tutorial.welcomeBodies', {
+      returnObjects: true,
+    }),
+  );
+  const replyBodies = getStringList(
+    t('tutorial.replyBodies', {
+      returnObjects: true,
+    }),
+  );
+
+  return {
+    languageCode: normalizedLanguageCode,
+    botNickname: t('tutorial.botNickname'),
+    roomTitle: t('tutorial.roomTitle'),
+    eventDate: t('tutorial.eventDate'),
+    location: t('tutorial.location'),
+    welcomeBodies:
+      welcomeBodies.length > 0
+        ? welcomeBodies
+        : [t('tutorialRoomDescription')],
+    replyBodies:
+      replyBodies.length > 0
+        ? replyBodies
+        : [t('chatRoomDescription')],
+  };
+}
+
+function getTutorialRoom(
+  categoryId: string,
+  copy: TutorialRoomCopy,
+): PreviewRoom {
   return {
     id: `${TUTORIAL_ROOM_ID_PREFIX}${categoryId}`,
     categoryId,
-    title: '튜토리얼 단톡방',
-    eventDate: '상시',
-    location: '오늘의오리 사용법',
+    title: copy.roomTitle,
+    eventDate: copy.eventDate,
+    location: copy.location,
+    primaryLanguage: copy.languageCode,
+    languageCodes: [copy.languageCode],
     status: 'active',
     eventTimezone: KOREAN_EVENT_TIME_ZONE,
     activeFromAt: EVENT_ROOM_ALWAYS_ACTIVE_FROM_AT,
@@ -49,17 +98,21 @@ function getTutorialRoom(categoryId: string): PreviewRoom {
   };
 }
 
-export function getTutorialRoomForCategory(categoryId: string): EventRoom {
-  return toPublicPreviewRoom(getTutorialRoom(categoryId));
+export function getTutorialRoomForCategory(
+  categoryId: string,
+  copy: TutorialRoomCopy = getTutorialRoomCopy(),
+): EventRoom {
+  return toPublicPreviewRoom(getTutorialRoom(categoryId, copy));
 }
 
 export function withTutorialRoom(
   categoryId: string,
   rooms: EventRoom[],
+  copy: TutorialRoomCopy = getTutorialRoomCopy(),
 ): EventRoom[] {
   const visibleRooms = rooms.filter(room => !isTutorialRoomId(room.id));
 
-  return [...visibleRooms, getTutorialRoomForCategory(categoryId)];
+  return [...visibleRooms, getTutorialRoomForCategory(categoryId, copy)];
 }
 
 function createTutorialBotMessage(
@@ -67,17 +120,43 @@ function createTutorialBotMessage(
   idSuffix: string,
   body: string,
   createdAt: string,
+  copy: TutorialRoomCopy,
 ): ChatMessage {
   return {
     id: `${roomId}-${idSuffix}`,
     roomId,
     userId: TUTORIAL_BOT_USER_ID,
-    nickname: TUTORIAL_BOT_NICKNAME,
+    nickname: copy.botNickname,
     type: 'text',
     body,
     hashtags: [],
     createdAt,
   };
+}
+
+function getResolvedWelcomeBodies(copy: TutorialRoomCopy): string[] {
+  return copy.welcomeBodies.length > 0
+    ? copy.welcomeBodies
+    : getTutorialRoomCopy(copy.languageCode).welcomeBodies;
+}
+
+function getResolvedReplyBodies(copy: TutorialRoomCopy): string[] {
+  return copy.replyBodies.length > 0
+    ? copy.replyBodies
+    : getTutorialRoomCopy(copy.languageCode).replyBodies;
+}
+
+function getStoredReplyIndex(messageId: string, roomId: string): number | null {
+  const replyPrefix = `${roomId}-reply-`;
+
+  if (!messageId.startsWith(replyPrefix)) {
+    return null;
+  }
+
+  const rawIndex = messageId.slice(replyPrefix.length).split('-').at(-1);
+  const replyIndex = Number(rawIndex);
+
+  return Number.isInteger(replyIndex) && replyIndex >= 0 ? replyIndex : null;
 }
 
 export async function joinTutorialRoom(
@@ -89,22 +168,51 @@ export async function joinTutorialRoom(
 
 export async function ensureTutorialWelcomeMessages(
   roomId: string,
+  copy: TutorialRoomCopy = getTutorialRoomCopy(),
 ): Promise<ChatMessage[]> {
   const messages = await readPreviewMessages(roomId);
-
-  if (messages.length > 0) {
-    return messages;
-  }
-
+  const welcomeBodies = getResolvedWelcomeBodies(copy);
+  const replyBodies = getResolvedReplyBodies(copy);
   const now = Date.now();
-  const welcomeMessages = TUTORIAL_WELCOME_BODIES.map((body, index) =>
+  const welcomeMessages = welcomeBodies.map((body, index) =>
     createTutorialBotMessage(
       roomId,
       `welcome-${index + 1}`,
       body,
       new Date(now + index).toISOString(),
+      copy,
     ),
   );
+
+  if (messages.length > 0) {
+    const localizedMessages = messages.map(message => {
+      const welcomeIndex = welcomeMessages.findIndex(
+        welcomeMessage => welcomeMessage.id === message.id,
+      );
+      const replyIndex = getStoredReplyIndex(message.id, roomId);
+
+      if (welcomeIndex >= 0) {
+        return {...welcomeMessages[welcomeIndex], createdAt: message.createdAt};
+      }
+
+      if (
+        message.userId === TUTORIAL_BOT_USER_ID &&
+        replyIndex !== null &&
+        replyIndex < replyBodies.length
+      ) {
+        return {
+          ...message,
+          nickname: copy.botNickname,
+          body: replyBodies[replyIndex],
+        };
+      }
+
+      return message;
+    });
+
+    await writePreviewMessages(roomId, localizedMessages);
+    return localizedMessages;
+  }
 
   await writePreviewMessages(roomId, welcomeMessages);
   return welcomeMessages;
@@ -112,17 +220,20 @@ export async function ensureTutorialWelcomeMessages(
 
 export async function createTutorialBotReply(
   roomId: string,
+  copy: TutorialRoomCopy = getTutorialRoomCopy(),
 ): Promise<ChatMessage> {
   const messages = await readPreviewMessages(roomId);
+  const replyBodies = getResolvedReplyBodies(copy);
   const replyIndex = Math.min(
-    Math.floor(Math.random() * TUTORIAL_REPLY_BODIES.length),
-    TUTORIAL_REPLY_BODIES.length - 1,
+    Math.floor(Math.random() * replyBodies.length),
+    replyBodies.length - 1,
   );
   const reply = createTutorialBotMessage(
     roomId,
     `reply-${Date.now()}-${replyIndex}`,
-    TUTORIAL_REPLY_BODIES[replyIndex],
+    replyBodies[replyIndex],
     new Date().toISOString(),
+    copy,
   );
 
   await writePreviewMessages(roomId, [...messages, reply]);

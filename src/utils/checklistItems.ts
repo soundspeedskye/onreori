@@ -1,4 +1,8 @@
+import type {TFunction} from 'i18next';
+
+import {i18n} from '../i18n';
 import type {Checklist, ChecklistItem} from '../types';
+import {getLocalizedChecklistItem} from './checklistTemplateTranslations';
 
 export type ChecklistSectionGroup = {
   title: string;
@@ -13,13 +17,18 @@ type CustomChecklistItemInput = {
 
 export function groupChecklistItemsBySection(
   items: ChecklistItem[],
+  options: {templateId?: string; t?: TFunction} = {},
 ): ChecklistSectionGroup[] {
   const sections = new Map<string, ChecklistItem[]>();
 
   items.forEach(item => {
-    const currentItems = sections.get(item.section) ?? [];
-    currentItems.push(item);
-    sections.set(item.section, currentItems);
+    const displayItem =
+      options.templateId && options.t
+        ? getLocalizedChecklistItem({templateId: options.templateId}, item, options.t)
+        : item;
+    const currentItems = sections.get(displayItem.section) ?? [];
+    currentItems.push(displayItem);
+    sections.set(displayItem.section, currentItems);
   });
 
   return Array.from(sections.entries()).map(([title, sectionItems]) => ({
@@ -58,9 +67,9 @@ export function addCustomChecklistItem(
       {
         id: input.id,
         name: nextName,
-        section: '추가 항목',
+        section: i18n.t('customSection', {ns: 'checklist'}),
         essential: false,
-        tip: nextDescription || '직접 추가한 항목입니다.',
+        tip: nextDescription || i18n.t('customTip', {ns: 'checklist'}),
         checked: false,
         custom: true,
       },

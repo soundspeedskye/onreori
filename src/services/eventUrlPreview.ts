@@ -1,9 +1,9 @@
 import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {isSupabaseConfigured, supabase} from '../config/supabase';
+import {i18n} from '../i18n';
 import type {EventUrlPreview} from '../types';
 import {
   EVENT_URL_PREVIEW_FETCH_HEADERS,
-  EVENT_URL_PREVIEW_HTTPS_ONLY_MESSAGE,
   type ParsedEventUrlPreview,
   isSupportedEventUrlPreviewUrl,
   parseEventUrlPreviewHtml,
@@ -108,7 +108,7 @@ export async function fetchEventUrlPreview(
   const trimmedUrl = url.trim();
 
   if (!trimmedUrl.toLowerCase().startsWith('https://')) {
-    throw new Error(EVENT_URL_PREVIEW_HTTPS_ONLY_MESSAGE);
+    throw new Error(i18n.t('eventUrlHttpsOnly', {ns: 'rooms'}));
   }
 
   if (!isSupabaseConfigured || !supabase) {

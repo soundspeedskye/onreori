@@ -2013,6 +2013,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNLocalize (3.7.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNReanimated (4.4.1):
     - hermes-engine
     - RCTRequired
@@ -2311,6 +2333,7 @@ DEPENDENCIES:
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
   - "ReactNativeKakaoMaps (from `../node_modules/@jiggag/react-native-kakao-maps`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
+  - RNLocalize (from `../node_modules/react-native-localize`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
@@ -2483,6 +2506,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@jiggag/react-native-kakao-maps"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
+  RNLocalize:
+    :path: "../node_modules/react-native-localize"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2576,6 +2601,7 @@ SPEC CHECKSUMS:
   ReactNativeDependencies: dc67e07029e389b52240113a1369d2bffe29591a
   ReactNativeKakaoMaps: 0301c186bd1a7587fac0a57d20e228174f0fe14c
   RNDateTimePicker: 9025ccd219b382f246e9ceb85cd4095279b9bad1
+  RNLocalize: 1e6eb4290e89502c3d2193d82dfb7de14a9e672b
   RNReanimated: 7e08958bc219c0cb2ac5e749871bb0bcd4523f49
   RNScreens: 6cb648bdad8fe9bee9259fe144df95b6d1d5b707
   RNShare: bedb237f4fc22851d14d4d30dee152950b289274

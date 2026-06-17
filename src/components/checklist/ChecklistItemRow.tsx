@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {ChecklistItem} from '../../types';
@@ -20,9 +21,11 @@ export function ChecklistItemRow({
   onDelete,
   onToggle,
 }: ChecklistItemRowProps) {
+  const {t} = useTranslation('checklist');
+
   return (
     <Card
-      accessibilityLabel={`${item.name} 체크`}
+      accessibilityLabel={t('checkAccessibility', {itemName: item.name})}
       accessibilityRole="checkbox"
       accessibilityState={{checked: item.checked}}
       onPress={onToggle}
@@ -37,14 +40,18 @@ export function ChecklistItemRow({
               {item.name}
             </Text>
             {item.essential ? (
-              <Chip label="필수" tone="action" style={styles.badge} />
+              <Chip label={t('essential')} tone="action" style={styles.badge} />
             ) : null}
-            {item.custom ? <Chip label="직접 추가" style={styles.badge} /> : null}
+            {item.custom ? (
+              <Chip label={t('custom')} style={styles.badge} />
+            ) : null}
           </View>
           {canDelete ? (
             <Pressable
-              accessibilityHint="항목을 삭제합니다."
-              accessibilityLabel={`${item.name} 삭제`}
+              accessibilityHint={t('deleteAccessibilityHint')}
+              accessibilityLabel={t('deleteAccessibility', {
+                itemName: item.name,
+              })}
               accessibilityRole="button"
               hitSlop={8}
               onPress={event => {

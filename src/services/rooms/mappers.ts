@@ -1,5 +1,9 @@
 import type {ChatMessage, EventRoom, RoomStatus} from '../../types';
 import {KOREAN_EVENT_TIME_ZONE} from '../../utils/date';
+import {
+  normalizePrimaryRoomLanguage,
+  normalizeRoomLanguageCodes,
+} from '../../utils/eventRoomLanguages';
 import {getEventRoomAvailability} from '../../utils/eventRoomVisibility';
 import type {
   ChatMessageRow,
@@ -41,6 +45,11 @@ export async function mapChatMessageRow(
 
 export function mapEventRoomRow(row: EventRoomRow): EventRoom {
   const eventDate = row.event_date as string;
+  const languageCodes = normalizeRoomLanguageCodes(row.language_codes);
+  const primaryLanguage = normalizePrimaryRoomLanguage(
+    row.primary_language,
+    languageCodes,
+  );
   const activeFromAt = nullableString(row.active_from_at);
   const activeUntilAt = nullableString(row.active_until_at);
   const availability = getEventRoomAvailability({
@@ -62,6 +71,8 @@ export function mapEventRoomRow(row: EventRoomRow): EventRoom {
     latitude: nullableNumber(row.latitude),
     longitude: nullableNumber(row.longitude),
     subjectName: nullableString(row.subject_name),
+    primaryLanguage,
+    languageCodes,
     status: (row.status as RoomStatus | undefined) ?? 'active',
     eventTimezone:
       nullableString(row.event_timezone) ??
@@ -77,6 +88,11 @@ export function mapEventRoomRow(row: EventRoomRow): EventRoom {
 }
 
 export function toPublicPreviewRoom(room: PreviewRoom): EventRoom {
+  const languageCodes = normalizeRoomLanguageCodes(room.languageCodes);
+  const primaryLanguage = normalizePrimaryRoomLanguage(
+    room.primaryLanguage,
+    languageCodes,
+  );
   const availability = getEventRoomAvailability(room);
 
   return {
@@ -92,6 +108,8 @@ export function toPublicPreviewRoom(room: PreviewRoom): EventRoom {
     latitude: room.latitude,
     longitude: room.longitude,
     subjectName: room.subjectName,
+    primaryLanguage,
+    languageCodes,
     status: room.status ?? 'active',
     eventTimezone:
       room.eventTimezone ?? KOREAN_EVENT_TIME_ZONE,

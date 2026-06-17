@@ -28,7 +28,7 @@ export const EVENT_URL_PREVIEW_ALLOWED_HOST_ENTRIES = [
 ] as const;
 
 export const EVENT_URL_PREVIEW_HTTPS_ONLY_MESSAGE =
-  'https:// 주소만 사용할 수 있습니다.';
+  'Only https:// URLs are supported.';
 
 export const EVENT_URL_PREVIEW_FETCH_HEADERS = {
   accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',

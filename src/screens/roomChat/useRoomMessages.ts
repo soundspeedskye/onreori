@@ -5,6 +5,7 @@ import {
   isTutorialRoomId,
   listMessages,
   subscribeToRoomMessages,
+  type TutorialRoomCopy,
 } from '../../services/rooms';
 import type {ChatMessage} from '../../types';
 import {ALERT_MESSAGES, showError} from '../../utils/appAlert';
@@ -16,7 +17,11 @@ import {
 
 const TUTORIAL_BOT_TYPING_DELAY_MS = 700;
 
-export function useRoomMessages(roomId: string, enabled: boolean) {
+export function useRoomMessages(
+  roomId: string,
+  enabled: boolean,
+  tutorialCopy?: TutorialRoomCopy,
+) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [botTyping, setBotTyping] = useState(false);
@@ -44,7 +49,10 @@ export function useRoomMessages(roomId: string, enabled: boolean) {
       setBotTyping(true);
       const timer = setTimeout(async () => {
         try {
-          const welcomeMessages = await ensureTutorialWelcomeMessages(roomId);
+          const welcomeMessages = await ensureTutorialWelcomeMessages(
+            roomId,
+            tutorialCopy,
+          );
           if (active) {
             setMessages(current =>
               mergeRoomMessagesByCreatedAt(roomId, current, ...welcomeMessages),
@@ -68,8 +76,24 @@ export function useRoomMessages(roomId: string, enabled: boolean) {
             mergeRoomMessagesByCreatedAt(roomId, current, ...nextMessages),
           );
 
-          if (tutorialRoom && nextMessages.length === 0) {
-            scheduleTutorialWelcomeMessages();
+          if (tutorialRoom) {
+            if (nextMessages.length === 0) {
+              scheduleTutorialWelcomeMessages();
+            } else {
+              const localizedMessages = await ensureTutorialWelcomeMessages(
+                roomId,
+                tutorialCopy,
+              );
+              if (active) {
+                setMessages(current =>
+                  mergeRoomMessagesByCreatedAt(
+                    roomId,
+                    current,
+                    ...localizedMessages,
+                  ),
+                );
+              }
+            }
           }
         }
       } catch (error) {
@@ -97,7 +121,7 @@ export function useRoomMessages(roomId: string, enabled: boolean) {
       clearTutorialBotTimers();
       unsubscribe();
     };
-  }, [enabled, roomId]);
+  }, [enabled, roomId, tutorialCopy]);
 
   function scheduleTutorialReply(replyFactory: () => Promise<ChatMessage>) {
     setBotTyping(true);

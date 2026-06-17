@@ -2,12 +2,13 @@ import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 import {colors, layout, radii, spacing} from '../theme/tokens';
 
 import {CategoryCard} from '../components/categories/CategoryCard';
 import {Button} from '../components/ui/Button';
 import {ScreenHeader} from '../components/ui/ScreenHeader';
-import { eventCategories } from '../data/eventCategories';
+import {getEventCategories} from '../data/eventCategories';
 import type { EventCategory, RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CategoryHome'>;
@@ -16,12 +17,15 @@ type Props = NativeStackScreenProps<RootStackParamList, 'CategoryHome'>;
  * 이벤트 카테고리 목록을 보여주고 선택한 카테고리 상세 또는 마이페이지로 연결한다.
  */
 export function CategoryHomeScreen({ navigation }: Props) {
+  const {t} = useTranslation('categories');
+  const eventCategories = getEventCategories();
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader
-          title="어떤 이벤트인가요?"
-          description="현장에 있는 팬들과 실시간으로 소통해요."
+          title={t('homeTitle')}
+          description={t('homeDescription')}
           trailing={
             <Button
               onPress={() => navigation.navigate('MyPage')}

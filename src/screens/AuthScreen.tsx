@@ -1,29 +1,31 @@
-import React, {useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
-import {useAuth} from '../auth/AuthContext';
-import {AuthForm, type AuthFormMode} from '../components/auth/AuthForm';
-import {ScreenHeader} from '../components/ui/ScreenHeader';
-import {colors, layout, spacing} from '../theme/tokens';
-import type {RootStackParamList} from '../types';
-import {ALERT_MESSAGES, showError} from '../utils/appAlert';
-import {useAuthRedirect} from './auth/useAuthRedirect';
+import { useAuth } from '../auth/AuthContext';
+import { AuthForm, type AuthFormMode } from '../components/auth/AuthForm';
+import { ScreenHeader } from '../components/ui/ScreenHeader';
+import { colors, layout, spacing } from '../theme/tokens';
+import type { RootStackParamList } from '../types';
+import { ALERT_MESSAGES, showError } from '../utils/appAlert';
+import { useAuthRedirect } from './auth/useAuthRedirect';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Auth'>;
 
 /**
  * 로그인과 회원가입을 처리하고 인증 후 요청된 목적 화면으로 리다이렉트한다.
  */
-export function AuthScreen({navigation, route}: Props) {
-  const {signIn, signUp, serverConfigured} = useAuth();
+export function AuthScreen({ navigation, route }: Props) {
+  const { t } = useTranslation('auth');
+  const { signIn, signUp, serverConfigured } = useAuth();
   const [mode, setMode] = useState<AuthFormMode>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const {completeRedirect} = useAuthRedirect({
+  const { completeRedirect } = useAuthRedirect({
     navigation,
     redirect: route.params?.redirect,
   });
@@ -51,8 +53,8 @@ export function AuthScreen({navigation, route}: Props) {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ScreenHeader
-            title={mode === 'signIn' ? '로그인' : '회원가입'}
-            description="이벤트 단톡방 입장과 내 계정 저장은 로그인한 사용자만 사용할 수 있어요."
+            title={mode === 'signIn' ? t('signInTitle') : t('signUpTitle')}
+            // description={t('description')}
           />
         </View>
 

@@ -1,17 +1,23 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 
 import {EventRoomList} from '../components/rooms/EventRoomList';
 import {RoomCreateForm} from '../components/rooms/RoomCreateForm';
+import {RoomLanguageFilterBar} from '../components/rooms/RoomLanguageFilterBar';
 import {EmptyState} from '../components/ui/EmptyState';
 import {ScreenHeader} from '../components/ui/ScreenHeader';
+import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
 import {getEventCategoryById} from '../data/eventCategories';
+import {useAppLanguage} from '../i18n/AppLanguageProvider';
+import {getTutorialRoomCopy} from '../services/rooms';
 import {colors, layout, spacing} from '../theme/tokens';
 import {useAuth} from '../auth/AuthContext';
-import type {RootStackParamList} from '../types';
+import type {EventRoomLanguageFilter, RootStackParamList} from '../types';
 import {getRoomCreationConfig} from '../utils/eventRoomForm';
+import {filterRoomsByLanguage} from '../utils/eventRoomLanguages';
 import {useCreateRoomAction} from './eventRooms/useCreateRoomAction';
 import {useEventRooms} from './eventRooms/useEventRooms';
 import {useEventUrlPreview} from './eventRooms/useEventUrlPreview';
@@ -24,15 +30,42 @@ type Props = NativeStackScreenProps<RootStackParamList, 'EventRooms'>;
  * 카테고리별 이벤트 단톡방 목록, 방 생성 폼, 입장 코드 기반 참여 흐름을 조립한다.
  */
 export function EventRoomsScreen({navigation, route}: Props) {
+  const {t: tRooms} = useTranslation('rooms');
   const {user} = useAuth();
+  const {language} = useAppLanguage();
+  const [selectedLanguageFilter, setSelectedLanguageFilter] =
+    useState<EventRoomLanguageFilter>('all');
   const category = getEventCategoryById(route.params.categoryId);
   const creationConfig = category
     ? getRoomCreationConfig(category.id)
     : getRoomCreationConfig(route.params.categoryId);
+  const localizedCreationConfig = useMemo(() => {
+    if (category?.id === EVENT_CATEGORY_IDS.CAFE_EVENT) {
+      return {
+        ...creationConfig,
+        titleLabel: tRooms('artistTitleLabel'),
+        titlePlaceholder: tRooms('artistTitlePlaceholder'),
+      };
+    }
+
+    return {
+      ...creationConfig,
+      titleLabel: tRooms('titleLabel'),
+      titlePlaceholder:
+        category?.id === EVENT_CATEGORY_IDS.POPUP
+          ? tRooms('popupTitlePlaceholder')
+          : tRooms('eventDayTitlePlaceholder'),
+    };
+  }, [category?.id, creationConfig, tRooms]);
+  const tutorialCopy = useMemo(() => getTutorialRoomCopy(language), [language]);
   const {rooms, loading, usingTutorialFallback, loadRooms, addRoomToList} =
-    useEventRooms(category?.id);
+    useEventRooms(category?.id, tutorialCopy);
+  const visibleRooms = useMemo(
+    () => filterRoomsByLanguage(rooms, selectedLanguageFilter),
+    [rooms, selectedLanguageFilter],
+  );
   const form = useRoomCreationForm({
-    requiresPlace: creationConfig.requiresPlace,
+    requiresPlace: localizedCreationConfig.requiresPlace,
     selectedPlace: route.params.selectedPlace,
   });
   const {previewLoading, handleFetchEventUrlPreview} = useEventUrlPreview({
@@ -46,7 +79,7 @@ export function EventRoomsScreen({navigation, route}: Props) {
   const {creating, handleCreateRoom} = useCreateRoomAction({
     user,
     category,
-    creationConfig,
+    creationConfig: localizedCreationConfig,
     form,
     onVisibleRoomCreated: addRoomToList,
   });
@@ -67,7 +100,7 @@ export function EventRoomsScreen({navigation, route}: Props) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <EmptyState
-          title="카테고리를 찾지 못했습니다."
+          title={tRooms('categoryNotFound')}
           style={styles.emptyState}
         />
       </SafeAreaView>
@@ -78,13 +111,16 @@ export function EventRoomsScreen({navigation, route}: Props) {
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <ScreenHeader title={`${category.title} 단톡방`} />
+          <ScreenHeader
+            title={tRooms('categoryRoomTitle', {categoryTitle: category.title})}
+          />
           <RoomCreateForm
-            creationConfig={creationConfig}
+            creationConfig={localizedCreationConfig}
             title={form.title}
             eventDate={form.eventDate}
             location={form.location}
             newRoomCode={form.newRoomCode}
+            languageCodes={form.languageCodes}
             showDatePicker={form.showDatePicker}
             eventUrl={form.eventUrl}
             previewLoading={previewLoading}
@@ -93,6 +129,7 @@ export function EventRoomsScreen({navigation, route}: Props) {
             onEventDateChange={form.handleDateChange}
             onLocationChange={form.handleLocationChange}
             onNewRoomCodeChange={form.setNewRoomCode}
+            onToggleLanguageCode={form.toggleLanguageCode}
             onShowDatePickerChange={form.setShowDatePicker}
             onEventUrlChange={form.setEventUrl}
             onFetchEventUrlPreview={handleFetchEventUrlPreview}
@@ -105,16 +142,20 @@ export function EventRoomsScreen({navigation, route}: Props) {
             onCreateRoom={handleCreateRoom}
           />
 
-          <Text style={styles.sectionTitle}>오늘의 단톡방</Text>
+          <Text style={styles.sectionTitle}>{tRooms('todayRooms')}</Text>
+          <RoomLanguageFilterBar
+            onSelectFilter={setSelectedLanguageFilter}
+            selectedFilter={selectedLanguageFilter}
+          />
           {usingTutorialFallback ? (
             <Text style={styles.fallbackNotice}>
-              단톡방 목록을 잠시 불러오지 못해 튜토리얼 방을 보여드려요.
+              {tRooms('tutorialFallbackNotice')}
             </Text>
           ) : null}
         </View>
 
         <EventRoomList
-          rooms={rooms}
+          rooms={visibleRooms}
           loading={loading}
           selectedRoomId={roomJoin.selectedRoomId}
           entryCode={roomJoin.entryCode}

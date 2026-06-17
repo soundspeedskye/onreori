@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, radii, spacing} from '../../theme/tokens';
 import {Card} from '../ui/Card';
@@ -21,8 +22,11 @@ export function ChecklistHeroCard({
   meta,
   saveStateLabel,
   conditionLabels,
-  fallbackConditionLabel = '선택한 추가 조건 없음',
+  fallbackConditionLabel,
 }: ChecklistHeroCardProps) {
+  const {t} = useTranslation('checklist');
+  const noConditionsLabel = fallbackConditionLabel ?? t('noConditions');
+
   return (
     <Card style={styles.card}>
       <View style={styles.top}>
@@ -43,7 +47,7 @@ export function ChecklistHeroCard({
         {conditionLabels.length > 0 ? (
           conditionLabels.map(label => <Chip key={label} label={label} />)
         ) : (
-          <Text style={styles.fallback}>{fallbackConditionLabel}</Text>
+          <Text style={styles.fallback}>{noConditionsLabel}</Text>
         )}
       </View>
     </Card>

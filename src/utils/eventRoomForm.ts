@@ -1,5 +1,6 @@
 import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
+import {i18n} from '../i18n';
 import {
   getKoreanEventRoomAvailability,
   isKoreanEventRoomDateActiveNow,
@@ -23,19 +24,19 @@ type RoomCreationDraft = {
 export function getRoomCreationConfig(categoryId: string): RoomCreationConfig {
   if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
     return {
-      titleLabel: '아티스트/멤버명',
-      titlePlaceholder: '예: 민지',
+      titleLabel: i18n.t('artistTitleLabel', {ns: 'rooms'}),
+      titlePlaceholder: i18n.t('artistTitlePlaceholder', {ns: 'rooms'}),
       requiresPlace: false,
       allowsEventUrlPreview: false,
     };
   }
 
   return {
-    titleLabel: '방 제목',
+    titleLabel: i18n.t('titleLabel', {ns: 'rooms'}),
     titlePlaceholder:
       categoryId === EVENT_CATEGORY_IDS.POPUP
-        ? '예: 성수 팝업 재고방'
-        : '예: KSPO 2일차 대기방',
+        ? i18n.t('popupTitlePlaceholder', {ns: 'rooms'})
+        : i18n.t('eventDayTitlePlaceholder', {ns: 'rooms'}),
     requiresPlace: true,
     allowsEventUrlPreview: true,
   };
@@ -45,7 +46,7 @@ export function buildRoomTitle(categoryId: string, title: string): string {
   const trimmedTitle = title.trim();
 
   if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
-    return `${trimmedTitle} 생카 정보방`;
+    return i18n.t('cafeRoomTitle', {title: trimmedTitle, ns: 'rooms'});
   }
 
   return trimmedTitle;

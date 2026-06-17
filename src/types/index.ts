@@ -1,6 +1,8 @@
 import type {EventCategoryId} from '../constants/eventCategories';
+import type {SupportedLanguageCode} from '../i18n/languages';
 
 export type {EventCategoryId};
+export type {SupportedLanguageCode};
 
 export type ConditionId = string;
 
@@ -158,6 +160,8 @@ export type AuthUser = {
 
 export type RoomStatus = 'active' | 'closed' | 'soft_deleted';
 
+export type EventRoomLanguageFilter = SupportedLanguageCode | 'all';
+
 export type EventRoom = {
   id: string;
   categoryId: string;
@@ -171,6 +175,8 @@ export type EventRoom = {
   latitude?: number;
   longitude?: number;
   subjectName?: string;
+  primaryLanguage: SupportedLanguageCode;
+  languageCodes: SupportedLanguageCode[];
   status: RoomStatus;
   eventTimezone: string;
   activeFromAt: string;
@@ -210,7 +216,12 @@ export type RootStackParamList = {
   MapPicker:
     | { categoryId: string; returnTo: 'EventRooms' }
     | { categoryId: string; returnTo: 'CafeRoutes'; routeId?: string };
-  RoomChat: { roomId: string; title: string; categoryId?: string };
+  RoomChat: {
+    roomId: string;
+    title: string;
+    categoryId?: string;
+    languageCodes?: SupportedLanguageCode[];
+  };
   MyPage: undefined;
   ShareCard: { checklistId: string };
 };

@@ -1,4 +1,5 @@
 import {useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
 import type {KakaoPlaceSearchResult} from '../../services/placeSearch';
 import type {PlaceSelection} from '../../types';
@@ -25,6 +26,7 @@ export const SEOUL_COORDINATE = {
 };
 
 export function useMapCenterSelection() {
+  const {t} = useTranslation('map');
   const currentCenterRef = useRef<Coordinate>(SEOUL_COORDINATE);
   const [nativeCenter, setNativeCenter] = useState(SEOUL_COORDINATE);
   const [searchCenter, setSearchCenter] = useState(SEOUL_COORDINATE);
@@ -56,7 +58,7 @@ export function useMapCenterSelection() {
     setMapFocusVersion(version => version + 1);
     setPlace({
       provider: 'kakao',
-      name: '선택한 장소',
+      name: t('selectedPlaceName'),
       latitude: selectedCenter.latitude,
       longitude: selectedCenter.longitude,
       source: 'center',

@@ -44,14 +44,17 @@ export function getChatMessageDateKey(createdAt: string): string {
   return `${year}-${month}-${day}`;
 }
 
-export function formatChatMessageDate(createdAt: string): string {
+export function formatChatMessageDate(
+  createdAt: string,
+  locale = 'ko-KR',
+): string {
   const date = new Date(createdAt);
 
   if (Number.isNaN(date.getTime())) {
     return createdAt.slice(0, 10);
   }
 
-  return new Intl.DateTimeFormat('ko-KR', {
+  return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -59,14 +62,17 @@ export function formatChatMessageDate(createdAt: string): string {
   }).format(date);
 }
 
-export function formatChatMessageTime(createdAt: string): string {
+export function formatChatMessageTime(
+  createdAt: string,
+  locale = 'ko-KR',
+): string {
   const date = new Date(createdAt);
 
   if (Number.isNaN(date.getTime())) {
     return '';
   }
 
-  return new Intl.DateTimeFormat('ko-KR', {
+  return new Intl.DateTimeFormat(locale, {
     hour: 'numeric',
     minute: '2-digit',
   }).format(date);
@@ -76,6 +82,7 @@ export function getChatMessagePresentation(
   messages: ChatMessage[],
   index: number,
   currentUserId: string | undefined,
+  locale = 'ko-KR',
 ): ChatMessagePresentation {
   const message = messages[index];
   const previousMessage = index > 0 ? messages[index - 1] : undefined;
@@ -94,11 +101,11 @@ export function getChatMessagePresentation(
 
   return {
     isMine,
-    dateLabel: formatChatMessageDate(message.createdAt),
+    dateLabel: formatChatMessageDate(message.createdAt, locale),
     showNickname: !isMine && !sameAuthor,
     showDateSeparator: !previousMessage || !sameDate,
     showTime: !sameAuthor || !sameMinute,
-    timeLabel: formatChatMessageTime(message.createdAt),
+    timeLabel: formatChatMessageTime(message.createdAt, locale),
   };
 }
 

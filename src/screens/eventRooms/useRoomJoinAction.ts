@@ -42,6 +42,7 @@ export function useRoomJoinAction({
         roomId: room.id,
         title: room.title,
         categoryId: room.categoryId,
+        languageCodes: room.languageCodes,
       });
     } catch (error) {
       showError(error, {

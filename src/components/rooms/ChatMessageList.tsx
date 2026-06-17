@@ -1,6 +1,9 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {ActivityIndicator, FlatList, StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
+import {useAppLanguage} from '../../i18n/AppLanguageProvider';
+import {getIntlLocale} from '../../i18n/languages';
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {ChatMessage} from '../../types';
 import {getChatMessagePresentation} from '../../utils/chatMessages';
@@ -26,6 +29,9 @@ export function ChatMessageList({
   onHashtagFilterChange,
   onClearHashtagFilter,
 }: ChatMessageListProps) {
+  const {t} = useTranslation('rooms');
+  const {language} = useAppLanguage();
+  const intlLocale = getIntlLocale(language);
   const listRef = useRef<FlatList<ChatMessage>>(null);
   const didInitialScrollRef = useRef(false);
 
@@ -61,6 +67,7 @@ export function ChatMessageList({
         messages,
         index,
         currentUserId,
+        intlLocale,
       );
 
     return (
@@ -85,20 +92,21 @@ export function ChatMessageList({
         style={styles.list}
         contentContainerStyle={styles.messageList}
         data={messages}
+        extraData={intlLocale}
         keyExtractor={item => item.id}
         renderItem={renderMessage}
         onContentSizeChange={handleContentSizeChange}
         ListEmptyComponent={
           botTyping ? null : (
             <View style={styles.emptyBox}>
-              <Text style={styles.emptyText}>아직 메시지가 없습니다.</Text>
+              <Text style={styles.emptyText}>{t('emptyMessages')}</Text>
             </View>
           )
         }
         ListFooterComponent={
           botTyping ? (
             <View style={styles.typingBox}>
-              <Text style={styles.typingText}>오늘의오리가 입력 중...</Text>
+              <Text style={styles.typingText}>{t('botTyping')}</Text>
             </View>
           ) : null
         }

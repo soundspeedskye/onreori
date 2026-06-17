@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import { colors, radii, spacing } from '../../theme/tokens';
 import { Button } from '../ui/Button';
@@ -21,19 +22,21 @@ export function ChecklistAddItemForm({
   onDescriptionChange,
   onAdd,
 }: ChecklistAddItemFormProps) {
+  const {t} = useTranslation('checklist');
+
   return (
     <Card style={styles.addCard}>
-      <Text style={styles.sectionTitle}>아이템 추가</Text>
+      <Text style={styles.sectionTitle}>{t('addItemTitle')}</Text>
       <View style={styles.addFields}>
         <TextField
           onChangeText={onNameChange}
-          placeholder="아이템"
+          placeholder={t('itemPlaceholder')}
           value={name}
         />
         <TextField
           multiline
           onChangeText={onDescriptionChange}
-          placeholder="설명"
+          placeholder={t('descriptionPlaceholder')}
           style={styles.descriptionInput}
           value={description}
         />
@@ -41,7 +44,7 @@ export function ChecklistAddItemForm({
           onPress={onAdd}
           style={styles.addButton}
           textStyle={styles.addButtonText}
-          title="추가"
+          title={t('addItem')}
           variant="dark"
         />
       </View>

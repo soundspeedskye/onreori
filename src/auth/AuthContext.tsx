@@ -10,6 +10,7 @@ import React, {
 
 import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {isSupabaseConfigured, supabase} from '../config/supabase';
+import {i18n} from '../i18n';
 import type {AuthUser} from '../types';
 
 type AuthContextValue = {
@@ -212,7 +213,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
       }
 
       if (!data.session) {
-        throw new Error('가입 확인 이메일을 완료한 뒤 로그인하세요.');
+        throw new Error(i18n.t('confirmEmailBeforeLogin', {ns: 'auth'}));
       }
 
       const nextUser = toAuthUser(data.user.id, data.user.email, nickname);

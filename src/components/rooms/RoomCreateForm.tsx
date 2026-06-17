@@ -1,10 +1,13 @@
 import React from 'react';
 import {Platform, StyleSheet, Text} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {useTranslation} from 'react-i18next';
 
+import type {SupportedLanguageCode} from '../../i18n/languages';
 import {colors, radii, spacing} from '../../theme/tokens';
 import {formatDateInput, parseDateInput} from '../../utils/date';
 import type {RoomCreationConfig} from '../../utils/eventRoomForm';
+import {LanguageChipSelector} from '../language/LanguageChipSelector';
 import {Button} from '../ui/Button';
 import {Card} from '../ui/Card';
 import {TextField} from '../ui/TextField';
@@ -15,6 +18,7 @@ type RoomCreateFormProps = {
   eventDate: string;
   location: string;
   newRoomCode: string;
+  languageCodes: SupportedLanguageCode[];
   showDatePicker: boolean;
   eventUrl: string;
   previewLoading: boolean;
@@ -23,6 +27,7 @@ type RoomCreateFormProps = {
   onEventDateChange: (eventDate: string) => void;
   onLocationChange: (location: string) => void;
   onNewRoomCodeChange: (entryCode: string) => void;
+  onToggleLanguageCode: (languageCode: SupportedLanguageCode) => void;
   onShowDatePickerChange: (showDatePicker: boolean) => void;
   onEventUrlChange: (eventUrl: string) => void;
   onFetchEventUrlPreview: () => void;
@@ -36,6 +41,7 @@ export function RoomCreateForm({
   eventDate,
   location,
   newRoomCode,
+  languageCodes,
   showDatePicker,
   eventUrl,
   previewLoading,
@@ -44,15 +50,20 @@ export function RoomCreateForm({
   onEventDateChange,
   onLocationChange,
   onNewRoomCodeChange,
+  onToggleLanguageCode,
   onShowDatePickerChange,
   onEventUrlChange,
   onFetchEventUrlPreview,
   onOpenMapPicker,
   onCreateRoom,
 }: RoomCreateFormProps) {
+  const {t: tCommon} = useTranslation('common');
+  const {t: tLanguage} = useTranslation('language');
+  const {t: tRooms} = useTranslation('rooms');
+
   return (
     <Card style={styles.createBox}>
-      <Text style={styles.sectionTitle}>방 만들기</Text>
+      <Text style={styles.sectionTitle}>{tRooms('createTitle')}</Text>
       <TextField
         accessibilityLabel={creationConfig.titleLabel}
         onChangeText={onTitleChange}
@@ -61,7 +72,7 @@ export function RoomCreateForm({
       />
       <Button
         onPress={() => onShowDatePickerChange(true)}
-        title={eventDate || '날짜 선택'}
+        title={eventDate || tRooms('datePlaceholder')}
         variant="secondary"
       />
       {showDatePicker ? (
@@ -82,7 +93,7 @@ export function RoomCreateForm({
       {showDatePicker && Platform.OS === 'ios' ? (
         <Button
           onPress={() => onShowDatePickerChange(false)}
-          title="완료"
+          title={tCommon('actions.done')}
           variant="secondary"
         />
       ) : null}
@@ -90,12 +101,12 @@ export function RoomCreateForm({
         <>
           <TextField
             onChangeText={onLocationChange}
-            placeholder="장소"
+            placeholder={tRooms('placePlaceholder')}
             value={location}
           />
           <Button
             onPress={onOpenMapPicker}
-            title="지도에서 장소 선택"
+            title={tRooms('choosePlaceOnMap')}
             variant="secondary"
           />
         </>
@@ -104,27 +115,38 @@ export function RoomCreateForm({
         <>
           <TextField
             onChangeText={onEventUrlChange}
-            placeholder="공식 공지/예매/안내 링크"
+            placeholder={tRooms('eventUrlPlaceholder')}
             value={eventUrl}
           />
           <Button
             disabled={previewLoading}
             onPress={onFetchEventUrlPreview}
-            title={previewLoading ? '가져오는 중...' : '링크에서 정보 가져오기'}
+            title={
+              previewLoading
+                ? tRooms('fetchingEventUrlPreview')
+                : tRooms('fetchEventUrlPreview')
+            }
             variant="secondary"
           />
         </>
       ) : null}
+      <Text style={styles.fieldLabel}>{tLanguage('conversationLanguages')}</Text>
+      <LanguageChipSelector
+        accessibilityLabel={tLanguage('conversationLanguages')}
+        multiSelect
+        onToggleLanguage={onToggleLanguageCode}
+        selectedLanguages={languageCodes}
+      />
       <TextField
         onChangeText={onNewRoomCodeChange}
-        placeholder="입장코드"
+        placeholder={tRooms('entryCodePlaceholder')}
         secureTextEntry
         value={newRoomCode}
       />
       <Button
         disabled={creating}
         onPress={onCreateRoom}
-        title={creating ? '만드는 중...' : '단톡방 만들기'}
+        title={creating ? tRooms('creatingRoom') : tRooms('createRoom')}
         variant="dark"
       />
     </Card>
@@ -136,6 +158,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 18,
     fontWeight: '900',
+  },
+  fieldLabel: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '800',
   },
   createBox: {
     borderRadius: radii.hero,

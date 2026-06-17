@@ -5,13 +5,17 @@ import type {
   EventRoom,
   PlaceSelection,
 } from '../types';
+import {i18n} from '../i18n';
 import {EVENT_ROOM_ALWAYS_ACTIVE_UNTIL_AT} from './eventRoomVisibility';
 import {createLocalId} from './localId';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const KOREA_UTC_OFFSET_MS = 9 * 60 * 60 * 1000;
-export const DEFAULT_CAFE_ROUTE_TITLE = '새 생일카페 루트';
 export const CAFE_ROUTE_TITLE_MAX_LENGTH = 40;
+
+function getDefaultCafeRouteTitle() {
+  return i18n.t('defaultTitle', {ns: 'cafeRoutes'});
+}
 
 type CreateCafeRouteDraftParams = {
   categoryId: string;
@@ -53,7 +57,7 @@ function getValidTime(value: string): number | null {
 export function createCafeRouteDraft({
   categoryId,
   ownerId,
-  title = DEFAULT_CAFE_ROUTE_TITLE,
+  title = getDefaultCafeRouteTitle(),
   now = new Date().toISOString(),
 }: CreateCafeRouteDraftParams): CafeRoute {
   return {
@@ -73,7 +77,7 @@ export function normalizeCafeRouteTitle(title: string): string {
 
   return (
     singleLineTitle.slice(0, CAFE_ROUTE_TITLE_MAX_LENGTH) ||
-    DEFAULT_CAFE_ROUTE_TITLE
+    getDefaultCafeRouteTitle()
   );
 }
 
@@ -217,15 +221,24 @@ export function getCafeRouteRoomLinkStatus(
   const linkedRoom = route.linkedRoom;
 
   if (route.visibility !== 'shared' || !linkedRoom) {
-    return {state: 'notLinked', label: '미연동'};
+    return {
+      state: 'notLinked',
+      label: i18n.t('statuses.notLinked', {ns: 'cafeRoutes'}),
+    };
   }
 
   if (linkedRoom.status && linkedRoom.status !== 'active') {
-    return {state: 'expired', label: '단톡방 종료'};
+    return {
+      state: 'expired',
+      label: i18n.t('statuses.expired', {ns: 'cafeRoutes'}),
+    };
   }
 
   if (linkedRoom.activeUntilAt === EVENT_ROOM_ALWAYS_ACTIVE_UNTIL_AT) {
-    return {state: 'alwaysActive', label: '상시 연동'};
+    return {
+      state: 'alwaysActive',
+      label: i18n.t('statuses.alwaysActive', {ns: 'cafeRoutes'}),
+    };
   }
 
   const activeFromTime = getValidTime(linkedRoom.activeFromAt);
@@ -236,7 +249,10 @@ export function getCafeRouteRoomLinkStatus(
     activeUntilTime === null ||
     activeFromTime >= activeUntilTime
   ) {
-    return {state: 'notLinked', label: '미연동'};
+    return {
+      state: 'notLinked',
+      label: i18n.t('statuses.notLinked', {ns: 'cafeRoutes'}),
+    };
   }
 
   const nowTime = now.getTime();
@@ -247,11 +263,20 @@ export function getCafeRouteRoomLinkStatus(
       getKoreanDayNumber(new Date(activeFromTime)) - getKoreanDayNumber(now),
     );
 
-    return {state: 'upcoming', label: `오픈 전 D-${remainingDays}`};
+    return {
+      state: 'upcoming',
+      label: i18n.t('statuses.upcoming', {
+        count: remainingDays,
+        ns: 'cafeRoutes',
+      }),
+    };
   }
 
   if (nowTime >= activeUntilTime) {
-    return {state: 'expired', label: '단톡방 종료'};
+    return {
+      state: 'expired',
+      label: i18n.t('statuses.expired', {ns: 'cafeRoutes'}),
+    };
   }
 
   const todayNumber = getKoreanDayNumber(now);
@@ -261,8 +286,17 @@ export function getCafeRouteRoomLinkStatus(
   const remainingDays = lastActiveDayNumber - todayNumber;
 
   if (remainingDays <= 0) {
-    return {state: 'endingToday', label: '오늘 종료'};
+    return {
+      state: 'endingToday',
+      label: i18n.t('statuses.endingToday', {ns: 'cafeRoutes'}),
+    };
   }
 
-  return {state: 'active', label: `연동됨 D-${remainingDays}`};
+  return {
+    state: 'active',
+    label: i18n.t('statuses.active', {
+      count: remainingDays,
+      ns: 'cafeRoutes',
+    }),
+  };
 }

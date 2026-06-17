@@ -1,16 +1,49 @@
+import {i18n} from '../i18n';
+
 export const ALERT_MESSAGES = {
-  failed: '실패했습니다.',
-  createFailed: '생성에 실패했습니다.',
-  loadFailed: '불러오지 못했습니다.',
-  partialLoad: '일부 정보만 불러왔습니다.',
-  saveFailed: '저장에 실패했습니다.',
-  syncFailed: '동기화에 실패했습니다.',
-  sendFailed: '전송에 실패했습니다.',
-  notFound: '찾지 못했습니다.',
-  openFailed: '열지 못했습니다.',
-  requiredInput: '정보를 입력해 주세요.',
-  requiredSelection: '항목을 선택해 주세요.',
-  checkInput: '입력한 정보를 확인해 주세요.',
-  unavailable: '현재 사용할 수 없습니다.',
-  retry: '다시 시도하세요.',
+  get failed() {
+    return i18n.t('alerts.failed', {ns: 'common'});
+  },
+  get createFailed() {
+    return i18n.t('alerts.createFailed', {ns: 'common'});
+  },
+  get loadFailed() {
+    return i18n.t('alerts.loadFailed', {ns: 'common'});
+  },
+  get partialLoad() {
+    return i18n.t('alerts.partialLoad', {ns: 'common'});
+  },
+  get saveFailed() {
+    return i18n.t('alerts.saveFailed', {ns: 'common'});
+  },
+  get syncFailed() {
+    return i18n.t('alerts.syncFailed', {ns: 'common'});
+  },
+  get sendFailed() {
+    return i18n.t('alerts.sendFailed', {ns: 'common'});
+  },
+  get notFound() {
+    return i18n.t('alerts.notFound', {ns: 'common'});
+  },
+  get openFailed() {
+    return i18n.t('alerts.openFailed', {ns: 'common'});
+  },
+  get requiredInput() {
+    return i18n.t('alerts.requiredInput', {ns: 'common'});
+  },
+  get requiredSelection() {
+    return i18n.t('alerts.requiredSelection', {ns: 'common'});
+  },
+  get checkInput() {
+    return i18n.t('alerts.checkInput', {ns: 'common'});
+  },
+  get unavailable() {
+    return i18n.t('alerts.unavailable', {ns: 'common'});
+  },
+  get retry() {
+    return i18n.t('alerts.retry', {ns: 'common'});
+  },
+  get supabaseRequired() {
+    return i18n.t('alerts.supabaseRequired', {ns: 'common'});
+  },
 } as const;

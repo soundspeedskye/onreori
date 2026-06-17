@@ -7,6 +7,7 @@ import {
   isTutorialRoomId,
   sendImageMessage,
   sendTextMessage,
+  type TutorialRoomCopy,
 } from '../../services/rooms';
 import type {AuthUser, ChatMessage} from '../../types';
 import {ALERT_MESSAGES, showAlert, showError} from '../../utils/appAlert';
@@ -15,6 +16,7 @@ import {mergeMessagesByCreatedAt} from '../../utils/chatMessages';
 type UseChatSendActionsParams = {
   roomId: string;
   user: AuthUser | null;
+  tutorialCopy?: TutorialRoomCopy;
   setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
   scheduleTutorialReply: (replyFactory: () => Promise<ChatMessage>) => void;
 };
@@ -22,6 +24,7 @@ type UseChatSendActionsParams = {
 export function useChatSendActions({
   roomId,
   user,
+  tutorialCopy,
   setMessages,
   scheduleTutorialReply,
 }: UseChatSendActionsParams) {
@@ -39,7 +42,9 @@ export function useChatSendActions({
       setMessages(current => mergeMessagesByCreatedAt(current, message));
       setBody('');
       if (isTutorialRoomId(roomId)) {
-        scheduleTutorialReply(() => createTutorialBotReply(roomId));
+        scheduleTutorialReply(() =>
+          createTutorialBotReply(roomId, tutorialCopy),
+        );
       }
     } catch (error) {
       showError(error, {

@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {KOREAN_EVENT_TIME_ZONE} from '../../utils/date';
+import {
+  normalizePrimaryRoomLanguage,
+  normalizeRoomLanguageCodes,
+} from '../../utils/eventRoomLanguages';
+import {getEventRoomAvailability} from '../../utils/eventRoomVisibility';
 import type {ChatMessage} from '../../types';
 import type {PreviewRoom} from './contracts';
 
@@ -93,6 +99,67 @@ function normalizePreviewMessage(
   };
 }
 
+function normalizePreviewRoom(value: unknown): PreviewRoom | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const id = getString(value.id);
+  const categoryId = getString(value.categoryId);
+  const title = getString(value.title);
+  const eventDate = getString(value.eventDate);
+  const location = getString(value.location);
+  const createdBy = getString(value.createdBy);
+  const createdAt = getString(value.createdAt);
+
+  if (
+    !id ||
+    !categoryId ||
+    !title ||
+    !eventDate ||
+    !location ||
+    !createdBy ||
+    !createdAt
+  ) {
+    return null;
+  }
+
+  const languageCodes = normalizeRoomLanguageCodes(value.languageCodes);
+  const availability = getEventRoomAvailability({
+    eventDate,
+    activeFromAt: getString(value.activeFromAt),
+    activeUntilAt: getString(value.activeUntilAt),
+  });
+
+  return {
+    ...(value as PreviewRoom),
+    id,
+    categoryId,
+    title,
+    eventDate,
+    location,
+    primaryLanguage: normalizePrimaryRoomLanguage(
+      value.primaryLanguage,
+      languageCodes,
+    ),
+    languageCodes,
+    status:
+      value.status === 'closed' || value.status === 'soft_deleted'
+        ? value.status
+        : 'active',
+    eventTimezone: getString(value.eventTimezone) ?? KOREAN_EVENT_TIME_ZONE,
+    activeFromAt: availability.activeFromAt,
+    activeUntilAt: availability.activeUntilAt,
+    memberCount:
+      typeof value.memberCount === 'number'
+        ? value.memberCount
+        : Number(value.memberCount ?? 0),
+    createdBy,
+    createdAt,
+    entryCode: typeof value.entryCode === 'string' ? value.entryCode : '',
+  };
+}
+
 export async function readPreviewRooms(): Promise<PreviewRoom[]> {
   const rawValue = await AsyncStorage.getItem(PREVIEW_ROOMS_KEY);
 
@@ -103,7 +170,15 @@ export async function readPreviewRooms(): Promise<PreviewRoom[]> {
   try {
     const parsedValue = JSON.parse(rawValue);
 
-    return Array.isArray(parsedValue) ? (parsedValue as PreviewRoom[]) : [];
+    if (!Array.isArray(parsedValue)) {
+      return [];
+    }
+
+    return parsedValue.flatMap(room => {
+      const normalizedRoom = normalizePreviewRoom(room);
+
+      return normalizedRoom ? [normalizedRoom] : [];
+    });
   } catch {
     return [];
   }

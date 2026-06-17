@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {
   AndroidSoftInputModes,
@@ -12,7 +12,8 @@ import {useAuth} from '../auth/AuthContext';
 import {ChatComposer} from '../components/rooms/ChatComposer';
 import {ChatHeader} from '../components/rooms/ChatHeader';
 import {ChatMessageList} from '../components/rooms/ChatMessageList';
-import {isTutorialRoomId} from '../services/rooms';
+import {useAppLanguage} from '../i18n/AppLanguageProvider';
+import {getTutorialRoomCopy, isTutorialRoomId} from '../services/rooms';
 import {colors} from '../theme/tokens';
 import type {RootStackParamList} from '../types';
 import {getVisibleMessagesForHashtagFilter} from '../utils/chatMessages';
@@ -39,7 +40,10 @@ const keyboardStickyOffset = {
  */
 export function RoomChatScreen({navigation, route}: Props) {
   const {user} = useAuth();
+  const {language} = useAppLanguage();
   const roomId = route.params.roomId;
+  const tutorialRoom = isTutorialRoomId(roomId);
+  const tutorialCopy = useMemo(() => getTutorialRoomCopy(language), [language]);
   const [hashtagFilter, setHashtagFilter] = useState('');
 
   useEffect(() => {
@@ -63,11 +67,12 @@ export function RoomChatScreen({navigation, route}: Props) {
   }, []);
 
   const {messages, setMessages, loading, botTyping, scheduleTutorialReply} =
-    useRoomMessages(roomId, Boolean(user));
+    useRoomMessages(roomId, Boolean(user), tutorialCopy);
   const {body, setBody, sending, handleSendText, handleSendImage} =
     useChatSendActions({
       roomId,
       user,
+      tutorialCopy,
       setMessages,
       scheduleTutorialReply,
     });
@@ -79,8 +84,13 @@ export function RoomChatScreen({navigation, route}: Props) {
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <ChatHeader
-        title={route.params.title}
-        tutorialRoom={isTutorialRoomId(roomId)}
+        languageCodes={
+          tutorialRoom
+            ? [tutorialCopy.languageCode]
+            : route.params.languageCodes ?? ['ko']
+        }
+        title={tutorialRoom ? tutorialCopy.roomTitle : route.params.title}
+        tutorialRoom={tutorialRoom}
       />
       <View style={styles.keyboardAwareArea}>
         <ChatMessageList

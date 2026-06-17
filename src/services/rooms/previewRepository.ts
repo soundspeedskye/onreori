@@ -1,4 +1,5 @@
 import {ALERT_MESSAGES} from '../../constants/alertMessages';
+import {i18n} from '../../i18n';
 import type {AuthUser, ChatMessage, EventRoom} from '../../types';
 import {
   getKoreanEventRoomAvailability,
@@ -9,6 +10,10 @@ import {
   getEventRoomAvailability,
   isEventRoomActiveAt,
 } from '../../utils/eventRoomVisibility';
+import {
+  normalizePrimaryRoomLanguage,
+  normalizeRoomLanguageCodes,
+} from '../../utils/eventRoomLanguages';
 import {getRoomCreationActiveWindowMessage} from '../../utils/eventRoomPolicy';
 import {extractHashtags} from '../../utils/hashtags';
 import {createLocalId} from '../../utils/localId';
@@ -96,12 +101,17 @@ export async function createPreviewRoom(
     activeFromAt: undefined,
     activeUntilAt: undefined,
   });
+  const languageCodes = normalizeRoomLanguageCodes(params.languageCodes);
+  const primaryLanguage = normalizePrimaryRoomLanguage(
+    params.primaryLanguage,
+    languageCodes,
+  );
   const room: PreviewRoom = {
     id: createLocalId('room'),
     categoryId: params.categoryId,
     title: params.title.trim(),
     eventDate,
-    location: params.location.trim() || '장소 미정',
+    location: params.location.trim() || i18n.t('unknownPlace', {ns: 'rooms'}),
     eventUrl: params.eventUrl,
     locationName: params.locationName,
     address: params.address,
@@ -109,6 +119,8 @@ export async function createPreviewRoom(
     latitude: params.latitude,
     longitude: params.longitude,
     subjectName: params.subjectName,
+    primaryLanguage,
+    languageCodes,
     status: 'active',
     eventTimezone: KOREAN_EVENT_TIME_ZONE,
     activeFromAt: availability.activeFromAt,

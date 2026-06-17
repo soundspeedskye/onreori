@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {colors, radii, spacing} from '../../theme/tokens';
 import {Button} from '../ui/Button';
@@ -34,11 +35,13 @@ export function AuthForm({
   onSubmit,
   onToggleMode,
 }: AuthFormProps) {
+  const {t} = useTranslation('auth');
+
   return (
     <>
       {!serverConfigured ? (
         <Text style={styles.previewNotice}>
-          Supabase 설정 전이라 현재는 로컬 프리뷰 로그인으로 동작합니다.
+          {t('previewNotice')}
         </Text>
       ) : null}
 
@@ -46,7 +49,7 @@ export function AuthForm({
         {mode === 'signUp' ? (
           <TextField
             onChangeText={onNicknameChange}
-            placeholder="닉네임"
+            placeholder={t('nicknamePlaceholder')}
             style={styles.input}
             value={nickname}
           />
@@ -55,13 +58,13 @@ export function AuthForm({
           autoCapitalize="none"
           keyboardType="email-address"
           onChangeText={onEmailChange}
-          placeholder="이메일"
+          placeholder={t('emailPlaceholder')}
           style={styles.input}
           value={email}
         />
         <TextField
           onChangeText={onPasswordChange}
-          placeholder="비밀번호"
+          placeholder={t('passwordPlaceholder')}
           secureTextEntry
           style={styles.input}
           value={password}
@@ -72,7 +75,7 @@ export function AuthForm({
         loading={submitting}
         onPress={onSubmit}
         style={styles.primaryButton}
-        title={mode === 'signIn' ? '로그인하기' : '가입하고 계속하기'}
+        title={mode === 'signIn' ? t('signInAction') : t('signUpAction')}
       />
 
       <Button
@@ -81,8 +84,8 @@ export function AuthForm({
         textStyle={styles.switchButtonText}
         title={
           mode === 'signIn'
-            ? '계정이 없다면 회원가입'
-            : '이미 계정이 있다면 로그인'
+            ? t('switchToSignUp')
+            : t('switchToSignIn')
         }
         variant="ghost"
       />

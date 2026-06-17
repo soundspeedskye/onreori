@@ -1,11 +1,13 @@
 import {useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
 import {getChecklistById, saveChecklist} from '../../storage/checklists';
 import type {Checklist} from '../../types';
-import {getSelectedConditionLabels} from '../../utils/checklistPresentation';
+import {getSelectedConditionLabels} from '../../utils/checklistTemplateTranslations';
 import {groupChecklistItemsBySection} from '../../utils/checklistItems';
 
 export function useChecklistState(checklistId: string) {
+  const {t: tTemplates} = useTranslation('checklistTemplates');
   const [checklist, setChecklist] = useState<Checklist | null>(null);
 
   useEffect(() => {
@@ -18,14 +20,22 @@ export function useChecklistState(checklistId: string) {
   }, [checklistId]);
 
   const groupedItems = useMemo(
-    () => (checklist ? groupChecklistItemsBySection(checklist.items) : []),
-    [checklist],
+    () =>
+      checklist
+        ? groupChecklistItemsBySection(checklist.items, {
+            templateId: checklist.templateId,
+            t: tTemplates,
+          })
+        : [],
+    [checklist, tTemplates],
   );
 
   const selectedConditionLabels = useMemo(
     () =>
-      checklist ? getSelectedConditionLabels(checklist.selectedConditions) : [],
-    [checklist],
+      checklist
+        ? getSelectedConditionLabels(checklist.selectedConditions, tTemplates)
+        : [],
+    [checklist, tTemplates],
   );
 
   const checkedCount = useMemo(

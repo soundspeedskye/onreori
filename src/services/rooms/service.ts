@@ -27,6 +27,7 @@ import {
 } from './supabaseRepository';
 import {
   getTutorialRoomForCategory,
+  type TutorialRoomCopy,
   isTutorialRoomId,
   joinTutorialRoom,
   withTutorialRoom,
@@ -38,17 +39,18 @@ function shouldUseRemoteRooms(): boolean {
 
 export async function listRoomsByCategory(
   categoryId: string,
+  tutorialCopy?: TutorialRoomCopy,
 ): Promise<EventRoom[]> {
   if (!shouldUseRemoteRooms()) {
     const rooms = await listPreviewRoomsByCategory(categoryId);
-    return withTutorialRoom(categoryId, rooms);
+    return withTutorialRoom(categoryId, rooms, tutorialCopy);
   }
 
   try {
     const rooms = await listRemoteRoomsByCategory(categoryId);
-    return withTutorialRoom(categoryId, rooms);
+    return withTutorialRoom(categoryId, rooms, tutorialCopy);
   } catch {
-    return [getTutorialRoomForCategory(categoryId)];
+    return [getTutorialRoomForCategory(categoryId, tutorialCopy)];
   }
 }
 

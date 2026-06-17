@@ -1,6 +1,10 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
+import {RoomLanguageChips} from '../rooms/RoomLanguageChips';
+import {useAppLanguage} from '../../i18n/AppLanguageProvider';
+import {getIntlLocale} from '../../i18n/languages';
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {EventRoom} from '../../types';
 import type {MyRooms} from '../../services/rooms';
@@ -19,27 +23,28 @@ export function MyRoomsTab({
   loadingMyRooms,
   onOpenRoom,
 }: MyRoomsTabProps) {
+  const {t} = useTranslation('myPage');
   const hasCreatedRooms = myRooms.createdRooms.length > 0;
   const hasJoinedRooms = myRooms.joinedRooms.length > 0;
 
   if (loadingMyRooms) {
     return (
       <EmptyState
-        title="단톡방 내역을 불러오는 중입니다."
+        title={t('roomsLoading')}
         style={styles.emptyBox}
       />
     );
   }
 
   if (!hasCreatedRooms && !hasJoinedRooms) {
-    return <EmptyState title="단톡방 내역이 없습니다." style={styles.emptyBox} />;
+    return <EmptyState title={t('roomsEmpty')} style={styles.emptyBox} />;
   }
 
   return (
     <View style={styles.roomGroups}>
       {hasCreatedRooms ? (
         <RoomGroup
-          title="내가 만든 단톡방"
+          title={t('createdRooms')}
           rooms={myRooms.createdRooms}
           onOpenRoom={onOpenRoom}
         />
@@ -47,7 +52,7 @@ export function MyRoomsTab({
 
       {hasJoinedRooms ? (
         <RoomGroup
-          title="참여한 단톡방"
+          title={t('joinedRooms')}
           rooms={myRooms.joinedRooms}
           onOpenRoom={onOpenRoom}
         />
@@ -84,14 +89,28 @@ function RoomHistoryCard({
   room: EventRoom;
   onOpenRoom: (room: EventRoom) => void;
 }) {
+  const {t} = useTranslation('rooms');
+  const {t: tMyPage} = useTranslation('myPage');
+  const {language} = useAppLanguage();
+  const intlLocale = getIntlLocale(language);
+
   return (
     <Card
-      accessibilityLabel={`${room.title} 단톡방 열기`}
+      accessibilityLabel={tMyPage('openRoomAccessibility', {
+        title: room.title,
+      })}
       onPress={() => onOpenRoom(room)}
       style={styles.roomCard}>
       <Text style={styles.roomTitle}>{room.title}</Text>
-      <Text style={styles.roomMeta}>{getEventRoomMetaLabel(room)}</Text>
-      <Text style={styles.roomMembers}>참여 {room.memberCount}명</Text>
+      <Text style={styles.roomMeta}>
+        {getEventRoomMetaLabel(room, intlLocale)}
+      </Text>
+      <View style={styles.roomMetaRow}>
+        <Text style={styles.roomMembers}>
+          {t('memberCount', {count: room.memberCount})}
+        </Text>
+        <RoomLanguageChips languageCodes={room.languageCodes} />
+      </View>
     </Card>
   );
 }
@@ -130,6 +149,12 @@ const styles = StyleSheet.create({
     color: colors.brandMuted,
     fontSize: 12,
     fontWeight: '800',
+  },
+  roomMetaRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
   },
   emptyBox: {
     backgroundColor: colors.surface,

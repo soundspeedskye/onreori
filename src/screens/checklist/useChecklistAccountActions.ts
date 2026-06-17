@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 
 import {saveChecklistToAccount} from '../../services/checklistAccount';
 import {
@@ -27,6 +28,7 @@ export function useChecklistAccountActions({
   navigation,
   setChecklist,
 }: UseChecklistAccountActionsParams) {
+  const {t} = useTranslation('checklist');
   const [savingToAccount, setSavingToAccount] = useState(false);
   const [syncingToAccount, setSyncingToAccount] = useState(false);
 
@@ -59,7 +61,7 @@ export function useChecklistAccountActions({
       setChecklist(failedChecklist);
       showAlert({
         title: ALERT_MESSAGES.syncFailed,
-        message: '로컬 변경은 저장했습니다. 다시 동기화해 주세요.',
+        message: t('localSavedRetrySync'),
       });
     } finally {
       setSyncingToAccount(false);
@@ -85,7 +87,7 @@ export function useChecklistAccountActions({
         remoteReference,
       );
       setChecklist(nextChecklist);
-      showAlert({title: '저장했습니다.'});
+      showAlert({title: t('saved')});
     } catch (error) {
       showError(error, {
         title: ALERT_MESSAGES.saveFailed,

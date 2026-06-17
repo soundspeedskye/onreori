@@ -4,9 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 import {colors} from './src/theme/tokens';
+import './src/i18n';
 
 import { AuthProvider } from './src/auth/AuthContext';
+import {AppLanguageProvider} from './src/i18n/AppLanguageProvider';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { CafeRoutesScreen } from './src/screens/CafeRoutesScreen';
 import { CategoryDetailScreen } from './src/screens/CategoryDetailScreen';
@@ -35,85 +38,95 @@ const navigationTheme = {
   },
 };
 
+function AppNavigator() {
+  const {t} = useTranslation('navigation');
+
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <Stack.Navigator
+        initialRouteName="Landing"
+        screenOptions={{
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { color: colors.text, fontWeight: '700' },
+          headerTintColor: colors.text,
+          contentStyle: { backgroundColor: colors.background },
+        }}>
+        <Stack.Screen
+          name="Landing"
+          component={LandingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CategoryHome"
+          component={CategoryHomeScreen}
+          options={{ title: t('appName') }}
+        />
+        <Stack.Screen
+          name="CategoryDetail"
+          component={CategoryDetailScreen}
+          options={{ title: t('category') }}
+        />
+        <Stack.Screen
+          name="Conditions"
+          component={ConditionsScreen}
+          options={{ title: t('conditions') }}
+        />
+        <Stack.Screen
+          name="Checklist"
+          component={ChecklistScreen}
+          options={{ title: t('checklist') }}
+        />
+        <Stack.Screen
+          name="CafeRoutes"
+          component={CafeRoutesScreen}
+          options={{ title: t('cafeRoutes') }}
+        />
+        <Stack.Screen
+          name="Auth"
+          component={AuthScreen}
+          options={{ title: t('auth') }}
+        />
+        <Stack.Screen
+          name="EventRooms"
+          component={EventRoomsScreen}
+          options={{ title: t('eventRooms') }}
+        />
+        <Stack.Screen
+          name="MapPicker"
+          component={MapPickerScreen}
+          options={{ title: t('mapPicker') }}
+        />
+        <Stack.Screen
+          name="RoomChat"
+          component={RoomChatScreen}
+          options={{ title: t('roomChat') }}
+        />
+        <Stack.Screen
+          name="MyPage"
+          component={MyPageScreen}
+          options={{ title: t('myPage') }}
+        />
+        <Stack.Screen
+          name="ShareCard"
+          component={ShareCardScreen}
+          options={{ title: t('shareCard') }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
 function App() {
   return (
     <SafeAreaProvider>
       <KeyboardProvider preload={false}>
-        <AuthProvider>
-          <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-          <NavigationContainer theme={navigationTheme}>
-            <Stack.Navigator
-              initialRouteName="Landing"
-              screenOptions={{
-                headerShadowVisible: false,
-                headerStyle: { backgroundColor: colors.surface },
-                headerTitleStyle: { color: colors.text, fontWeight: '700' },
-                headerTintColor: colors.text,
-                contentStyle: { backgroundColor: colors.background },
-              }}>
-              <Stack.Screen
-                name="Landing"
-                component={LandingScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="CategoryHome"
-                component={CategoryHomeScreen}
-                options={{ title: 'onreori' }}
-              />
-              <Stack.Screen
-                name="CategoryDetail"
-                component={CategoryDetailScreen}
-                options={{ title: '카테고리' }}
-              />
-              <Stack.Screen
-                name="Conditions"
-                component={ConditionsScreen}
-                options={{ title: '상황 선택' }}
-              />
-              <Stack.Screen
-                name="Checklist"
-                component={ChecklistScreen}
-                options={{ title: '체크리스트' }}
-              />
-              <Stack.Screen
-                name="CafeRoutes"
-                component={CafeRoutesScreen}
-                options={{ title: '생일카페 루트' }}
-              />
-              <Stack.Screen
-                name="Auth"
-                component={AuthScreen}
-                options={{ title: '로그인' }}
-              />
-              <Stack.Screen
-                name="EventRooms"
-                component={EventRoomsScreen}
-                options={{ title: '이벤트 단톡방' }}
-              />
-              <Stack.Screen
-                name="MapPicker"
-                component={MapPickerScreen}
-                options={{ title: '장소 선택' }}
-              />
-              <Stack.Screen
-                name="RoomChat"
-                component={RoomChatScreen}
-                options={{ title: '단톡방' }}
-              />
-              <Stack.Screen
-                name="MyPage"
-                component={MyPageScreen}
-                options={{ title: '마이페이지' }}
-              />
-              <Stack.Screen
-                name="ShareCard"
-                component={ShareCardScreen}
-                options={{ title: '공유 카드' }}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </AuthProvider>
+        <AppLanguageProvider>
+          <AuthProvider>
+            <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+            <AppNavigator />
+          </AuthProvider>
+        </AppLanguageProvider>
       </KeyboardProvider>
     </SafeAreaProvider>
   );

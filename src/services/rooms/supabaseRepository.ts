@@ -3,6 +3,10 @@ import {supabase} from '../../config/supabase';
 import type {AuthUser, ChatMessage, EventRoom} from '../../types';
 import {KOREAN_EVENT_TIME_ZONE} from '../../utils/date';
 import {
+  normalizePrimaryRoomLanguage,
+  normalizeRoomLanguageCodes,
+} from '../../utils/eventRoomLanguages';
+import {
   getRoomCreationActiveWindowMessage,
   isRoomCreationActiveWindowError,
   isRoomCreationDateInputError,
@@ -31,7 +35,7 @@ import {uploadChatImage} from './chatMedia';
 
 function requireSupabase() {
   if (!supabase) {
-    throw new Error('Supabase 설정이 필요합니다.');
+    throw new Error(ALERT_MESSAGES.supabaseRequired);
   }
 
   return supabase;
@@ -82,6 +86,11 @@ export async function createRemoteRoom(
   params: CreateRoomParams,
 ): Promise<EventRoom> {
   const client = requireSupabase();
+  const languageCodes = normalizeRoomLanguageCodes(params.languageCodes);
+  const primaryLanguage = normalizePrimaryRoomLanguage(
+    params.primaryLanguage,
+    languageCodes,
+  );
   const {data, error} = await client.rpc('create_event_room_with_code', {
     input_category_id: params.categoryId,
     input_title: params.title.trim(),
@@ -96,6 +105,8 @@ export async function createRemoteRoom(
     input_longitude: params.longitude ?? null,
     input_subject_name: params.subjectName ?? null,
     input_event_timezone: KOREAN_EVENT_TIME_ZONE,
+    input_primary_language: primaryLanguage,
+    input_language_codes: languageCodes,
   });
 
   if (error || !data) {

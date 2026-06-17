@@ -5,6 +5,7 @@ import {
 } from '@supabase/supabase-js';
 
 import { isSupabaseConfigured, supabase } from '../config/supabase';
+import {i18n} from '../i18n';
 
 import type { Coordinate } from '../screens/mapPicker/useMapCenterSelection';
 
@@ -39,8 +40,11 @@ type SupabasePlaceSearchResponse = {
 const DEFAULT_RADIUS = 20000;
 const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
-const DEFAULT_ERROR_MESSAGE = '장소를 검색하지 못했습니다.';
-const LOGIN_REQUIRED_MESSAGE = '로그인이 필요한 장소 검색입니다.';
+const getSearchErrorMessage = (key: string) =>
+  i18n.t(`searchErrors.${key}`, {ns: 'map'});
+
+const DEFAULT_ERROR_MESSAGE = () => getSearchErrorMessage('default');
+const LOGIN_REQUIRED_MESSAGE = () => getSearchErrorMessage('loginRequired');
 
 function toOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim().length > 0
@@ -90,11 +94,11 @@ function toPlaceSearchResult(value: unknown): KakaoPlaceSearchResult | null {
 
 function normalizeServerErrorMessage(message: string) {
   if (message.toLowerCase().includes('invalid jwt')) {
-    return LOGIN_REQUIRED_MESSAGE;
+    return LOGIN_REQUIRED_MESSAGE();
   }
 
   if (message.includes('Kakao REST API key')) {
-    return 'Kakao REST API 키가 Supabase에 설정되지 않았습니다.';
+    return getSearchErrorMessage('missingKakaoKey');
   }
 
   return message;
@@ -103,17 +107,17 @@ function normalizeServerErrorMessage(message: string) {
 function getStatusErrorMessage(status: number | undefined) {
   switch (status) {
     case 401:
-      return LOGIN_REQUIRED_MESSAGE;
+      return LOGIN_REQUIRED_MESSAGE();
     case 404:
-      return '장소 검색 서버 함수가 배포되지 않았습니다.';
+      return getSearchErrorMessage('functionNotDeployed');
     case 429:
-      return '장소 검색 요청이 너무 많습니다. 잠시 후 다시 시도하세요.';
+      return getSearchErrorMessage('rateLimited');
     case 500:
-      return '장소 검색 서버 설정을 확인하세요.';
+      return getSearchErrorMessage('serverConfig');
     case 502:
-      return 'Kakao 장소 검색 요청에 실패했습니다.';
+      return getSearchErrorMessage('kakaoRequestFailed');
     default:
-      return DEFAULT_ERROR_MESSAGE;
+      return DEFAULT_ERROR_MESSAGE();
   }
 }
 
@@ -150,20 +154,20 @@ async function getFunctionInvokeErrorMessage(error: unknown) {
     error instanceof FunctionsFetchError ||
     error instanceof FunctionsRelayError
   ) {
-    return '장소 검색 서버에 연결하지 못했습니다.';
+    return getSearchErrorMessage('connectionFailed');
   }
 
   if (error instanceof Error && error.message.trim().length > 0) {
     return normalizeServerErrorMessage(error.message.trim());
   }
 
-  return DEFAULT_ERROR_MESSAGE;
+  return DEFAULT_ERROR_MESSAGE();
 }
 
 export function getPlaceSearchErrorMessage(error: unknown) {
   return error instanceof Error && error.message.trim().length > 0
     ? error.message.trim()
-    : DEFAULT_ERROR_MESSAGE;
+    : DEFAULT_ERROR_MESSAGE();
 }
 
 export async function searchKakaoPlaces({
@@ -203,7 +207,7 @@ export async function searchKakaoPlaces({
   const accessToken = sessionData.session?.access_token;
 
   if (sessionError || !accessToken) {
-    throw new Error(LOGIN_REQUIRED_MESSAGE);
+    throw new Error(LOGIN_REQUIRED_MESSAGE());
   }
 
   const { data, error } = await supabase.functions.invoke(
