@@ -1,12 +1,12 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {useTranslation} from 'react-i18next';
-import {colors, radii, spacing} from '../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import { colors, radii, spacing } from '../theme/tokens';
 
-import {Button} from '../components/ui/Button';
-import {PixelIcon} from '../components/ui/PixelIcon';
+import { Button } from '../components/ui/Button';
+import { PixelIcon } from '../components/ui/PixelIcon';
 import type { RootStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
@@ -15,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
  * 앱의 첫 진입 화면으로 핵심 사용 맥락을 보여주고 카테고리 홈으로 이동시킨다.
  */
 export function LandingScreen({ navigation }: Props) {
-  const {t} = useTranslation('categories');
+  const { t } = useTranslation('categories');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -39,9 +39,9 @@ export function LandingScreen({ navigation }: Props) {
         <View style={styles.copy}>
           <Text style={styles.eyebrow}>Fan day planner</Text>
           <Text style={styles.title}>{t('landing.title')}</Text>
-          <Text style={styles.description}>
+          {/* <Text style={styles.description}>
             {t('landing.description')}
-          </Text>
+          </Text> */}
         </View>
 
         <Button
