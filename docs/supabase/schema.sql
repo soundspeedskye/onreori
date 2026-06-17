@@ -48,6 +48,8 @@ create table if not exists public.event_rooms (
   latitude double precision,
   longitude double precision,
   subject_name text,
+  primary_language text not null default 'ko',
+  language_codes text[] not null default array['ko']::text[],
   status text not null default 'active',
   event_timezone text not null default 'Asia/Seoul',
   active_from_at timestamptz not null,
@@ -58,6 +60,13 @@ create table if not exists public.event_rooms (
   member_count integer not null default 1,
   created_by uuid not null references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
+  constraint event_rooms_primary_language_check check (primary_language in ('ko', 'en', 'ja', 'zh')),
+  constraint event_rooms_language_codes_check check (
+    cardinality(language_codes) > 0
+    and array_position(language_codes, null::text) is null
+    and language_codes <@ array['ko', 'en', 'ja', 'zh']::text[]
+  ),
+  constraint event_rooms_primary_language_in_language_codes_check check (primary_language = any(language_codes)),
   constraint event_rooms_status_check check (status in ('active', 'closed', 'soft_deleted')),
   constraint event_rooms_active_window_check check (active_from_at < active_until_at)
 );
@@ -89,6 +98,8 @@ alter table public.event_rooms add column if not exists road_address text;
 alter table public.event_rooms add column if not exists latitude double precision;
 alter table public.event_rooms add column if not exists longitude double precision;
 alter table public.event_rooms add column if not exists subject_name text;
+alter table public.event_rooms add column if not exists primary_language text default 'ko';
+alter table public.event_rooms add column if not exists language_codes text[] default array['ko']::text[];
 alter table public.event_rooms add column if not exists status text not null default 'active';
 alter table public.event_rooms add column if not exists event_timezone text not null default 'Asia/Seoul';
 alter table public.event_rooms add column if not exists active_from_at timestamptz;
@@ -107,8 +118,88 @@ where active_from_at is null
 alter table public.event_rooms alter column active_from_at set not null;
 alter table public.event_rooms alter column active_until_at set not null;
 
+with normalized as (
+  select
+    id,
+    case
+      when cardinality(supported_codes) > 0 then supported_codes
+      else array['ko']::text[]
+    end as normalized_language_codes,
+    lower(trim(coalesce(primary_language, ''))) as normalized_primary_language
+  from (
+    select
+      id,
+      primary_language,
+      array(
+        select supported.code
+        from unnest(array['ko', 'en', 'ja', 'zh']::text[]) as supported(code)
+        where supported.code = any(
+          array(
+            select lower(trim(language_code))
+            from unnest(coalesce(language_codes, array[]::text[])) as language_values(language_code)
+            where nullif(trim(language_code), '') is not null
+          )
+        )
+      ) as supported_codes
+    from public.event_rooms
+  ) rooms
+)
+update public.event_rooms
+set
+  language_codes = normalized.normalized_language_codes,
+  primary_language = case
+    when normalized.normalized_primary_language = any(normalized.normalized_language_codes)
+      then normalized.normalized_primary_language
+    else normalized.normalized_language_codes[1]
+  end
+from normalized
+where event_rooms.id = normalized.id;
+
+alter table public.event_rooms
+alter column primary_language set default 'ko',
+alter column primary_language set not null,
+alter column language_codes set default array['ko']::text[],
+alter column language_codes set not null;
+
 do $$
 begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'event_rooms_primary_language_check'
+      and conrelid = 'public.event_rooms'::regclass
+  ) then
+    alter table public.event_rooms
+    add constraint event_rooms_primary_language_check
+    check (primary_language in ('ko', 'en', 'ja', 'zh'));
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'event_rooms_language_codes_check'
+      and conrelid = 'public.event_rooms'::regclass
+  ) then
+    alter table public.event_rooms
+    add constraint event_rooms_language_codes_check
+    check (
+      cardinality(language_codes) > 0
+      and array_position(language_codes, null::text) is null
+      and language_codes <@ array['ko', 'en', 'ja', 'zh']::text[]
+    );
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'event_rooms_primary_language_in_language_codes_check'
+      and conrelid = 'public.event_rooms'::regclass
+  ) then
+    alter table public.event_rooms
+    add constraint event_rooms_primary_language_in_language_codes_check
+    check (primary_language = any(language_codes));
+  end if;
+
   if not exists (
     select 1
     from pg_constraint
@@ -151,6 +242,9 @@ create index if not exists event_rooms_active_category_window_idx
 on public.event_rooms (category_id, status, active_from_at, active_until_at)
 where status = 'active';
 
+create index if not exists event_rooms_language_codes_idx
+on public.event_rooms using gin (language_codes);
+
 create index if not exists chat_messages_hashtags_idx
 on public.chat_messages using gin (hashtags);
 
@@ -171,6 +265,8 @@ grant select (
   latitude,
   longitude,
   subject_name,
+  primary_language,
+  language_codes,
   status,
   event_timezone,
   active_from_at,
@@ -484,7 +580,9 @@ create or replace function public.create_event_room_with_code(
   input_latitude double precision,
   input_longitude double precision,
   input_subject_name text,
-  input_event_timezone text
+  input_event_timezone text,
+  input_primary_language text default 'ko',
+  input_language_codes text[] default array['ko']::text[]
 )
 returns jsonb
 language plpgsql
@@ -492,6 +590,7 @@ security definer
 set search_path = public
 as $$
 declare
+  supported_language_codes text[] := array['ko', 'en', 'ja', 'zh']::text[];
   normalized_category_id text;
   normalized_title text;
   normalized_event_date text;
@@ -504,6 +603,8 @@ declare
   normalized_longitude double precision;
   normalized_subject_name text;
   normalized_event_timezone text;
+  normalized_primary_language text;
+  normalized_language_codes text[];
   normalized_active_from_at timestamptz;
   normalized_active_until_at timestamptz;
   new_room public.event_rooms;
@@ -525,6 +626,10 @@ begin
     raise exception 'event date required';
   end if;
 
+  if normalized_event_date !~ '^\d{4}-\d{2}-\d{2}$' then
+    raise exception 'event date required';
+  end if;
+
   normalized_event_timezone := coalesce(
     nullif(trim(coalesce(input_event_timezone, '')), ''),
     'Asia/Seoul'
@@ -532,6 +637,29 @@ begin
 
   if normalized_event_timezone <> 'Asia/Seoul' then
     raise exception 'unsupported event timezone';
+  end if;
+
+  normalized_language_codes := array(
+    select supported.code
+    from unnest(supported_language_codes) as supported(code)
+    where supported.code = any(
+      array(
+        select lower(trim(language_code))
+        from unnest(coalesce(input_language_codes, array[]::text[])) as language_values(language_code)
+        where nullif(trim(language_code), '') is not null
+      )
+    )
+  );
+
+  if cardinality(normalized_language_codes) = 0 then
+    normalized_language_codes := array['ko']::text[];
+  end if;
+
+  normalized_primary_language := lower(trim(coalesce(input_primary_language, '')));
+
+  if not (normalized_primary_language = any(supported_language_codes))
+    or not (normalized_primary_language = any(normalized_language_codes)) then
+    normalized_primary_language := normalized_language_codes[1];
   end if;
 
   if length(trim(coalesce(input_entry_code, ''))) < 4 then
@@ -570,6 +698,11 @@ begin
   normalized_active_until_at :=
     ((normalized_event_date::date + 8)::timestamp at time zone normalized_event_timezone);
 
+  if normalized_active_from_at > now()
+    or now() >= normalized_active_until_at then
+    raise exception 'room can only be created during active window';
+  end if;
+
   insert into public.event_rooms (
     category_id,
     title,
@@ -582,6 +715,8 @@ begin
     latitude,
     longitude,
     subject_name,
+    primary_language,
+    language_codes,
     status,
     event_timezone,
     active_from_at,
@@ -601,6 +736,8 @@ begin
     normalized_latitude,
     normalized_longitude,
     normalized_subject_name,
+    normalized_primary_language,
+    normalized_language_codes,
     'active',
     normalized_event_timezone,
     normalized_active_from_at,
@@ -626,6 +763,8 @@ begin
     'latitude', new_room.latitude,
     'longitude', new_room.longitude,
     'subject_name', new_room.subject_name,
+    'primary_language', new_room.primary_language,
+    'language_codes', new_room.language_codes,
     'status', new_room.status,
     'event_timezone', new_room.event_timezone,
     'active_from_at', new_room.active_from_at,
@@ -688,9 +827,9 @@ begin
 end;
 $$;
 
-revoke execute on function public.create_event_room_with_code(text, text, text, text, text, text, text, text, text, double precision, double precision, text, text) from public, anon;
+revoke execute on function public.create_event_room_with_code(text, text, text, text, text, text, text, text, text, double precision, double precision, text, text, text, text[]) from public, anon;
 revoke execute on function public.join_event_room_with_code(uuid, text) from public, anon;
-grant execute on function public.create_event_room_with_code(text, text, text, text, text, text, text, text, text, double precision, double precision, text, text) to authenticated;
+grant execute on function public.create_event_room_with_code(text, text, text, text, text, text, text, text, text, double precision, double precision, text, text, text, text[]) to authenticated;
 grant execute on function public.join_event_room_with_code(uuid, text) to authenticated;
 
 create or replace function private.maintain_event_room_expiration()
