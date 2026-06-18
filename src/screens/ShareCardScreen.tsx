@@ -1,21 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Modal,
-  PermissionsAndroid,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {useTranslation} from 'react-i18next';
-import {
-  CameraRoll,
-  iosReadGalleryPermission,
-  iosRequestAddOnlyGalleryPermission,
-} from '@react-native-camera-roll/camera-roll';
+import { useTranslation } from 'react-i18next';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import ViewShot, { type ViewShotRef } from 'react-native-view-shot';
 import { colors, layout, spacing } from '../theme/tokens';
@@ -31,19 +19,15 @@ import {
   getLocalizedChecklist,
   getSelectedConditionLabels,
 } from '../utils/checklistTemplateTranslations';
+import {
+  normalizeFileUri,
+  requestPhotoSavePermission,
+} from '../utils/photoLibrary';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ShareCard'>;
 type ExportAction = 'save' | 'share';
 
 const IMAGE_MIME_TYPE = 'image/png';
-
-function normalizeFileUri(uri: string) {
-  return uri.startsWith('file://') ? uri : `file://${uri}`;
-}
-
-function isGrantedPhotoPermission(status: string) {
-  return status === 'granted' || status === 'limited';
-}
 
 function isShareCancelError(error: unknown) {
   if (!(error instanceof Error)) {
@@ -54,58 +38,12 @@ function isShareCancelError(error: unknown) {
   return message.includes('cancel') || message.includes('dismiss');
 }
 
-async function requestIosPhotoSavePermission() {
-  const currentStatus = await iosReadGalleryPermission('addOnly');
-
-  if (isGrantedPhotoPermission(currentStatus)) {
-    return true;
-  }
-
-  if (currentStatus !== 'not-determined') {
-    return false;
-  }
-
-  const requestedStatus = await iosRequestAddOnlyGalleryPermission();
-  return isGrantedPhotoPermission(requestedStatus);
-}
-
-async function requestAndroidPhotoSavePermission() {
-  const androidVersion = Number(Platform.Version);
-  const permission =
-    androidVersion >= 33
-      ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-      : androidVersion >= 29
-      ? PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-      : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-
-  const hasPermission = await PermissionsAndroid.check(permission);
-
-  if (hasPermission) {
-    return true;
-  }
-
-  const status = await PermissionsAndroid.request(permission);
-  return status === PermissionsAndroid.RESULTS.GRANTED;
-}
-
-async function requestPhotoSavePermission() {
-  if (Platform.OS === 'ios') {
-    return requestIosPhotoSavePermission();
-  }
-
-  if (Platform.OS === 'android') {
-    return requestAndroidPhotoSavePermission();
-  }
-
-  return true;
-}
-
 /**
  * 체크리스트 공유 카드를 캡처해 사진첩 저장 또는 시스템 공유 시트로 내보낸다.
  */
 export function ShareCardScreen({ route }: Props) {
-  const {t} = useTranslation('shareCard');
-  const {t: tTemplates} = useTranslation('checklistTemplates');
+  const { t } = useTranslation('shareCard');
+  const { t: tTemplates } = useTranslation('checklistTemplates');
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
   const [exportAction, setExportAction] = useState<ExportAction | null>(null);
@@ -158,7 +96,7 @@ export function ShareCardScreen({ route }: Props) {
 
     return [
       `${checklist.icon} ${localizedChecklist?.title ?? checklist.title}`,
-      t('messageProgress', {checkedCount, totalCount}),
+      t('messageProgress', { checkedCount, totalCount }),
       selectedConditionLabels.length > 0
         ? t('messageConditions', {
             conditions: selectedConditionLabels.join(', '),
@@ -228,10 +166,7 @@ export function ShareCardScreen({ route }: Props) {
   if (!checklist) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <EmptyState
-          title={t('loadFailed')}
-          style={styles.emptyState}
-        />
+        <EmptyState title={t('loadFailed')} style={styles.emptyState} />
       </SafeAreaView>
     );
   }
@@ -262,7 +197,7 @@ export function ShareCardScreen({ route }: Props) {
         <Button
           onPress={() => setExportMenuVisible(true)}
           title={t('export')}
-          variant="dark"
+          variant="primary"
         />
       </BottomActionBar>
 
@@ -273,8 +208,8 @@ export function ShareCardScreen({ route }: Props) {
         visible={exportMenuVisible}
       >
         <Pressable style={styles.exportOverlay} onPress={closeExportMenu}>
-          <Pressable
-            onPress={event => event.stopPropagation()}
+          <View
+            // onPress={event => event.stopPropagation()}
             style={styles.exportSheet}
           >
             <View style={styles.exportActions}>
@@ -283,17 +218,17 @@ export function ShareCardScreen({ route }: Props) {
                 loading={exportAction === 'save'}
                 onPress={handleSaveImage}
                 title={t('saveToLibrary')}
-                variant="secondary"
+                variant="primary"
               />
               <Button
                 disabled={Boolean(exportAction)}
                 loading={exportAction === 'share'}
                 onPress={handleShareImage}
                 title={t('share')}
-                variant="dark"
+                variant="brand"
               />
             </View>
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </SafeAreaView>
@@ -328,12 +263,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     gap: spacing.lg,
     padding: spacing.lg,
-  },
-  exportTitle: {
-    color: colors.text,
-    fontSize: 17,
-    fontWeight: '800',
-    textAlign: 'center',
   },
   exportActions: {
     gap: spacing.sm,
