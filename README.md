@@ -36,15 +36,24 @@ yarn android
 
 For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+This project uses Ruby 3.3.6 and Bundler 2.5.22 for reproducible CocoaPods installs. If you use rbenv:
 
 ```sh
-bundle install
+rbenv install -s 3.3.6
+rbenv local 3.3.6
+gem install bundler -v 2.5.22
+```
+
+Then install the Ruby dependencies:
+
+```sh
+bundle _2.5.22_ install
 ```
 
 Then, and every time you update your native dependencies, run:
 
 ```sh
+cd ios
 bundle exec pod install
 ```
 
