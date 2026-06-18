@@ -1,11 +1,10 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {
-  AndroidSoftInputModes,
-  KeyboardController,
-  KeyboardStickyView,
+  KeyboardAvoidingView,
+  useKeyboardState,
 } from 'react-native-keyboard-controller';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import {useAuth} from '../auth/AuthContext';
@@ -30,17 +29,14 @@ export {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoomChat'>;
 
-const keyboardStickyOffset = {
-  closed: 0,
-  opened: 0,
-} as const;
-
 /**
  * 단톡방 메시지 목록, 해시태그 필터, 텍스트/이미지 전송, 튜토리얼 응답을 연결한다.
  */
 export function RoomChatScreen({navigation, route}: Props) {
   const {user} = useAuth();
   const {language} = useAppLanguage();
+  const insets = useSafeAreaInsets();
+  const keyboardVisible = useKeyboardState(state => state.isVisible);
   const roomId = route.params.roomId;
   const tutorialRoom = isTutorialRoomId(roomId);
   const tutorialCopy = useMemo(() => getTutorialRoomCopy(language), [language]);
@@ -51,20 +47,6 @@ export function RoomChatScreen({navigation, route}: Props) {
       navigation.replace('Auth');
     }
   }, [navigation, user]);
-
-  useEffect(() => {
-    if (Platform.OS !== 'android') {
-      return;
-    }
-
-    KeyboardController.setInputMode(
-      AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING,
-    );
-
-    return () => {
-      KeyboardController.setDefaultMode();
-    };
-  }, []);
 
   const {messages, setMessages, loading, botTyping, scheduleTutorialReply} =
     useRoomMessages(roomId, Boolean(user), tutorialCopy);
@@ -80,9 +62,16 @@ export function RoomChatScreen({navigation, route}: Props) {
     messages,
     hashtagFilter,
   );
+  const composerDockStyle = useMemo(
+    () => [
+      styles.composerDock,
+      {paddingBottom: keyboardVisible ? 0 : insets.bottom},
+    ],
+    [insets.bottom, keyboardVisible],
+  );
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.safeArea}>
+    <SafeAreaView edges={[]} style={styles.safeArea}>
       <ChatHeader
         languageCodes={
           tutorialRoom
@@ -92,7 +81,11 @@ export function RoomChatScreen({navigation, route}: Props) {
         title={tutorialRoom ? tutorialCopy.roomTitle : route.params.title}
         tutorialRoom={tutorialRoom}
       />
-      <View style={styles.keyboardAwareArea}>
+      <KeyboardAvoidingView
+        automaticOffset
+        behavior="padding"
+        enabled={Platform.OS === 'ios'}
+        style={styles.keyboardAwareArea}>
         <ChatMessageList
           messages={visibleMessages}
           hashtagFilter={hashtagFilter}
@@ -102,9 +95,7 @@ export function RoomChatScreen({navigation, route}: Props) {
           onHashtagFilterChange={setHashtagFilter}
           onClearHashtagFilter={() => setHashtagFilter('')}
         />
-        <KeyboardStickyView
-          offset={keyboardStickyOffset}
-          style={styles.composerDock}>
+        <View testID="chat-composer-dock" style={composerDockStyle}>
           <ChatComposer
             body={body}
             onBodyChange={setBody}
@@ -112,8 +103,8 @@ export function RoomChatScreen({navigation, route}: Props) {
             onSendText={handleSendText}
             sending={sending}
           />
-        </KeyboardStickyView>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

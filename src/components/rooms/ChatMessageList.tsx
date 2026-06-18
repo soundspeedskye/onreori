@@ -1,5 +1,12 @@
 import React, {useCallback, useEffect, useRef} from 'react';
-import {ActivityIndicator, FlatList, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
 import {useAppLanguage} from '../../i18n/AppLanguageProvider';
@@ -57,6 +64,17 @@ export function ChatMessageList({
     didInitialScrollRef.current = true;
   }, [loading, messages.length, scrollToBottom]);
 
+  const handleListLayout = useCallback(
+    (_event: LayoutChangeEvent) => {
+      if (loading || messages.length === 0) {
+        return;
+      }
+
+      scrollToBottom(true);
+    },
+    [loading, messages.length, scrollToBottom],
+  );
+
   if (loading) {
     return <ActivityIndicator color={colors.brand} style={styles.loader} />;
   }
@@ -96,6 +114,7 @@ export function ChatMessageList({
         keyExtractor={item => item.id}
         renderItem={renderMessage}
         onContentSizeChange={handleContentSizeChange}
+        onLayout={handleListLayout}
         ListEmptyComponent={
           botTyping ? null : (
             <View style={styles.emptyBox}>
