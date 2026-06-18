@@ -1,9 +1,9 @@
 import React from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
+import { StyleSheet, Switch, Text, View } from 'react-native';
 
-import {colors, radii, spacing} from '../../theme/tokens';
-import type {TemplateCondition} from '../../types';
-import {Card} from '../ui/Card';
+import { colors, radii, spacing } from '../../theme/tokens';
+import type { TemplateCondition } from '../../types';
+import { Card } from '../ui/Card';
 
 type ConditionToggleProps = {
   condition: TemplateCondition;
@@ -25,7 +25,7 @@ export function ConditionToggle({
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{false: colors.border, true: colors.brand}}
+        trackColor={{ false: colors.border, true: colors.brand }}
         thumbColor={value ? colors.brand : colors.surface}
       />
     </Card>

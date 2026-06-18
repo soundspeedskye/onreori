@@ -1,8 +1,8 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-import {BottomActionBar} from '../ui/BottomActionBar';
-import {Button} from '../ui/Button';
+import { BottomActionBar } from '../ui/BottomActionBar';
+import { Button } from '../ui/Button';
 
 type ChecklistActionBarProps = {
   savingToAccount: boolean;
@@ -21,7 +21,7 @@ export function ChecklistActionBar({
   onRetrySync,
   onOpenShareCard,
 }: ChecklistActionBarProps) {
-  const {t} = useTranslation('checklist');
+  const { t } = useTranslation('checklist');
 
   return (
     <BottomActionBar>
@@ -38,7 +38,11 @@ export function ChecklistActionBar({
           variant="secondary"
         />
       ) : null}
-      <Button onPress={onOpenShareCard} title={t('shareCard')} variant="dark" />
+      <Button
+        onPress={onOpenShareCard}
+        title={t('shareCard')}
+        variant="brand"
+      />
     </BottomActionBar>
   );
 }

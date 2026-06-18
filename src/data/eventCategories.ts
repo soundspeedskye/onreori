@@ -1,6 +1,6 @@
-import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
-import {i18n} from '../i18n';
-import type {EventCategory} from '../types';
+import { EVENT_CATEGORY_IDS } from '../constants/eventCategories';
+import { i18n } from '../i18n';
+import type { EventCategory } from '../types';
 
 type EventCategoryResourceKey = 'eventDay' | 'popup' | 'cafeEvent';
 
@@ -34,7 +34,7 @@ export function getEventCategories(): EventCategory[] {
     id: category.id,
     icon: category.icon,
     templateId: category.templateId,
-    title: i18n.t(`${category.resourceKey}.title`, {ns: 'categories'}),
+    title: i18n.t(`${category.resourceKey}.title`, { ns: 'categories' }),
     description: i18n.t(`${category.resourceKey}.description`, {
       ns: 'categories',
     }),

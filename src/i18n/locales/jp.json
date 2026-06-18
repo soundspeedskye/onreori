@@ -51,17 +51,17 @@
     "homeDescription": "現地のファンとリアルタイムで話しましょう。",
     "eventDay": {
       "title": "コンサート/ファンコン",
-      "description": "入場、待機、観覧準備をまとめて確認できます。",
+      "description": "会場外まわり、待機、入場、観覧、退場までまとめて確認できます。",
       "roomLabel": "会場のリアルタイム情報共有"
     },
     "popup": {
       "title": "ポップアップ/展示",
-      "description": "予約、待機、グッズ購入をまとめて確認できます。",
-      "roomLabel": "待機列/在庫状況の共有"
+      "description": "予約、待機、入場、グッズ購入、交換までまとめて確認できます。",
+      "roomLabel": "在庫/交換状況の共有"
     },
     "cafeEvent": {
-      "title": "誕生日カフェイベント",
-      "description": "カフェ動線、特典、交換準備をまとめて確認できます。",
+      "title": "誕生日カフェ/イベント",
+      "description": "動線、先着特典、観覧、配布までまとめて確認できます。",
       "roomLabel": "特典/動線状況の共有"
     },
     "actions": {
@@ -69,7 +69,7 @@
       "checklistDescription": "持ち物をチェックして画像で端末に保存します。",
       "cafeRoutesTitle": "誕生日カフェルートを作成",
       "cafeRoutesDescription": "特典の好みに合わせてカフェを選び、動線を保存します。",
-      "roomsTitle": "今日のイベントチャットルーム",
+      "roomsTitle": "今日のチャットルーム",
       "roomsDescription": "現地のファンとリアルタイムで情報を共有します。"
     },
     "landing": {

@@ -1,16 +1,16 @@
 import React from 'react';
-import {Platform, StyleSheet, Text} from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-import type {SupportedLanguageCode} from '../../i18n/languages';
-import {colors, radii, spacing} from '../../theme/tokens';
-import {formatDateInput, parseDateInput} from '../../utils/date';
-import type {RoomCreationConfig} from '../../utils/eventRoomForm';
-import {LanguageChipSelector} from '../language/LanguageChipSelector';
-import {Button} from '../ui/Button';
-import {Card} from '../ui/Card';
-import {TextField} from '../ui/TextField';
+import type { SupportedLanguageCode } from '../../i18n/languages';
+import { colors, radii, spacing } from '../../theme/tokens';
+import { formatDateInput, parseDateInput } from '../../utils/date';
+import type { RoomCreationConfig } from '../../utils/eventRoomForm';
+import { LanguageChipSelector } from '../language/LanguageChipSelector';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { TextField } from '../ui/TextField';
 
 type RoomCreateFormProps = {
   creationConfig: RoomCreationConfig;
@@ -57,9 +57,9 @@ export function RoomCreateForm({
   onOpenMapPicker,
   onCreateRoom,
 }: RoomCreateFormProps) {
-  const {t: tCommon} = useTranslation('common');
-  const {t: tLanguage} = useTranslation('language');
-  const {t: tRooms} = useTranslation('rooms');
+  const { t: tCommon } = useTranslation('common');
+  const { t: tLanguage } = useTranslation('language');
+  const { t: tRooms } = useTranslation('rooms');
 
   return (
     <Card style={styles.createBox}>
@@ -130,7 +130,9 @@ export function RoomCreateForm({
           />
         </>
       ) : null}
-      <Text style={styles.fieldLabel}>{tLanguage('conversationLanguages')}</Text>
+      <Text style={styles.fieldLabel}>
+        {tLanguage('conversationLanguages')}
+      </Text>
       <LanguageChipSelector
         accessibilityLabel={tLanguage('conversationLanguages')}
         multiSelect
@@ -147,7 +149,7 @@ export function RoomCreateForm({
         disabled={creating}
         onPress={onCreateRoom}
         title={creating ? tRooms('creatingRoom') : tRooms('createRoom')}
-        variant="dark"
+        variant="brand"
       />
     </Card>
   );

@@ -51,17 +51,17 @@
     "homeDescription": "和现场的粉丝实时交流。",
     "eventDay": {
       "title": "演唱会/Fancon",
-      "description": "一次整理入场、排队和观演准备。",
+      "description": "一次整理场外打卡、排队、入场、观演和退场。",
       "roomLabel": "场馆实时信息共享"
     },
     "popup": {
       "title": "快闪/展览",
-      "description": "一次整理预约、排队和周边购买。",
-      "roomLabel": "队伍/库存状态共享"
+      "description": "一次整理预约、排队、入场、周边购买和交换。",
+      "roomLabel": "库存/交换状态共享"
     },
     "cafeEvent": {
-      "title": "生日咖啡活动",
-      "description": "一次整理咖啡路线、特典和交换准备。",
+      "title": "生日咖啡/活动",
+      "description": "一次整理路线、先到特典、观览和分发。",
       "roomLabel": "特典/路线状态共享"
     },
     "actions": {
@@ -69,7 +69,7 @@
       "checklistDescription": "勾选准备物品并保存为图片到设备。",
       "cafeRoutesTitle": "创建生日咖啡路线",
       "cafeRoutesDescription": "按特典偏好选择咖啡店并保存路线。",
-      "roomsTitle": "今日活动聊天室",
+      "roomsTitle": "今日聊天室",
       "roomsDescription": "和现场的粉丝实时共享信息。"
     },
     "landing": {

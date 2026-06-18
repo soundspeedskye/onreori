@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { colors, radii, spacing } from '../../theme/tokens';
 import { Button } from '../ui/Button';
@@ -22,7 +22,7 @@ export function ChecklistAddItemForm({
   onDescriptionChange,
   onAdd,
 }: ChecklistAddItemFormProps) {
-  const {t} = useTranslation('checklist');
+  const { t } = useTranslation('checklist');
 
   return (
     <Card style={styles.addCard}>

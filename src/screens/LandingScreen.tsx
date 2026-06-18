@@ -21,7 +21,7 @@ export function LandingScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
         <View style={styles.visual}>
-          <PixelIcon name="ticket" size={80} />
+          <PixelIcon name="ticket" size={92} />
           <View style={[styles.floatingIcon, styles.topLeft]}>
             <PixelIcon name="coffee" size={32} />
           </View>
@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
   },
   visual: {
     alignSelf: 'center',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: radii.display,
@@ -81,10 +82,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surfaceMuted,
     borderRadius: radii.xl,
-    height: 54,
+    height: 62,
     justifyContent: 'center',
     position: 'absolute',
-    width: 54,
+    width: 62,
   },
   topLeft: {
     left: 26,

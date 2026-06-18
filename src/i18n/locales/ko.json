@@ -51,17 +51,17 @@
     "homeDescription": "현장에 있는 팬들과 실시간으로 소통해요.",
     "eventDay": {
       "title": "콘서트/팬콘",
-      "description": "입장, 대기, 관람 준비를 한 번에 챙겨요.",
+      "description": "겉돌, 대기, 입장, 관람, 퇴장까지 한번에",
       "roomLabel": "공연장 실시간 정보 공유"
     },
     "popup": {
       "title": "팝업/전시",
-      "description": "예약, 대기, 굿즈 구매를 한 번에 챙겨요.",
-      "roomLabel": "대기줄/재고 현황 공유"
+      "description": "예약, 대기, 입장, 굿즈 구매, 교환까지 한번에",
+      "roomLabel": "재고/교환 현황 공유"
     },
     "cafeEvent": {
-      "title": "생일카페 이벤트",
-      "description": "카페 동선, 특전, 교환 준비를 한 번에 챙겨요.",
+      "title": "생일카페/이벤트",
+      "description": "동선, 선착순 특전, 관람, 나눔까지 한번에",
       "roomLabel": "특전/동선 현황 공유"
     },
     "actions": {
@@ -69,7 +69,7 @@
       "checklistDescription": "준비물을 체크하고 이미지로 기기에 저장해요.",
       "cafeRoutesTitle": "생일카페 루트 만들기",
       "cafeRoutesDescription": "특전 취향에 맞춰 카페를 고르고 내 동선을 저장해요.",
-      "roomsTitle": "오늘의 이벤트 단톡방",
+      "roomsTitle": "오늘의 단톡방",
       "roomsDescription": "현장에 있는 팬들과 정보를 실시간으로 공유해요."
     },
     "landing": {

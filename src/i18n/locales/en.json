@@ -51,17 +51,17 @@
     "homeDescription": "Talk with fans on site in real time.",
     "eventDay": {
       "title": "Concert/Fancon",
-      "description": "Handle entry, waiting, and viewing prep in one place.",
+      "description": "Handle venue rounds, waiting, entry, viewing, and exit in one place.",
       "roomLabel": "Real-time venue info sharing"
     },
     "popup": {
       "title": "Popup/Exhibition",
-      "description": "Handle reservations, waiting, and merch shopping together.",
-      "roomLabel": "Queue and stock updates"
+      "description": "Handle reservations, waiting, entry, merch purchases, and trades in one place.",
+      "roomLabel": "Stock and trade updates"
     },
     "cafeEvent": {
-      "title": "Birthday Cafe Event",
-      "description": "Plan cafe routes, benefits, and trades together.",
+      "title": "Birthday Cafe/Event",
+      "description": "Plan routes, first-come benefits, viewing, and giveaways in one place.",
       "roomLabel": "Benefit and route updates"
     },
     "actions": {
@@ -69,7 +69,7 @@
       "checklistDescription": "Check what to bring and save it as an image.",
       "cafeRoutesTitle": "Create birthday cafe route",
       "cafeRoutesDescription": "Choose cafes by benefit preference and save your route.",
-      "roomsTitle": "Today's event chat room",
+      "roomsTitle": "Today's chat room",
       "roomsDescription": "Share real-time updates with fans on site."
     },
     "landing": {

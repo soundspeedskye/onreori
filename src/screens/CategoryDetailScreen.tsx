@@ -1,15 +1,15 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {useTranslation} from 'react-i18next';
-import {colors, layout, radii, spacing} from '../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import { colors, layout, radii, spacing } from '../theme/tokens';
 
 import { useAuth } from '../auth/AuthContext';
-import {Card} from '../components/ui/Card';
-import {EmptyState} from '../components/ui/EmptyState';
-import {PixelIconForEmoji} from '../components/ui/PixelIcon';
-import {isCafeEventCategory} from '../constants/eventCategories';
+import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
+import { PixelIconForEmoji } from '../components/ui/PixelIcon';
+import { isCafeEventCategory } from '../constants/eventCategories';
 import { getEventCategoryById } from '../data/eventCategories';
 import type { RootStackParamList } from '../types';
 
@@ -19,8 +19,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'CategoryDetail'>;
  * 선택한 이벤트 카테고리에서 체크리스트, 카페 루트, 단톡방 기능으로 분기한다.
  */
 export function CategoryDetailScreen({ navigation, route }: Props) {
-  const {t} = useTranslation('categories');
-  const {t: tRooms} = useTranslation('rooms');
+  const { t } = useTranslation('categories');
+  const { t: tRooms } = useTranslation('rooms');
   const category = getEventCategoryById(route.params.categoryId);
   const { user } = useAuth();
 
@@ -65,35 +65,37 @@ export function CategoryDetailScreen({ navigation, route }: Props) {
                 templateId: category.templateId,
               })
             }
-            style={styles.actionCard}>
+            style={styles.actionCard}
+          >
             <Text style={styles.actionTitle}>
               {t('actions.checklistTitle')}
             </Text>
-            <Text style={styles.actionDescription}>
+            {/* <Text style={styles.actionDescription}>
               {t('actions.checklistDescription')}
-            </Text>
+            </Text> */}
           </Card>
 
           {isCafeEventCategory(category.id) ? (
             <Card
               onPress={() =>
-                navigation.navigate('CafeRoutes', {categoryId: category.id})
+                navigation.navigate('CafeRoutes', { categoryId: category.id })
               }
-              style={styles.actionCard}>
+              style={styles.actionCard}
+            >
               <Text style={styles.actionTitle}>
                 {t('actions.cafeRoutesTitle')}
               </Text>
-              <Text style={styles.actionDescription}>
+              {/* <Text style={styles.actionDescription}>
                 {t('actions.cafeRoutesDescription')}
-              </Text>
+              </Text> */}
             </Card>
           ) : null}
 
           <Card onPress={openRooms} style={styles.actionCard}>
             <Text style={styles.actionTitle}>{t('actions.roomsTitle')}</Text>
-            <Text style={styles.actionDescription}>
+            {/* <Text style={styles.actionDescription}>
               {t('actions.roomsDescription')}
-            </Text>
+            </Text> */}
           </Card>
         </View>
       </View>

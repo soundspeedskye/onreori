@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { colors, layout, radii, spacing } from '../theme/tokens';
 
 import { ConditionToggle } from '../components/templates/ConditionToggle';
@@ -30,8 +30,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Conditions'>;
  * 체크리스트 템플릿에 적용할 상황 조건을 선택하고 로컬 초안을 생성한다.
  */
 export function ConditionsScreen({ navigation, route }: Props) {
-  const {t} = useTranslation('conditions');
-  const {t: tTemplates} = useTranslation('checklistTemplates');
+  const { t } = useTranslation('conditions');
+  const { t: tTemplates } = useTranslation('checklistTemplates');
   const template = useMemo(
     () => getTemplateById(route.params.templateId),
     [route.params.templateId],
@@ -41,7 +41,8 @@ export function ConditionsScreen({ navigation, route }: Props) {
     [tTemplates, template],
   );
   const localizedConditions = useMemo(
-    () => conditions.map(condition => getLocalizedCondition(condition, tTemplates)),
+    () =>
+      conditions.map(condition => getLocalizedCondition(condition, tTemplates)),
     [tTemplates],
   );
   const [selectedConditions, setSelectedConditions] = useState<ConditionId[]>(
@@ -71,10 +72,7 @@ export function ConditionsScreen({ navigation, route }: Props) {
   if (!template) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <EmptyState
-          title={t('templateNotFound')}
-          style={styles.emptyState}
-        />
+        <EmptyState title={t('templateNotFound')} style={styles.emptyState} />
       </SafeAreaView>
     );
   }
@@ -90,9 +88,9 @@ export function ConditionsScreen({ navigation, route }: Props) {
           />
           <View style={styles.headerCopy}>
             <Text style={styles.title}>{localizedTemplate?.title}</Text>
-            <Text style={styles.description}>
+            {/* <Text style={styles.description}>
               {localizedTemplate?.description}
-            </Text>
+            </Text> */}
           </View>
         </Card>
 
