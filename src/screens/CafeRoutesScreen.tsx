@@ -7,61 +7,65 @@ import React, {
 } from 'react';
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import {useIsFocused} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useTranslation} from 'react-i18next';
+import { useIsFocused } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import ViewShot, { type ViewShotRef } from 'react-native-view-shot';
 
-import {useAuth} from '../auth/AuthContext';
-import {CafeRouteMapPreview} from '../components/cafeRoutes/CafeRouteMapPreview';
-import {Button} from '../components/ui/Button';
-import {Card} from '../components/ui/Card';
-import {Chip} from '../components/ui/Chip';
-import {EmptyState} from '../components/ui/EmptyState';
-import {ScreenHeader} from '../components/ui/ScreenHeader';
-import {TextField} from '../components/ui/TextField';
-import {isCafeEventCategory} from '../constants/eventCategories';
-import {useAppLanguage} from '../i18n/AppLanguageProvider';
-import {getIntlLocale} from '../i18n/languages';
-import {isTutorialRoomId, listLinkableRoomsByCategory} from '../services/rooms';
+import { useAuth } from '../auth/AuthContext';
+import { CafeRouteExportCard } from '../components/cafeRoutes/CafeRouteExportCard';
+import { CafeRouteMapPreview } from '../components/cafeRoutes/CafeRouteMapPreview';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ScreenHeader } from '../components/ui/ScreenHeader';
+import { TextField } from '../components/ui/TextField';
+import { isCafeEventCategory } from '../constants/eventCategories';
 import {
+  deleteCafeRoute,
   getCafeRoutesByCategory,
   saveCafeRoute,
 } from '../storage/cafeRoutes';
-import {getEventCategoryById} from '../data/eventCategories';
-import {colors, layout, radii, spacing} from '../theme/tokens';
-import type {
-  CafeRoute,
-  EventRoom,
-  RootStackParamList,
-} from '../types';
-import {ALERT_MESSAGES, showError} from '../utils/appAlert';
+import { getEventCategoryById } from '../data/eventCategories';
+import { colors, layout, radii, spacing } from '../theme/tokens';
+import type { CafeRoute, RootStackParamList } from '../types';
+import { ALERT_MESSAGES, showAlert, showError } from '../utils/appAlert';
 import {
   CAFE_ROUTE_TITLE_MAX_LENGTH,
   addPlaceToCafeRoute,
   createCafeRouteDraft,
-  getCafeRouteRoomLinkStatus,
   getCafeRouteDisplayTitle,
-  linkCafeRouteToRoom,
+  getNextRouteIdAfterDelete,
   moveCafeRouteStop,
   normalizeCafeRouteTitle,
   removeCafeRouteStop,
-  unlinkCafeRouteFromRoom,
   updateCafeRouteTitle,
-  updateCafeRouteVisibility,
 } from '../utils/cafeRoutes';
-import {formatEventRoomDate} from '../utils/eventRoomPresentation';
-import {isEventRoomActiveAt} from '../utils/eventRoomVisibility';
+import {
+  normalizeFileUri,
+  requestPhotoSavePermission,
+} from '../utils/photoLibrary';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CafeRoutes'>;
 
 const MAP_PREVIEW_HEIGHT = 220;
+const EXPORT_CARD_MAX_WIDTH = 360;
+const EXPORT_CAPTURE_DELAY_MS = 350;
+
+function wait(ms: number) {
+  return new Promise<void>(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
 
 function getSelectedPlaceSignature(
   place: RootStackParamList['CafeRoutes']['selectedPlace'],
@@ -78,10 +82,9 @@ function getSelectedPlaceSignature(
 }
 
 function upsertRoute(routes: CafeRoute[], route: CafeRoute): CafeRoute[] {
-  return [
-    route,
-    ...routes.filter(item => item.id !== route.id),
-  ].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return [route, ...routes.filter(item => item.id !== route.id)].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  );
 }
 
 function restoreRouteAfterFailedPersist(
@@ -100,23 +103,23 @@ function restoreRouteAfterFailedPersist(
 }
 
 /**
- * 생일카페 루트를 만들고 장소 순서 편집, 공개 여부, 활성 단톡방 연동 상태를 관리한다.
+ * 생일카페 루트를 만들고 장소 순서 편집과 이미지 내보내기를 관리한다.
  */
-export function CafeRoutesScreen({navigation, route}: Props) {
-  const {t} = useTranslation('cafeRoutes');
-  const {t: tRooms} = useTranslation('rooms');
-  const {user} = useAuth();
-  const {language} = useAppLanguage();
-  const intlLocale = getIntlLocale(language);
+export function CafeRoutesScreen({ navigation, route }: Props) {
+  const { t } = useTranslation('cafeRoutes');
+  const { t: tRooms } = useTranslation('rooms');
+  const { user } = useAuth();
   const isFocused = useIsFocused();
   const category = getEventCategoryById(route.params.categoryId);
   const isCafeCategory = isCafeEventCategory(route.params.categoryId);
   const [routes, setRoutes] = useState<CafeRoute[]>([]);
-  const [rooms, setRooms] = useState<EventRoom[]>([]);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
-  const [loadingRooms, setLoadingRooms] = useState(false);
-  const [roomsLoadFailed, setRoomsLoadFailed] = useState(false);
   const [savingRouteId, setSavingRouteId] = useState<string | null>(null);
+  const [deletingRouteId, setDeletingRouteId] = useState<string | null>(null);
+  const [exportRoute, setExportRoute] = useState<CafeRoute | null>(null);
+  const [exportReady, setExportReady] = useState(false);
+  const [savingExportImage, setSavingExportImage] = useState(false);
+  const exportCardRef = useRef<ViewShotRef>(null);
   const consumedPlaceSignatureRef = useRef<string | null>(null);
   const pendingSaveCountRef = useRef(0);
 
@@ -158,52 +161,6 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     };
   }, [isCafeCategory, route.params.categoryId]);
 
-  useEffect(() => {
-    let mounted = true;
-
-    const loadRooms = async () => {
-      if (!isCafeCategory) {
-        setRooms([]);
-        setLoadingRooms(false);
-        return;
-      }
-
-      try {
-        setLoadingRooms(true);
-        setRoomsLoadFailed(false);
-        const categoryRooms = await listLinkableRoomsByCategory(
-          route.params.categoryId,
-        );
-
-        if (mounted) {
-          setRooms(
-            categoryRooms.filter(
-              room =>
-                room.categoryId === route.params.categoryId &&
-                !isTutorialRoomId(room.id) &&
-                isEventRoomActiveAt(room),
-            ),
-          );
-        }
-      } catch {
-        if (mounted) {
-          setRooms([]);
-          setRoomsLoadFailed(true);
-        }
-      } finally {
-        if (mounted) {
-          setLoadingRooms(false);
-        }
-      }
-    };
-
-    loadRooms();
-
-    return () => {
-      mounted = false;
-    };
-  }, [isCafeCategory, route.params.categoryId]);
-
   const selectedRoute = useMemo(() => {
     if (route.params.routeId) {
       return (
@@ -221,46 +178,28 @@ export function CafeRoutesScreen({navigation, route}: Props) {
       return;
     }
 
-    const hasSelectedRoute = routes.some(item => item.id === route.params.routeId);
+    const hasSelectedRoute = routes.some(
+      item => item.id === route.params.routeId,
+    );
 
     if (hasSelectedRoute) {
       return;
     }
 
-    navigation.setParams({routeId: routes[0]?.id});
+    navigation.setParams({ routeId: routes[0]?.id });
   }, [loadingRoutes, navigation, route.params.routeId, routes]);
 
-  const sharedRouteCount = useMemo(
-    () => routes.filter(item => item.visibility === 'shared').length,
-    [routes],
-  );
-
-  const linkStatus = selectedRoute
-    ? getCafeRouteRoomLinkStatus(selectedRoute)
-    : {state: 'notLinked' as const, label: t('statuses.notLinked')};
-  const linkedRoomListed =
-    selectedRoute?.linkedRoom &&
-    rooms.some(room => room.id === selectedRoute.linkedRoom?.roomId);
-  const linkedRoomUnavailable =
-    Boolean(selectedRoute?.linkedRoom) &&
-    !loadingRooms &&
-    !roomsLoadFailed &&
-    !linkedRoomListed;
-  const linkedRoomStatusUnknown =
-    Boolean(selectedRoute?.linkedRoom) &&
-    !loadingRooms &&
-    roomsLoadFailed;
-  const linkedRoomDisabled =
-    linkStatus.state === 'expired' || linkedRoomUnavailable;
-  const linkedRoomStatusLabel = linkedRoomStatusUnknown
-    ? t('roomStatusCheckFailed')
-    : linkedRoomUnavailable
-    ? t('statuses.expired')
-    : linkStatus.label;
+  const isAnyRouteBusy =
+    savingRouteId !== null || deletingRouteId !== null || savingExportImage;
   const isAnyRouteSaving = savingRouteId !== null;
   const isSelectedRouteSaving = selectedRoute
     ? savingRouteId === selectedRoute.id
     : false;
+  const isSelectedRouteDeleting = selectedRoute
+    ? deletingRouteId === selectedRoute.id
+    : false;
+  const isSelectedRouteBusy =
+    isSelectedRouteSaving || isSelectedRouteDeleting || savingExportImage;
 
   const persistRoute = useCallback(async (nextRoute: CafeRoute) => {
     pendingSaveCountRef.current += 1;
@@ -297,7 +236,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
       categoryId: route.params.categoryId,
       ownerId: user?.id,
       title: category
-        ? t('categoryRouteTitle', {categoryTitle: category.title})
+        ? t('categoryRouteTitle', { categoryTitle: category.title })
         : t('defaultTitle'),
     });
 
@@ -310,7 +249,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
       return null;
     }
 
-    navigation.setParams({routeId: nextRoute.id, selectedPlace: undefined});
+    navigation.setParams({ routeId: nextRoute.id, selectedPlace: undefined });
     return nextRoute;
   }, [
     category,
@@ -345,7 +284,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
       const targetRoute = selectedRoute ?? (await createRoute());
 
       if (!targetRoute) {
-        navigation.setParams({selectedPlace: undefined});
+        navigation.setParams({ selectedPlace: undefined });
         return;
       }
 
@@ -378,7 +317,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
   ]);
 
   const handleSelectRoute = (routeId: string) => {
-    navigation.setParams({routeId, selectedPlace: undefined});
+    navigation.setParams({ routeId, selectedPlace: undefined });
   };
 
   const handleCreateRoute = async () => {
@@ -404,22 +343,128 @@ export function CafeRoutesScreen({navigation, route}: Props) {
     const persisted = await persistRoute(nextRoute);
 
     if (persisted) {
-      navigation.setParams({routeId: nextRoute.id, selectedPlace: undefined});
+      navigation.setParams({ routeId: nextRoute.id, selectedPlace: undefined });
       return;
     }
 
     if (previousRoute) {
       setRoutes(currentRoutes =>
-        restoreRouteAfterFailedPersist(
-          currentRoutes,
-          nextRoute,
-          previousRoute,
-        ),
+        restoreRouteAfterFailedPersist(currentRoutes, nextRoute, previousRoute),
       );
       navigation.setParams({
         routeId: previousRoute.id,
         selectedPlace: undefined,
       });
+    }
+  };
+
+  const deleteRouteAndSelectNext = useCallback(
+    async (routeToDelete: CafeRoute) => {
+      const nextRouteId = getNextRouteIdAfterDelete(routes, routeToDelete.id);
+
+      try {
+        setDeletingRouteId(routeToDelete.id);
+        await deleteCafeRoute(routeToDelete.id);
+        setRoutes(currentRoutes =>
+          currentRoutes.filter(item => item.id !== routeToDelete.id),
+        );
+        navigation.setParams({
+          routeId: nextRouteId,
+          selectedPlace: undefined,
+        });
+      } catch (error) {
+        showError(error, {
+          title: ALERT_MESSAGES.failed,
+          fallbackMessage: ALERT_MESSAGES.retry,
+        });
+      } finally {
+        setDeletingRouteId(null);
+      }
+    },
+    [navigation, routes],
+  );
+
+  const handleDeleteSelectedRoute = () => {
+    if (!selectedRoute || isSelectedRouteBusy) {
+      return;
+    }
+
+    showAlert({
+      title: t('deleteRouteTitle'),
+      message: t('deleteRouteMessage', {
+        routeTitle: getCafeRouteDisplayTitle(selectedRoute),
+      }),
+      actions: [
+        {
+          text: t('cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('deleteRouteConfirm'),
+          style: 'destructive',
+          onPress: () => deleteRouteAndSelectNext(selectedRoute),
+        },
+      ],
+    });
+  };
+
+  const handleOpenExportPreview = async () => {
+    if (!selectedRoute || selectedRoute.stops.length === 0) {
+      return;
+    }
+
+    setExportReady(false);
+    setExportRoute(selectedRoute);
+  };
+
+  const handleCloseExportPreview = () => {
+    if (savingExportImage) {
+      return;
+    }
+
+    setExportRoute(null);
+    setExportReady(false);
+  };
+
+  const handleExportMapRenderSettled = useCallback(() => {
+    setExportReady(true);
+  }, []);
+
+  const handleSaveExportPreview = async () => {
+    if (!exportRoute || !exportReady || savingExportImage) {
+      return;
+    }
+
+    try {
+      setSavingExportImage(true);
+
+      const hasPermission = await requestPhotoSavePermission();
+
+      if (!hasPermission) {
+        showAlert({
+          title: t('photoPermissionTitle'),
+          message: t('photoPermissionMessage'),
+        });
+        return;
+      }
+
+      await wait(EXPORT_CAPTURE_DELAY_MS);
+      const imageUri = await exportCardRef.current?.capture?.();
+
+      if (!imageUri) {
+        throw new Error(t('exportFailed'));
+      }
+
+      await CameraRoll.saveAsset(normalizeFileUri(imageUri), {
+        type: 'photo',
+      });
+      setExportRoute(null);
+      setExportReady(false);
+      showAlert({ title: t('exportSaved') });
+    } catch {
+      showAlert({ title: ALERT_MESSAGES.saveFailed });
+    } finally {
+      setSavingExportImage(false);
     }
   };
 
@@ -453,7 +498,7 @@ export function CafeRoutesScreen({navigation, route}: Props) {
           description={t('description')}
           trailing={
             <Button
-              disabled={isAnyRouteSaving}
+              disabled={isAnyRouteBusy}
               onPress={handleCreateRoute}
               style={styles.createButton}
               textStyle={styles.createButtonText}
@@ -464,29 +509,6 @@ export function CafeRoutesScreen({navigation, route}: Props) {
           style={styles.header}
         />
 
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryItem}>
-            <Text numberOfLines={1} style={styles.summaryNumber}>
-              {routes.length}
-            </Text>
-            <Text style={styles.summaryLabel}>{t('myRoutes')}</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text numberOfLines={1} style={styles.summaryNumber}>
-              {sharedRouteCount}
-            </Text>
-            <Text style={styles.summaryLabel}>{t('shared')}</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text numberOfLines={2} style={styles.summaryNumber}>
-              {linkedRoomStatusLabel}
-            </Text>
-            <Text style={styles.summaryLabel}>{t('roomLink')}</Text>
-          </View>
-        </View>
-
         {loadingRoutes ? (
           <View style={styles.loadingWrap}>
             <ActivityIndicator color={colors.brandMuted} />
@@ -495,11 +517,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
         ) : routes.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>{t('emptyTitle')}</Text>
-            <Text style={styles.emptyDescription}>
-              {t('emptyDescription')}
-            </Text>
+            <Text style={styles.emptyDescription}>{t('emptyDescription')}</Text>
             <Button
-              disabled={isAnyRouteSaving}
+              disabled={isAnyRouteBusy}
               loading={isAnyRouteSaving}
               title={t('createFirstRoute')}
               onPress={handleCreateRoute}
@@ -512,10 +532,10 @@ export function CafeRoutesScreen({navigation, route}: Props) {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.routeTabs}>
+                contentContainerStyle={styles.routeTabs}
+              >
                 {routes.map(item => {
                   const isSelected = item.id === selectedRoute?.id;
-                  const itemStatus = getCafeRouteRoomLinkStatus(item);
 
                   return (
                     <Pressable
@@ -524,13 +544,15 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                       style={[
                         styles.routeTab,
                         isSelected && styles.routeTabSelected,
-                      ]}>
+                      ]}
+                    >
                       <Text
                         numberOfLines={1}
                         style={[
                           styles.routeTabTitle,
                           isSelected && styles.routeTabTitleSelected,
-                        ]}>
+                        ]}
+                      >
                         {getCafeRouteDisplayTitle(item)}
                       </Text>
                       <Text
@@ -538,11 +560,9 @@ export function CafeRoutesScreen({navigation, route}: Props) {
                         style={[
                           styles.routeTabMeta,
                           isSelected && styles.routeTabMetaSelected,
-                        ]}>
-                        {t('cafeCountStatus', {
-                          count: item.stops.length,
-                          status: itemStatus.label,
-                        })}
+                        ]}
+                      >
+                        {t('cafeCount', { count: item.stops.length })}
                       </Text>
                     </Pressable>
                   );
@@ -551,325 +571,249 @@ export function CafeRoutesScreen({navigation, route}: Props) {
             </View>
 
             {selectedRoute ? (
-              <>
-                <Card style={styles.builderCard}>
-                  <View style={styles.sectionHeading}>
-                    <View style={styles.sectionTitleWrap}>
-                      <Text style={styles.eyebrow}>{t('selectedRoute')}</Text>
-                      <TextField
-                        value={selectedRoute.title}
-                        onChangeText={title =>
-                          handlePersistSelectedRoute(
-                            updateCafeRouteTitle(selectedRoute, title),
-                          )
-                        }
-                        onEndEditing={({nativeEvent}) =>
-                          handlePersistSelectedRoute(
-                            updateCafeRouteTitle(
-                              selectedRoute,
-                              normalizeCafeRouteTitle(nativeEvent.text),
-                            ),
-                          )
-                        }
-                        maxLength={CAFE_ROUTE_TITLE_MAX_LENGTH}
-                        placeholder={t('routeNamePlaceholder')}
-                        style={styles.titleInput}
-                      />
-                    </View>
-                    <Chip
-                      numberOfLines={1}
-                      style={styles.headingChip}
-                      tone={
-                        selectedRoute.visibility === 'shared'
-                          ? 'action'
-                          : 'brand'
-                      }>
-                      {selectedRoute.visibility === 'shared'
-                        ? t('shared')
-                        : t('private')}
-                    </Chip>
-                  </View>
-
-                  <View style={styles.visibilityRow}>
-                    <Button
-                      disabled={isSelectedRouteSaving}
-                      title={t('private')}
-                      variant={
-                        selectedRoute.visibility === 'private'
-                          ? 'dark'
-                          : 'secondary'
-                      }
-                      style={styles.visibilityButton}
-                      onPress={() =>
+              <Card style={styles.builderCard}>
+                <View style={styles.sectionHeading}>
+                  <View style={styles.sectionTitleWrap}>
+                    <Text style={styles.eyebrow}>{t('selectedRoute')}</Text>
+                    <TextField
+                      value={selectedRoute.title}
+                      onChangeText={title =>
                         handlePersistSelectedRoute(
-                          updateCafeRouteVisibility(selectedRoute, 'private'),
+                          updateCafeRouteTitle(selectedRoute, title),
                         )
                       }
-                    />
-                    <Button
-                      disabled={isSelectedRouteSaving}
-                      title={t('shared')}
-                      variant={
-                        selectedRoute.visibility === 'shared'
-                          ? 'dark'
-                          : 'secondary'
-                      }
-                      style={styles.visibilityButton}
-                      onPress={() =>
+                      onEndEditing={({ nativeEvent }) =>
                         handlePersistSelectedRoute(
-                          updateCafeRouteVisibility(selectedRoute, 'shared'),
+                          updateCafeRouteTitle(
+                            selectedRoute,
+                            normalizeCafeRouteTitle(nativeEvent.text),
+                          ),
                         )
                       }
+                      maxLength={CAFE_ROUTE_TITLE_MAX_LENGTH}
+                      placeholder={t('routeNamePlaceholder')}
+                      style={styles.titleInput}
                     />
                   </View>
+                  <Pressable
+                    disabled={isSelectedRouteBusy}
+                    onPress={handleDeleteSelectedRoute}
+                    style={styles.deleteRouteButton}
+                  >
+                    <Text
+                      style={[
+                        styles.deleteRouteText,
+                        isSelectedRouteBusy && styles.deleteRouteTextDisabled,
+                      ]}
+                    >
+                      {isSelectedRouteDeleting
+                        ? t('deletingRoute')
+                        : t('deleteRoute')}
+                    </Text>
+                  </Pressable>
+                </View>
 
+                {selectedRoute.stops.length === 0 ? (
+                  <View style={styles.mapEmpty}>
+                    <Text style={styles.mapEmptyTitle}>
+                      {t('addCafeTitle')}
+                    </Text>
+                    <Text style={styles.mapEmptyText}>
+                      {t('addCafeDescription')}
+                    </Text>
+                  </View>
+                ) : isFocused ? (
+                  <CafeRouteMapPreview
+                    height={MAP_PREVIEW_HEIGHT}
+                    stops={selectedRoute.stops}
+                  />
+                ) : null}
+
+                <View style={styles.stopList}>
                   {selectedRoute.stops.length === 0 ? (
-                    <View style={styles.mapEmpty}>
-                      <Text style={styles.mapEmptyTitle}>
-                        {t('addCafeTitle')}
-                      </Text>
-                      <Text style={styles.mapEmptyText}>
-                        {t('addCafeDescription')}
-                      </Text>
-                    </View>
-                  ) : isFocused ? (
-                    <CafeRouteMapPreview
-                      height={MAP_PREVIEW_HEIGHT}
-                      stops={selectedRoute.stops}
-                    />
-                  ) : null}
+                    <Text style={styles.stopEmptyText}>{t('noCafes')}</Text>
+                  ) : (
+                    selectedRoute.stops.map(stop => {
+                      const isMoveUpDisabled =
+                        isSelectedRouteBusy || stop.order === 1;
+                      const isMoveDownDisabled =
+                        isSelectedRouteBusy ||
+                        stop.order === selectedRoute.stops.length;
 
-                  <View style={styles.stopList}>
-                    {selectedRoute.stops.length === 0 ? (
-                      <Text style={styles.stopEmptyText}>
-                        {t('noCafes')}
-                      </Text>
-                    ) : (
-                      selectedRoute.stops.map(stop => {
-                        const isMoveUpDisabled =
-                          isSelectedRouteSaving || stop.order === 1;
-                        const isMoveDownDisabled =
-                          isSelectedRouteSaving ||
-                          stop.order === selectedRoute.stops.length;
-
-                        return (
-                          <View key={stop.id} style={styles.stopRow}>
-                            <View style={styles.stopOrder}>
-                              <Text style={styles.stopOrderText}>
-                                {stop.order}
-                              </Text>
-                            </View>
-                            <View style={styles.stopCopy}>
-                              <Text style={styles.stopName} numberOfLines={2}>
-                                {stop.name}
-                              </Text>
-                              <Text style={styles.stopMeta} numberOfLines={2}>
-                                {stop.roadAddress ??
-                                  stop.address ??
-                                  `${stop.latitude.toFixed(5)}, ${stop.longitude.toFixed(5)}`}
-                              </Text>
-                            </View>
-                            <View style={styles.stopActions}>
-                              <Pressable
-                                disabled={isMoveUpDisabled}
-                                onPress={() =>
-                                  handlePersistSelectedRoute(
-                                    moveCafeRouteStop(
-                                      selectedRoute,
-                                      stop.id,
-                                      'up',
-                                    ),
-                                  )
-                                }
-                                style={[
-                                  styles.stopAction,
-                                  isMoveUpDisabled &&
-                                    styles.stopActionDisabled,
-                                ]}>
-                                <Text style={styles.stopActionText}>
-                                  {t('moveUp')}
-                                </Text>
-                              </Pressable>
-                              <Pressable
-                                disabled={isMoveDownDisabled}
-                                onPress={() =>
-                                  handlePersistSelectedRoute(
-                                    moveCafeRouteStop(
-                                      selectedRoute,
-                                      stop.id,
-                                      'down',
-                                    ),
-                                  )
-                                }
-                                style={[
-                                  styles.stopAction,
-                                  isMoveDownDisabled &&
-                                    styles.stopActionDisabled,
-                                ]}>
-                                <Text style={styles.stopActionText}>
-                                  {t('moveDown')}
-                                </Text>
-                              </Pressable>
-                              <Pressable
-                                disabled={isSelectedRouteSaving}
-                                onPress={() =>
-                                  handlePersistSelectedRoute(
-                                    removeCafeRouteStop(selectedRoute, stop.id),
-                                  )
-                                }
-                                style={[
-                                  styles.stopAction,
-                                  isSelectedRouteSaving &&
-                                    styles.stopActionDisabled,
-                                ]}>
-                                <Text style={styles.stopActionText}>
-                                  {t('delete')}
-                                </Text>
-                              </Pressable>
-                            </View>
+                      return (
+                        <View key={stop.id} style={styles.stopRow}>
+                          <View style={styles.stopOrder}>
+                            <Text style={styles.stopOrderText}>
+                              {stop.order}
+                            </Text>
                           </View>
-                        );
-                      })
-                    )}
-                  </View>
-
-                  <View style={styles.actionRow}>
-                    <Button
-                      disabled={isSelectedRouteSaving}
-                      title={t('addCafe')}
-                      variant="secondary"
-                      style={styles.actionButton}
-                      onPress={handleOpenMapPicker}
-                    />
-                    <Button
-                      loading={isSelectedRouteSaving}
-                      title={
-                        isSelectedRouteSaving ? t('saving') : t('saved')
-                      }
-                      disabled
-                      style={styles.actionButton}
-                    />
-                  </View>
-                </Card>
-
-                {selectedRoute.visibility === 'shared' ? (
-                  <View style={styles.sectionBlock}>
-                    <View style={styles.sectionHeading}>
-                      <View style={styles.sectionTitleWrap}>
-                        <Text style={styles.eyebrow}>{t('optional')}</Text>
-                        <Text style={styles.sectionTitle}>{t('roomLink')}</Text>
-                        <Text style={styles.sectionDescription}>
-                          {t('roomLinkDescription')}
-                        </Text>
-                      </View>
-                      <Chip
-                        numberOfLines={1}
-                        style={styles.headingChip}
-                        tone="action">
-                        {linkedRoomStatusLabel}
-                      </Chip>
-                    </View>
-
-                    {selectedRoute.linkedRoom ? (
-                      <View
-                        style={[
-                          styles.linkedRoomCard,
-                          linkedRoomDisabled && styles.linkedRoomCardDisabled,
-                        ]}>
-                        <View style={styles.linkedRoomCopy}>
-                          <Text style={styles.linkedRoomTitle} numberOfLines={2}>
-                            {selectedRoute.linkedRoom.title}
-                          </Text>
-                          <Text style={styles.linkedRoomMeta}>
-                            {t('linkedInRoom', {
-                              status: linkedRoomStatusLabel,
-                            })}
-                          </Text>
-                        </View>
-                        {linkedRoomDisabled ? null : (
-                          <Button
-                            disabled={isSelectedRouteSaving}
-                            loading={isSelectedRouteSaving}
-                            title={t('unlink')}
-                            variant="secondary"
-                            style={styles.unlinkButton}
-                            onPress={() =>
-                              handlePersistSelectedRoute(
-                                unlinkCafeRouteFromRoom(selectedRoute),
-                              )
-                            }
-                          />
-                        )}
-                      </View>
-                    ) : loadingRooms ? (
-                      <Text style={styles.sectionDescription}>
-                        {t('loadingRooms')}
-                      </Text>
-                    ) : rooms.length === 0 ? (
-                      <Text style={styles.sectionDescription}>
-                        {t('noLinkableRooms')}
-                      </Text>
-                    ) : (
-                      <View style={styles.roomList}>
-                        {rooms.map(room => {
-                          const isLinked =
-                            selectedRoute.linkedRoom?.roomId === room.id;
-                          const isRoomOptionDisabled =
-                            isSelectedRouteSaving || isLinked;
-
-                          return (
+                          <View style={styles.stopCopy}>
+                            <Text style={styles.stopName} numberOfLines={2}>
+                              {stop.name}
+                            </Text>
+                            <Text style={styles.stopMeta} numberOfLines={2}>
+                              {stop.roadAddress ??
+                                stop.address ??
+                                `${stop.latitude.toFixed(
+                                  5,
+                                )}, ${stop.longitude.toFixed(5)}`}
+                            </Text>
+                          </View>
+                          <View style={styles.stopActions}>
                             <Pressable
-                              disabled={isRoomOptionDisabled}
-                              key={room.id}
+                              disabled={isMoveUpDisabled}
                               onPress={() =>
                                 handlePersistSelectedRoute(
-                                  linkCafeRouteToRoom(selectedRoute, room),
+                                  moveCafeRouteStop(
+                                    selectedRoute,
+                                    stop.id,
+                                    'up',
+                                  ),
                                 )
                               }
                               style={[
-                                styles.roomOption,
-                                isLinked && styles.roomOptionSelected,
-                                isRoomOptionDisabled &&
-                                  styles.roomOptionDisabled,
-                              ]}>
-                              <View style={styles.roomOptionCopy}>
-                                <Text
-                                  style={styles.roomOptionTitle}
-                                  numberOfLines={2}>
-                                  {room.title}
-                                </Text>
-                                <Text
-                                  style={styles.roomOptionMeta}
-                                  numberOfLines={1}>
-                                  {t('memberCountWithDate', {
-                                    count: room.memberCount,
-                                    eventDate: formatEventRoomDate(
-                                      room.eventDate,
-                                      intlLocale,
-                                    ),
-                                  })}
-                                </Text>
-                              </View>
-                              <Chip numberOfLines={1} style={styles.roomChip}>
-                                {isLinked ? t('linked') : t('link')}
-                              </Chip>
+                                styles.stopAction,
+                                isMoveUpDisabled && styles.stopActionDisabled,
+                              ]}
+                            >
+                              <Text style={styles.stopActionText}>
+                                {t('moveUp')}
+                              </Text>
                             </Pressable>
-                          );
-                        })}
-                      </View>
-                    )}
-                  </View>
-                ) : null}
+                            <Pressable
+                              disabled={isMoveDownDisabled}
+                              onPress={() =>
+                                handlePersistSelectedRoute(
+                                  moveCafeRouteStop(
+                                    selectedRoute,
+                                    stop.id,
+                                    'down',
+                                  ),
+                                )
+                              }
+                              style={[
+                                styles.stopAction,
+                                isMoveDownDisabled && styles.stopActionDisabled,
+                              ]}
+                            >
+                              <Text style={styles.stopActionText}>
+                                {t('moveDown')}
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              disabled={isSelectedRouteBusy}
+                              onPress={() =>
+                                handlePersistSelectedRoute(
+                                  removeCafeRouteStop(selectedRoute, stop.id),
+                                )
+                              }
+                              style={[
+                                styles.stopAction,
+                                isSelectedRouteBusy &&
+                                  styles.stopActionDisabled,
+                              ]}
+                            >
+                              <Text style={styles.stopActionText}>
+                                {t('delete')}
+                              </Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      );
+                    })
+                  )}
+                </View>
 
-                <Card style={styles.policyCard}>
-                  <Text style={styles.policyTitle}>{t('policyTitle')}</Text>
-                  <Text style={styles.policyText}>{t('policyText')}</Text>
-                </Card>
-              </>
+                <View style={styles.actionRow}>
+                  <Button
+                    disabled={isSelectedRouteBusy}
+                    title={t('addCafe')}
+                    variant="secondary"
+                    style={styles.actionButton}
+                    onPress={handleOpenMapPicker}
+                  />
+                  <Button
+                    disabled={
+                      isSelectedRouteBusy || selectedRoute.stops.length === 0
+                    }
+                    onPress={handleOpenExportPreview}
+                    title={t('export')}
+                    variant="primary"
+                    style={styles.actionButton}
+                  />
+                </View>
+              </Card>
             ) : null}
           </>
         )}
       </ScrollView>
+      <Modal
+        animationType="fade"
+        onRequestClose={handleCloseExportPreview}
+        transparent
+        visible={Boolean(exportRoute)}
+      >
+        <View style={styles.exportOverlay}>
+          <View style={styles.exportPreviewCard}>
+            <View style={styles.exportPreviewHeader}>
+              <Text style={styles.exportPreviewTitle}>
+                {t('exportPreviewTitle')}
+              </Text>
+              <Pressable
+                disabled={savingExportImage}
+                onPress={handleCloseExportPreview}
+                style={styles.exportPreviewCloseButton}
+              >
+                <Text
+                  style={[
+                    styles.exportPreviewCloseText,
+                    savingExportImage && styles.deleteRouteTextDisabled,
+                  ]}
+                >
+                  {t('close')}
+                </Text>
+              </Pressable>
+            </View>
+
+            <ScrollView
+              contentContainerStyle={styles.exportPreviewScrollContent}
+              style={styles.exportPreviewScroll}
+            >
+              <ViewShot
+                ref={exportCardRef}
+                options={{
+                  fileName: 'onreori-cafe-route',
+                  format: 'png',
+                  handleGLSurfaceViewOnAndroid: true,
+                  quality: 1,
+                  result: 'tmpfile',
+                }}
+                style={styles.exportCaptureTarget}
+              >
+                {exportRoute ? (
+                  <CafeRouteExportCard
+                    onMapRenderSettled={handleExportMapRenderSettled}
+                    route={exportRoute}
+                  />
+                ) : null}
+              </ViewShot>
+            </ScrollView>
+
+            {!exportReady ? (
+              <Text style={styles.exportPreviewStatus}>
+                {t('exportPreviewPreparing')}
+              </Text>
+            ) : null}
+            <Button
+              disabled={!exportReady || savingExportImage}
+              loading={savingExportImage}
+              onPress={handleSaveExportPreview}
+              title={t('saveToLibrary')}
+              variant="primary"
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -899,35 +843,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '900',
     lineHeight: 24,
-  },
-  summaryRow: {
-    alignItems: 'center',
-    backgroundColor: colors.dark,
-    borderRadius: radii.hero,
-    flexDirection: 'row',
-    paddingVertical: spacing.lg,
-  },
-  summaryItem: {
-    alignItems: 'center',
-    flex: 1,
-    gap: spacing.xs,
-    paddingHorizontal: spacing.xs,
-  },
-  summaryNumber: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '900',
-    textAlign: 'center',
-  },
-  summaryLabel: {
-    color: colors.surfaceMuted,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  summaryDivider: {
-    backgroundColor: '#5d4a67',
-    height: 34,
-    width: 1,
   },
   loadingWrap: {
     alignItems: 'center',
@@ -964,11 +879,20 @@ const styles = StyleSheet.create({
   sectionTitleWrap: {
     flex: 1,
     minWidth: 0,
-    gap: spacing.xs,
+    gap: spacing.md,
   },
-  headingChip: {
-    maxWidth: 118,
-    textAlign: 'center',
+  deleteRouteButton: {
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  deleteRouteText: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  deleteRouteTextDisabled: {
+    opacity: 0.45,
   },
   sectionTitle: {
     color: colors.text,
@@ -976,15 +900,11 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     lineHeight: 25,
   },
-  sectionDescription: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 19,
-  },
   eyebrow: {
     color: colors.brandMuted,
     fontSize: 12,
     fontWeight: '900',
+    paddingLeft: 2,
   },
   routeTabs: {
     gap: spacing.sm,
@@ -1027,13 +947,6 @@ const styles = StyleSheet.create({
   titleInput: {
     fontSize: 17,
     fontWeight: '900',
-  },
-  visibilityRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  visibilityButton: {
-    flex: 1,
   },
   mapEmpty: {
     alignItems: 'center',
@@ -1128,93 +1041,62 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
   },
-  linkedRoomCard: {
-    alignItems: 'center',
-    backgroundColor: colors.successSoft,
-    borderColor: '#bcebd7',
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: spacing.md,
-    padding: spacing.md,
+  exportCaptureTarget: {
+    maxWidth: EXPORT_CARD_MAX_WIDTH,
+    width: '100%',
   },
-  linkedRoomCardDisabled: {
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
-    opacity: 0.72,
-  },
-  linkedRoomCopy: {
-    flex: 1,
-    gap: spacing.xs,
-    minWidth: 0,
-  },
-  linkedRoomTitle: {
-    color: colors.successText,
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  linkedRoomMeta: {
-    color: colors.successText,
-    fontSize: 13,
-  },
-  unlinkButton: {
-    minHeight: 40,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  roomList: {
-    gap: spacing.sm,
-  },
-  roomOption: {
-    alignItems: 'flex-start',
+  exportPreviewCard: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    flexDirection: 'row',
     gap: spacing.md,
-    padding: spacing.md,
+    maxHeight: '88%',
+    maxWidth: EXPORT_CARD_MAX_WIDTH + spacing.lg * 2,
+    padding: spacing.lg,
+    width: '100%',
   },
-  roomOptionSelected: {
-    borderColor: colors.brandMuted,
+  exportPreviewCloseButton: {
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
-  roomOptionDisabled: {
-    opacity: 0.72,
-  },
-  roomOptionCopy: {
-    flex: 1,
-    gap: spacing.xs,
-    minWidth: 0,
-  },
-  roomChip: {
-    maxWidth: 64,
-    textAlign: 'center',
-  },
-  roomOptionTitle: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  roomOptionMeta: {
+  exportPreviewCloseText: {
     color: colors.muted,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '900',
   },
-  policyCard: {
-    backgroundColor: colors.successSoft,
-    borderColor: '#bcebd7',
-    borderRadius: radii.lg,
-    gap: spacing.sm,
+  exportPreviewHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
   },
-  policyTitle: {
-    color: colors.successText,
+  exportPreviewScroll: {
+    flexShrink: 1,
+    flexGrow: 0,
+  },
+  exportPreviewScrollContent: {
+    alignItems: 'center',
+  },
+  exportPreviewStatus: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  exportPreviewTitle: {
+    color: colors.text,
+    flex: 1,
     fontSize: 16,
     fontWeight: '900',
   },
-  policyText: {
-    color: colors.successText,
-    fontSize: 13,
-    lineHeight: 20,
+  exportOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(37, 27, 45, 0.56)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing.screen,
   },
   emptyState: {
     flex: 1,

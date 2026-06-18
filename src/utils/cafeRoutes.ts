@@ -1,20 +1,11 @@
-import type {
-  CafeRoute,
-  CafeRouteStop,
-  CafeRouteVisibility,
-  EventRoom,
-  PlaceSelection,
-} from '../types';
-import {i18n} from '../i18n';
-import {EVENT_ROOM_ALWAYS_ACTIVE_UNTIL_AT} from './eventRoomVisibility';
-import {createLocalId} from './localId';
+import type { CafeRoute, CafeRouteStop, PlaceSelection } from '../types';
+import { i18n } from '../i18n';
+import { createLocalId } from './localId';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const KOREA_UTC_OFFSET_MS = 9 * 60 * 60 * 1000;
 export const CAFE_ROUTE_TITLE_MAX_LENGTH = 40;
 
 function getDefaultCafeRouteTitle() {
-  return i18n.t('defaultTitle', {ns: 'cafeRoutes'});
+  return i18n.t('defaultTitle', { ns: 'cafeRoutes' });
 }
 
 type CreateCafeRouteDraftParams = {
@@ -24,34 +15,11 @@ type CreateCafeRouteDraftParams = {
   now?: string;
 };
 
-type RoomLinkStatusState =
-  | 'notLinked'
-  | 'upcoming'
-  | 'active'
-  | 'endingToday'
-  | 'expired'
-  | 'alwaysActive';
-
-export type CafeRouteRoomLinkStatus = {
-  state: RoomLinkStatusState;
-  label: string;
-};
-
 function touchRoute(route: CafeRoute, now = new Date().toISOString()) {
   return {
     ...route,
     updatedAt: now,
   };
-}
-
-function getKoreanDayNumber(date: Date): number {
-  return Math.floor((date.getTime() + KOREA_UTC_OFFSET_MS) / DAY_MS);
-}
-
-function getValidTime(value: string): number | null {
-  const time = new Date(value).getTime();
-
-  return Number.isFinite(time) ? time : null;
 }
 
 export function createCafeRouteDraft({
@@ -65,7 +33,6 @@ export function createCafeRouteDraft({
     ownerId,
     categoryId,
     title: normalizeCafeRouteTitle(title),
-    visibility: 'private',
     stops: [],
     createdAt: now,
     updatedAt: now,
@@ -83,6 +50,19 @@ export function normalizeCafeRouteTitle(title: string): string {
 
 export function getCafeRouteDisplayTitle(route: Pick<CafeRoute, 'title'>) {
   return normalizeCafeRouteTitle(route.title);
+}
+
+export function getNextRouteIdAfterDelete(
+  routes: Pick<CafeRoute, 'id'>[],
+  deletedRouteId: string,
+): string | undefined {
+  const deletedIndex = routes.findIndex(route => route.id === deletedRouteId);
+
+  if (deletedIndex < 0) {
+    return routes[0]?.id;
+  }
+
+  return routes[deletedIndex + 1]?.id ?? routes[deletedIndex - 1]?.id;
 }
 
 function cleanCafeRouteTitleInput(title: string): string {
@@ -117,9 +97,9 @@ export function removeCafeRouteStop(
 ): CafeRoute {
   const nextStops = route.stops
     .filter(stop => stop.id !== stopId)
-    .map((stop, index) => ({...stop, order: index + 1}));
+    .map((stop, index) => ({ ...stop, order: index + 1 }));
 
-  return touchRoute({...route, stops: nextStops}, now);
+  return touchRoute({ ...route, stops: nextStops }, now);
 }
 
 export function moveCafeRouteStop(
@@ -148,7 +128,7 @@ export function moveCafeRouteStop(
   return touchRoute(
     {
       ...route,
-      stops: nextStops.map((stop, index) => ({...stop, order: index + 1})),
+      stops: nextStops.map((stop, index) => ({ ...stop, order: index + 1 })),
     },
     now,
   );
@@ -159,144 +139,5 @@ export function updateCafeRouteTitle(
   title: string,
   now = new Date().toISOString(),
 ): CafeRoute {
-  return touchRoute({...route, title: cleanCafeRouteTitleInput(title)}, now);
-}
-
-export function updateCafeRouteVisibility(
-  route: CafeRoute,
-  visibility: CafeRouteVisibility,
-  now = new Date().toISOString(),
-): CafeRoute {
-  return touchRoute(
-    {
-      ...route,
-      visibility,
-      linkedRoom: visibility === 'private' ? undefined : route.linkedRoom,
-    },
-    now,
-  );
-}
-
-export function linkCafeRouteToRoom(
-  route: CafeRoute,
-  room: EventRoom,
-  now = new Date().toISOString(),
-): CafeRoute {
-  return touchRoute(
-    {
-      ...route,
-      visibility: 'shared',
-      linkedRoom: {
-        roomId: room.id,
-        title: room.title,
-        status: room.status,
-        activeFromAt: room.activeFromAt,
-        activeUntilAt: room.activeUntilAt,
-        closedAt: room.closedAt,
-        deletedAt: room.deletedAt,
-        linkedAt: now,
-      },
-    },
-    now,
-  );
-}
-
-export function unlinkCafeRouteFromRoom(
-  route: CafeRoute,
-  now = new Date().toISOString(),
-): CafeRoute {
-  return touchRoute(
-    {
-      ...route,
-      linkedRoom: undefined,
-    },
-    now,
-  );
-}
-
-export function getCafeRouteRoomLinkStatus(
-  route: CafeRoute,
-  now = new Date(),
-): CafeRouteRoomLinkStatus {
-  const linkedRoom = route.linkedRoom;
-
-  if (route.visibility !== 'shared' || !linkedRoom) {
-    return {
-      state: 'notLinked',
-      label: i18n.t('statuses.notLinked', {ns: 'cafeRoutes'}),
-    };
-  }
-
-  if (linkedRoom.status && linkedRoom.status !== 'active') {
-    return {
-      state: 'expired',
-      label: i18n.t('statuses.expired', {ns: 'cafeRoutes'}),
-    };
-  }
-
-  if (linkedRoom.activeUntilAt === EVENT_ROOM_ALWAYS_ACTIVE_UNTIL_AT) {
-    return {
-      state: 'alwaysActive',
-      label: i18n.t('statuses.alwaysActive', {ns: 'cafeRoutes'}),
-    };
-  }
-
-  const activeFromTime = getValidTime(linkedRoom.activeFromAt);
-  const activeUntilTime = getValidTime(linkedRoom.activeUntilAt);
-
-  if (
-    activeFromTime === null ||
-    activeUntilTime === null ||
-    activeFromTime >= activeUntilTime
-  ) {
-    return {
-      state: 'notLinked',
-      label: i18n.t('statuses.notLinked', {ns: 'cafeRoutes'}),
-    };
-  }
-
-  const nowTime = now.getTime();
-
-  if (nowTime < activeFromTime) {
-    const remainingDays = Math.max(
-      1,
-      getKoreanDayNumber(new Date(activeFromTime)) - getKoreanDayNumber(now),
-    );
-
-    return {
-      state: 'upcoming',
-      label: i18n.t('statuses.upcoming', {
-        count: remainingDays,
-        ns: 'cafeRoutes',
-      }),
-    };
-  }
-
-  if (nowTime >= activeUntilTime) {
-    return {
-      state: 'expired',
-      label: i18n.t('statuses.expired', {ns: 'cafeRoutes'}),
-    };
-  }
-
-  const todayNumber = getKoreanDayNumber(now);
-  const lastActiveDayNumber = getKoreanDayNumber(
-    new Date(activeUntilTime - 1),
-  );
-  const remainingDays = lastActiveDayNumber - todayNumber;
-
-  if (remainingDays <= 0) {
-    return {
-      state: 'endingToday',
-      label: i18n.t('statuses.endingToday', {ns: 'cafeRoutes'}),
-    };
-  }
-
-  return {
-    state: 'active',
-    label: i18n.t('statuses.active', {
-      count: remainingDays,
-      ns: 'cafeRoutes',
-    }),
-  };
+  return touchRoute({ ...route, title: cleanCafeRouteTitleInput(title) }, now);
 }

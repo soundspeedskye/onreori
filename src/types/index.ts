@@ -1,8 +1,8 @@
-import type {EventCategoryId} from '../constants/eventCategories';
-import type {SupportedLanguageCode} from '../i18n/languages';
+import type { EventCategoryId } from '../constants/eventCategories';
+import type { SupportedLanguageCode } from '../i18n/languages';
 
-export type {EventCategoryId};
-export type {SupportedLanguageCode};
+export type { EventCategoryId };
+export type { SupportedLanguageCode };
 
 export type ConditionId = string;
 
@@ -96,8 +96,6 @@ export type PlaceSelection = {
   source: 'center' | 'pin' | 'search' | 'address';
 };
 
-export type CafeRouteVisibility = 'private' | 'shared';
-
 export type CafeRouteStop = PlaceSelection & {
   id: string;
   order: number;
@@ -106,25 +104,12 @@ export type CafeRouteStop = PlaceSelection & {
   createdAt: string;
 };
 
-export type CafeRouteLinkedRoom = {
-  roomId: string;
-  title: string;
-  status?: RoomStatus;
-  activeFromAt: string;
-  activeUntilAt: string;
-  closedAt?: string;
-  deletedAt?: string;
-  linkedAt: string;
-};
-
 export type CafeRoute = {
   id: string;
   ownerId?: string;
   categoryId: string;
   title: string;
   subjectName?: string;
-  visibility: CafeRouteVisibility;
-  linkedRoom?: CafeRouteLinkedRoom;
   stops: CafeRouteStop[];
   createdAt: string;
   updatedAt: string;

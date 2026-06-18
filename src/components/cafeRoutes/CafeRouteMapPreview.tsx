@@ -1,4 +1,10 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   InteractionManager,
   Platform,
@@ -9,11 +15,11 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-import type {KakaoMapChangeEvent} from '../../screens/mapPicker/useMapCenterSelection';
-import {colors, radii} from '../../theme/tokens';
-import type {CafeRouteStop} from '../../types';
+import type { KakaoMapChangeEvent } from '../../screens/mapPicker/useMapCenterSelection';
+import { colors, radii } from '../../theme/tokens';
+import type { CafeRouteStop } from '../../types';
 
 const MAP_PIN_IMAGE_NAME = 'onreori_map_pin';
 const MAP_LOAD_TIMEOUT_MS = 9000;
@@ -48,17 +54,20 @@ type AndroidKakaoMapViewModule = {
 
 type CafeRouteMapPreviewProps = {
   height: number;
+  onRenderSettled?: () => void;
   stops: CafeRouteStop[];
 };
 
 function LegacyKakaoMapView(props: KakaoMapViewWithStyleProps) {
-  const {KakaoMapView} = require('@jiggag/react-native-kakao-maps') as LegacyKakaoMapViewModule;
+  const { KakaoMapView } =
+    require('@jiggag/react-native-kakao-maps') as LegacyKakaoMapViewModule;
 
   return <KakaoMapView {...props} />;
 }
 
 function AndroidKakaoMapView(props: KakaoMapViewWithStyleProps) {
-  const {OnreoriAndroidKakaoMapView} = require('../mapPicker/OnreoriAndroidKakaoMapView') as AndroidKakaoMapViewModule;
+  const { OnreoriAndroidKakaoMapView } =
+    require('../mapPicker/OnreoriAndroidKakaoMapView') as AndroidKakaoMapViewModule;
 
   return <OnreoriAndroidKakaoMapView {...props} />;
 }
@@ -84,13 +93,19 @@ function getRouteMapSignature(stops: CafeRouteStop[]) {
   return stops
     .map(
       stop =>
-        `${stop.id}:${stop.order}:${stop.latitude.toFixed(6)}:${stop.longitude.toFixed(6)}`,
+        `${stop.id}:${stop.order}:${stop.latitude.toFixed(
+          6,
+        )}:${stop.longitude.toFixed(6)}`,
     )
     .join('|');
 }
 
-export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
-  const {t} = useTranslation('map');
+export function CafeRouteMapPreview({
+  height,
+  onRenderSettled,
+  stops,
+}: CafeRouteMapPreviewProps) {
+  const { t } = useTranslation('map');
   const [layoutWidth, setLayoutWidth] = useState<number | null>(null);
   const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -119,7 +134,7 @@ export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
     }
   }, []);
   const handleNativeMapChange = useCallback(
-    ({nativeEvent}: KakaoMapChangeEvent) => {
+    ({ nativeEvent }: KakaoMapChangeEvent) => {
       if (nativeEvent.status === 'error') {
         clearLoadTimeout();
         setMapError(nativeEvent.reason ?? nativeEvent.message ?? 'unknown');
@@ -166,9 +181,15 @@ export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
     }
   }, [clearLoadTimeout, mapReady]);
 
+  useEffect(() => {
+    if (mapReady || mapError) {
+      onRenderSettled?.();
+    }
+  }, [mapError, mapReady, onRenderSettled]);
+
   const mapProps =
     previewWidth === null
-        ? null
+      ? null
       : {
           centerPoint,
           fitToMarkers: markerList.length > 1,
@@ -204,8 +225,11 @@ export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
       : `${mapKey}:${previewWidth}x${previewHeight}`;
 
   return (
-    <View style={[styles.container, {height: previewHeight}]} onLayout={handleLayout}>
-      <View style={[styles.mapSurface, {height: previewHeight}]}>
+    <View
+      style={[styles.container, { height: previewHeight }]}
+      onLayout={handleLayout}
+    >
+      <View style={[styles.mapSurface, { height: previewHeight }]}>
         {mountNativeMap && mapProps ? (
           Platform.OS === 'android' ? (
             <AndroidKakaoMapView key={nativeMapKey} {...mapProps} />
@@ -217,9 +241,7 @@ export function CafeRouteMapPreview({height, stops}: CafeRouteMapPreviewProps) {
       <View pointerEvents="none" style={styles.borderOverlay} />
       {mapError ? (
         <View pointerEvents="none" style={styles.mapUnavailable}>
-          <Text style={styles.mapUnavailableTitle}>
-            {t('mapLoadFailed')}
-          </Text>
+          <Text style={styles.mapUnavailableTitle}>{t('mapLoadFailed')}</Text>
           <Text style={styles.mapUnavailableText}>{mapError}</Text>
         </View>
       ) : null}

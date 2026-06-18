@@ -1,12 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type {
-  CafeRoute,
-  CafeRouteLinkedRoom,
-  CafeRouteStop,
-  RoomStatus,
-} from '../types';
-import {normalizeCafeRouteTitle} from '../utils/cafeRoutes';
+import type { CafeRoute, CafeRouteStop } from '../types';
+import { normalizeCafeRouteTitle } from '../utils/cafeRoutes';
 
 const STORAGE_KEY = '@onreori/cafeRoutes';
 const FALLBACK_TIMESTAMP = '1970-01-01T00:00:00.000Z';
@@ -46,54 +41,6 @@ function getTimestamp(value: unknown, fallback?: string): string {
   }
 
   return FALLBACK_TIMESTAMP;
-}
-
-function getRoomStatus(value: unknown): RoomStatus | undefined {
-  return value === 'active' || value === 'closed' || value === 'soft_deleted'
-    ? value
-    : undefined;
-}
-
-function normalizeCafeRouteLinkedRoom(
-  value: unknown,
-): CafeRouteLinkedRoom | undefined {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const roomId = getString(value.roomId);
-  const title = getString(value.title);
-  const activeFromAt = getString(value.activeFromAt);
-  const activeUntilAt = getString(value.activeUntilAt);
-  const linkedAt = getString(value.linkedAt);
-
-  if (!roomId || !title || !activeFromAt || !activeUntilAt || !linkedAt) {
-    return undefined;
-  }
-
-  const activeFromTime = getTime(activeFromAt);
-  const activeUntilTime = getTime(activeUntilAt);
-  const linkedTime = getTime(linkedAt);
-
-  if (
-    activeFromTime === undefined ||
-    activeUntilTime === undefined ||
-    linkedTime === undefined ||
-    activeFromTime >= activeUntilTime
-  ) {
-    return undefined;
-  }
-
-  return {
-    roomId,
-    title,
-    status: getRoomStatus(value.status),
-    activeFromAt,
-    activeUntilAt,
-    closedAt: getString(value.closedAt),
-    deletedAt: getString(value.deletedAt),
-    linkedAt,
-  };
 }
 
 function normalizeCafeRouteStops(value: unknown): CafeRouteStop[] {
@@ -156,11 +103,6 @@ function normalizeCafeRoute(value: unknown): CafeRoute | undefined {
   }
 
   const createdAt = getTimestamp(value.createdAt);
-  const visibility = value.visibility === 'shared' ? 'shared' : 'private';
-  const linkedRoom =
-    visibility === 'shared'
-      ? normalizeCafeRouteLinkedRoom(value.linkedRoom)
-      : undefined;
 
   return {
     id,
@@ -168,8 +110,6 @@ function normalizeCafeRoute(value: unknown): CafeRoute | undefined {
     categoryId,
     title: normalizeCafeRouteTitle(getString(value.title) ?? ''),
     subjectName: getString(value.subjectName),
-    visibility,
-    linkedRoom,
     stops: normalizeCafeRouteStops(value.stops),
     createdAt,
     updatedAt: getTimestamp(value.updatedAt, createdAt),
