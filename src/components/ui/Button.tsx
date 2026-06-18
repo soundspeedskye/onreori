@@ -9,9 +9,9 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import {colors, radii} from '../../theme/tokens';
+import { colors, radii } from '../../theme/tokens';
 
-type ButtonVariant = 'primary' | 'secondary' | 'dark' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'dark' | 'brand' | 'ghost';
 
 type ButtonProps = {
   title: string;
@@ -36,9 +36,9 @@ export function Button({
   const indicatorColor =
     variant === 'primary'
       ? colors.actionText
-      : variant === 'dark'
-        ? colors.textInverse
-        : colors.brandMuted;
+      : variant === 'dark' || variant === 'brand'
+      ? colors.textInverse
+      : colors.brandMuted;
 
   return (
     <Pressable
@@ -49,7 +49,8 @@ export function Button({
         styles[variant],
         isDisabled && styles.disabled,
         style,
-      ]}>
+      ]}
+    >
       {loading ? (
         <ActivityIndicator color={indicatorColor} />
       ) : (
@@ -81,6 +82,9 @@ const styles = StyleSheet.create({
   dark: {
     backgroundColor: colors.dark,
   },
+  brand: {
+    backgroundColor: colors.brandMuted,
+  },
   ghost: {
     backgroundColor: 'transparent',
   },
@@ -98,6 +102,9 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   darkText: {
+    color: colors.textInverse,
+  },
+  brandText: {
     color: colors.textInverse,
   },
   ghostText: {
