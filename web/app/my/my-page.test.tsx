@@ -11,6 +11,7 @@ const mockState = vi.hoisted(() => ({
   restoreChecklistFromAccount: vi.fn(),
   routerPush: vi.fn(),
   saveChecklistRestoredFromAccount: vi.fn(),
+  signOut: vi.fn(),
   user: null as AuthUser | null,
 }));
 
@@ -24,6 +25,7 @@ vi.mock('@/lib/auth/AuthProvider', () => ({
   useAuth: () => ({
     user: mockState.user,
     loading: mockState.loading,
+    signOut: mockState.signOut,
   }),
 }));
 
@@ -76,6 +78,7 @@ describe('MyPage', () => {
     mockState.restoreChecklistFromAccount.mockReset();
     mockState.routerPush.mockReset();
     mockState.saveChecklistRestoredFromAccount.mockReset();
+    mockState.signOut.mockReset();
     mockState.user = null;
   });
 
@@ -96,7 +99,19 @@ describe('MyPage', () => {
 
     expect(mockState.listAccountChecklists).toHaveBeenCalledWith(authUser);
     expect(await screen.findByText('Concert checklist')).toBeInTheDocument();
+    expect(screen.getByText('fan@example.com')).toBeInTheDocument();
     expect(screen.getByText('저장된 항목 1개')).toBeInTheDocument();
+  });
+
+  it('signs out from the my page', async () => {
+    mockState.user = authUser;
+    mockState.listAccountChecklists.mockResolvedValue([]);
+
+    render(<MyPage />);
+
+    fireEvent.click(await screen.findByRole('button', {name: '로그아웃'}));
+
+    expect(mockState.signOut).toHaveBeenCalledTimes(1);
   });
 
   it('restores a remote checklist locally and opens it', async () => {

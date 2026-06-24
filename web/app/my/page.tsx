@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {useCallback, useEffect, useState} from 'react';
 
+import {Button} from '@/components/ui/Button';
 import {ALERT_MESSAGES} from '@/constants/alertMessages';
 import {useAuth} from '@/lib/auth/AuthProvider';
 import {saveChecklistRestoredFromAccount} from '@/lib/storage/checklists';
@@ -33,7 +34,7 @@ function formatUpdatedAt(value: string): string {
 }
 
 export default function MyPage() {
-  const {loading, user} = useAuth();
+  const {loading, signOut, user} = useAuth();
   const router = useRouter();
   const [checklists, setChecklists] = useState<RemoteChecklistSummary[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
@@ -101,6 +102,16 @@ export default function MyPage() {
     [restoringId, router, user],
   );
 
+  const handleSignOut = useCallback(async () => {
+    setErrorMessage('');
+
+    try {
+      await signOut();
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, ALERT_MESSAGES.failed));
+    }
+  }, [signOut]);
+
   if (loading) {
     return (
       <main className="screen my-screen">
@@ -141,9 +152,19 @@ export default function MyPage() {
         <h1>{user.nickname}님의 체크리스트</h1>
       </header>
 
-      <section className="ui-card my-summary-card">
-        <span className="ui-chip ui-chip-brand">계정 저장</span>
-        <strong>저장된 항목 {checklists.length}개</strong>
+      <section className="ui-card my-account-card">
+        <div>
+          <span className="ui-chip ui-chip-brand">계정 저장</span>
+          <strong>저장된 항목 {checklists.length}개</strong>
+          <p>{user.email}</p>
+        </div>
+        <Button
+          className="my-sign-out-button"
+          onClick={() => void handleSignOut()}
+          variant="secondary"
+        >
+          로그아웃
+        </Button>
       </section>
 
       {errorMessage ? <p className="my-error">{errorMessage}</p> : null}

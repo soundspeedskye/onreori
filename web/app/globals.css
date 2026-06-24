@@ -860,7 +860,7 @@ button.ui-card {
 }
 
 .my-guest-card,
-.my-summary-card,
+.my-account-card,
 .my-checklist-card {
   border-radius: 22px;
 }
@@ -888,18 +888,41 @@ button.ui-card {
   line-height: 1.45;
 }
 
-.my-summary-card {
+.my-account-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.my-summary-card strong {
+.my-account-card > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.my-account-card strong {
   color: var(--color-dark);
   font-size: 16px;
   font-weight: 900;
   line-height: 1.25;
+}
+
+.my-account-card p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.my-sign-out-button {
+  min-height: 40px;
+  width: auto;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
 .my-error {
