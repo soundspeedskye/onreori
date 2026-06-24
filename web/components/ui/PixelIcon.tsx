@@ -187,8 +187,8 @@ export function PixelIcon({
   return (
     <svg
       aria-hidden="true"
+      focusable="false"
       height={size}
-      role="img"
       viewBox={`0 0 ${GRID_SIZE} ${GRID_SIZE}`}
       width={size}
     >

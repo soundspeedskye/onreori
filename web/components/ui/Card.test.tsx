@@ -12,6 +12,7 @@ describe('Card', () => {
         {
           'aria-label': 'Open details',
           asButton: true,
+          disabled: true,
           id: 'action-card',
         },
         'Details',
@@ -21,5 +22,6 @@ describe('Card', () => {
     expect(
       screen.getByRole('button', {name: 'Open details'}),
     ).toHaveAttribute('id', 'action-card');
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 });
