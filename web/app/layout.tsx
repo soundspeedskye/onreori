@@ -1,4 +1,5 @@
 import type {Metadata, Viewport} from 'next';
+import {AppProviders} from '@/components/AppProviders';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,7 +16,11 @@ export const viewport: Viewport = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <AppProviders>
+          <div className="app-shell">{children}</div>
+        </AppProviders>
+      </body>
     </html>
   );
 }
