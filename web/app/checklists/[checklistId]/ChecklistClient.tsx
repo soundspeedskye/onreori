@@ -131,7 +131,12 @@ export function ChecklistClient({
       setSyncError('');
       await saveChecklist(nextChecklist);
 
-      if (user && nextChecklist.saveState === 'synced') {
+      if (
+        user &&
+        nextChecklist.remoteId &&
+        (nextChecklist.saveState === 'synced' ||
+          nextChecklist.saveState === 'syncFailed')
+      ) {
         await syncChecklistToAccount(nextChecklist);
       }
     },

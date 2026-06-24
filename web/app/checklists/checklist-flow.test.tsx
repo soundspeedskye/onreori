@@ -211,4 +211,34 @@ describe('checklist flow', () => {
       );
     });
   });
+
+  it('retries account sync for a failed remote checklist after a local edit', async () => {
+    mockState.user = authUser;
+    window.localStorage.setItem(
+      'onreori.checklists',
+      JSON.stringify([
+        createChecklist({
+          ownerId: authUser.id,
+          remoteId: 'remote-failed',
+          saveState: 'syncFailed',
+        }),
+      ]),
+    );
+
+    render(<ChecklistClient checklistId="checklist-flow" />);
+
+    await user.click(await screen.findByRole('checkbox', {name: /Ticket/}));
+
+    await waitFor(() => {
+      expect(mockState.saveChecklistToAccount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'checklist-flow',
+          remoteId: 'remote-failed',
+          saveState: 'syncFailed',
+          items: [expect.objectContaining({id: 'ticket', checked: true})],
+        }),
+        authUser,
+      );
+    });
+  });
 });
