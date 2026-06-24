@@ -70,6 +70,9 @@ export function ChecklistClient({
   const latestChecklistRef = useRef<Checklist | null>(null);
   const localMutationSequenceRef = useRef(0);
   const latestSyncRequestSequenceRef = useRef(0);
+  const accountSyncQueueRef = useRef<Promise<Checklist | null>>(
+    Promise.resolve(null),
+  );
 
   const setCurrentChecklist = useCallback((nextChecklist: Checklist | null) => {
     latestChecklistRef.current = nextChecklist;
@@ -111,62 +114,74 @@ export function ChecklistClient({
       setSyncError('');
       setIsSavingToAccount(true);
 
-      const isLatestSyncCompletion = () =>
-        localMutationSequenceRef.current === mutationSequence &&
-        latestSyncRequestSequenceRef.current === syncRequestSequence &&
-        latestChecklistRef.current?.id === targetChecklist.id;
+      const runQueuedSync = async () => {
+        const isLatestSyncCompletion = () =>
+          localMutationSequenceRef.current === mutationSequence &&
+          latestSyncRequestSequenceRef.current === syncRequestSequence &&
+          latestChecklistRef.current?.id === targetChecklist.id;
 
-      try {
-        const remoteReference = await saveChecklistToAccount(
-          targetChecklist,
-          user,
-        );
+        try {
+          const remoteReference = await saveChecklistToAccount(
+            targetChecklist,
+            user,
+          );
 
-        if (!isLatestSyncCompletion()) {
-          return latestChecklistRef.current ?? targetChecklist;
+          if (!isLatestSyncCompletion()) {
+            return latestChecklistRef.current ?? targetChecklist;
+          }
+
+          const syncedChecklist: Checklist = {
+            ...(latestChecklistRef.current ?? targetChecklist),
+            ownerId: remoteReference.ownerId,
+            remoteId: remoteReference.remoteId,
+            saveState: 'synced',
+            updatedAt: new Date().toISOString(),
+          };
+
+          await saveChecklist(syncedChecklist);
+
+          if (!isLatestSyncCompletion()) {
+            return latestChecklistRef.current ?? syncedChecklist;
+          }
+
+          setCurrentChecklist(syncedChecklist);
+          return syncedChecklist;
+        } catch (error) {
+          if (!isLatestSyncCompletion()) {
+            return latestChecklistRef.current ?? targetChecklist;
+          }
+
+          const failedChecklist: Checklist = {
+            ...(latestChecklistRef.current ?? targetChecklist),
+            saveState: 'syncFailed',
+            updatedAt: new Date().toISOString(),
+          };
+
+          await saveChecklist(failedChecklist);
+
+          if (!isLatestSyncCompletion()) {
+            return latestChecklistRef.current ?? failedChecklist;
+          }
+
+          setCurrentChecklist(failedChecklist);
+          setSyncError(getErrorMessage(error, ALERT_MESSAGES.syncFailed));
+          return failedChecklist;
+        } finally {
+          if (latestSyncRequestSequenceRef.current === syncRequestSequence) {
+            setIsSavingToAccount(false);
+          }
         }
+      };
 
-        const syncedChecklist: Checklist = {
-          ...(latestChecklistRef.current ?? targetChecklist),
-          ownerId: remoteReference.ownerId,
-          remoteId: remoteReference.remoteId,
-          saveState: 'synced',
-          updatedAt: new Date().toISOString(),
-        };
+      const queuedSync = accountSyncQueueRef.current
+        .catch(() => null)
+        .then(runQueuedSync);
 
-        await saveChecklist(syncedChecklist);
+      accountSyncQueueRef.current = queuedSync.catch(
+        () => latestChecklistRef.current,
+      );
 
-        if (!isLatestSyncCompletion()) {
-          return latestChecklistRef.current ?? syncedChecklist;
-        }
-
-        setCurrentChecklist(syncedChecklist);
-        return syncedChecklist;
-      } catch (error) {
-        if (!isLatestSyncCompletion()) {
-          return latestChecklistRef.current ?? targetChecklist;
-        }
-
-        const failedChecklist: Checklist = {
-          ...(latestChecklistRef.current ?? targetChecklist),
-          saveState: 'syncFailed',
-          updatedAt: new Date().toISOString(),
-        };
-
-        await saveChecklist(failedChecklist);
-
-        if (!isLatestSyncCompletion()) {
-          return latestChecklistRef.current ?? failedChecklist;
-        }
-
-        setCurrentChecklist(failedChecklist);
-        setSyncError(getErrorMessage(error, ALERT_MESSAGES.syncFailed));
-        return failedChecklist;
-      } finally {
-        if (latestSyncRequestSequenceRef.current === syncRequestSequence) {
-          setIsSavingToAccount(false);
-        }
-      }
+      return queuedSync;
     },
     [setCurrentChecklist, user],
   );

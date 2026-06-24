@@ -253,7 +253,7 @@ describe('checklist flow', () => {
     });
   });
 
-  it('keeps newer local edits when auto-sync RPCs resolve out of order', async () => {
+  it('queues auto-sync RPCs so remote writes follow local mutation order', async () => {
     const firstSync = createDeferred<{ownerId: string; remoteId: string}>();
     const secondSync = createDeferred<{ownerId: string; remoteId: string}>();
     mockState.saveChecklistToAccount
@@ -282,19 +282,44 @@ describe('checklist flow', () => {
       target: {value: 'VIP badge'},
     });
     await user.click(screen.getByRole('button', {name: '추가'}));
-    await waitFor(() => {
-      expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(2);
-    });
 
-    await act(async () => {
-      secondSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
-      await secondSync.promise;
+    await waitFor(() => {
+      expect(screen.getByText('VIP badge')).toBeInTheDocument();
+      expect(
+        JSON.parse(window.localStorage.getItem('onreori.checklists') ?? '[]')[0]
+          .items,
+      ).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({name: 'VIP badge'}),
+        ]),
+      );
     });
-    expect(screen.getByText('VIP badge')).toBeInTheDocument();
+    expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       firstSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
       await firstSync.promise;
+    });
+    await waitFor(() => {
+      expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(2);
+    });
+
+    expect(mockState.saveChecklistToAccount).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        id: 'checklist-flow',
+        remoteId: 'remote-1',
+        items: expect.arrayContaining([
+          expect.objectContaining({id: 'ticket', checked: true}),
+          expect.objectContaining({name: 'VIP badge'}),
+        ]),
+      }),
+      authUser,
+    );
+
+    await act(async () => {
+      secondSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
+      await secondSync.promise;
     });
 
     const storedChecklist = JSON.parse(
