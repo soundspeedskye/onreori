@@ -1,18 +1,26 @@
 'use client';
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {ChecklistAddItemForm} from '@/components/checklist/ChecklistAddItemForm';
 import {ChecklistHeroCard} from '@/components/checklist/ChecklistHeroCard';
 import {ChecklistSections} from '@/components/checklist/ChecklistSections';
 import {Button} from '@/components/ui/Button';
 import {EmptyState} from '@/components/ui/EmptyState';
+import {ALERT_MESSAGES} from '@/constants/alertMessages';
 import {conditions} from '@/data/templates';
+import {useAuth} from '@/lib/auth/AuthProvider';
 import {
+  consumePendingAccountSaveChecklistId,
   getChecklistById,
   saveChecklist,
+  saveChecklistDraft,
+  saveChecklistSyncFailed,
+  saveChecklistSynced,
   setPendingAccountSaveChecklistId,
 } from '@/lib/storage/checklists';
+import {saveChecklistToAccount} from '@/services/checklistAccount';
 import type {Checklist} from '@/types';
 import {
   addCustomChecklistItem,
@@ -25,6 +33,7 @@ import {createLocalId} from '@/utils/localId';
 
 type ChecklistClientProps = {
   checklistId: string;
+  saveToAccount?: boolean;
 };
 
 export function getAccountSaveHref(checklistId: string): string {
@@ -43,11 +52,23 @@ function getConditionLabels(checklist: Checklist): string[] {
     .map(condition => condition.label);
 }
 
-export function ChecklistClient({checklistId}: ChecklistClientProps) {
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
+export function ChecklistClient({
+  checklistId,
+  saveToAccount = false,
+}: ChecklistClientProps) {
+  const router = useRouter();
+  const {user} = useAuth();
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [syncError, setSyncError] = useState('');
+  const [isSavingToAccount, setIsSavingToAccount] = useState(false);
   const [customItemName, setCustomItemName] = useState('');
   const [customItemDescription, setCustomItemDescription] = useState('');
+  const didAttemptPendingAccountSave = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -70,10 +91,84 @@ export function ChecklistClient({checklistId}: ChecklistClientProps) {
     };
   }, [checklistId]);
 
-  const persistChecklist = useCallback(async (nextChecklist: Checklist) => {
-    setChecklist(nextChecklist);
-    await saveChecklist(nextChecklist);
-  }, []);
+  const syncChecklistToAccount = useCallback(
+    async (targetChecklist: Checklist) => {
+      if (!user) {
+        return targetChecklist;
+      }
+
+      setSyncError('');
+      setIsSavingToAccount(true);
+
+      try {
+        const remoteReference = await saveChecklistToAccount(
+          targetChecklist,
+          user,
+        );
+        const syncedChecklist = await saveChecklistSynced(
+          targetChecklist,
+          remoteReference,
+        );
+
+        setChecklist(syncedChecklist);
+        return syncedChecklist;
+      } catch (error) {
+        const failedChecklist = await saveChecklistSyncFailed(targetChecklist);
+
+        setChecklist(failedChecklist);
+        setSyncError(getErrorMessage(error, ALERT_MESSAGES.syncFailed));
+        return failedChecklist;
+      } finally {
+        setIsSavingToAccount(false);
+      }
+    },
+    [user],
+  );
+
+  const persistChecklist = useCallback(
+    async (nextChecklist: Checklist) => {
+      setChecklist(nextChecklist);
+      setSyncError('');
+      await saveChecklist(nextChecklist);
+
+      if (user && nextChecklist.saveState === 'synced') {
+        await syncChecklistToAccount(nextChecklist);
+      }
+    },
+    [syncChecklistToAccount, user],
+  );
+
+  useEffect(() => {
+    if (
+      !saveToAccount ||
+      !user ||
+      !checklist ||
+      didAttemptPendingAccountSave.current
+    ) {
+      return;
+    }
+
+    didAttemptPendingAccountSave.current = true;
+    const currentChecklist = checklist;
+
+    async function savePendingChecklistToAccount() {
+      const pendingChecklistId = await consumePendingAccountSaveChecklistId();
+      const targetChecklistId = pendingChecklistId ?? currentChecklist.id;
+      const targetChecklist =
+        targetChecklistId === currentChecklist.id
+          ? currentChecklist
+          : await getChecklistById(targetChecklistId);
+
+      if (!targetChecklist) {
+        setSyncError(ALERT_MESSAGES.loadFailed);
+        return;
+      }
+
+      await syncChecklistToAccount(targetChecklist);
+    }
+
+    void savePendingChecklistToAccount();
+  }, [checklist, saveToAccount, syncChecklistToAccount, user]);
 
   const sections = useMemo(
     () => groupChecklistItemsBySection(checklist?.items ?? []),
@@ -126,8 +221,16 @@ export function ChecklistClient({checklistId}: ChecklistClientProps) {
       return;
     }
 
-    await setPendingAccountSaveChecklistId(checklist.id);
-    window.location.assign(getAccountSaveHref(checklist.id));
+    if (!user) {
+      const draftChecklist = await saveChecklistDraft(checklist);
+
+      setChecklist(draftChecklist);
+      await setPendingAccountSaveChecklistId(draftChecklist.id);
+      router.push(getAccountSaveHref(draftChecklist.id));
+      return;
+    }
+
+    await syncChecklistToAccount(checklist);
   }
 
   function handleShareCard() {
@@ -135,7 +238,7 @@ export function ChecklistClient({checklistId}: ChecklistClientProps) {
       return;
     }
 
-    window.location.assign(getShareHref(checklist.id));
+    router.push(getShareHref(checklist.id));
   }
 
   if (isLoading) {
@@ -163,9 +266,17 @@ export function ChecklistClient({checklistId}: ChecklistClientProps) {
         conditionLabels={getConditionLabels(checklist)}
         icon={checklist.icon}
         meta={`${checkedCount}/${totalCount} 완료`}
-        saveStateLabel={getChecklistSaveStateLabel(checklist.saveState)}
+        saveStateLabel={getChecklistSaveStateLabel(checklist.saveState, {
+          syncing: isSavingToAccount,
+        })}
         title={checklist.title}
       />
+
+      {syncError ? (
+        <p aria-live="polite" className="auth-form__error">
+          {syncError}
+        </p>
+      ) : null}
 
       <ChecklistAddItemForm
         description={customItemDescription}

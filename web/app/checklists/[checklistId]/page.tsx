@@ -1,9 +1,14 @@
 import {ChecklistClient} from './ChecklistClient';
 
+type ChecklistPageSearchParams = {
+  saveToAccount?: string | string[];
+};
+
 type ChecklistPageProps = {
   params: Promise<{
     checklistId: string;
   }>;
+  searchParams?: Promise<ChecklistPageSearchParams>;
 };
 
 export {
@@ -12,8 +17,25 @@ export {
   getShareHref,
 } from './ChecklistClient';
 
-export default async function ChecklistPage({params}: ChecklistPageProps) {
-  const {checklistId} = await params;
+function hasSaveToAccount(searchParam: string | string[] | undefined): boolean {
+  return Array.isArray(searchParam)
+    ? searchParam.includes('1')
+    : searchParam === '1';
+}
 
-  return <ChecklistClient checklistId={checklistId} />;
+export default async function ChecklistPage({
+  params,
+  searchParams,
+}: ChecklistPageProps) {
+  const {checklistId} = await params;
+  const resolvedSearchParams: ChecklistPageSearchParams = searchParams
+    ? await searchParams
+    : {};
+
+  return (
+    <ChecklistClient
+      checklistId={checklistId}
+      saveToAccount={hasSaveToAccount(resolvedSearchParams.saveToAccount)}
+    />
+  );
 }
