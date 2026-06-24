@@ -1,4 +1,4 @@
-import type {HTMLAttributes} from 'react';
+import {createElement, type HTMLAttributes} from 'react';
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   asButton?: boolean;
@@ -15,16 +15,24 @@ export function Card({
   const classes = ['ui-card', className].filter(Boolean).join(' ');
 
   if (asButton || onClick) {
-    return (
-      <button className={classes} onClick={onClick} type="button">
-        {children}
-      </button>
+    return createElement(
+      'button',
+      {
+        className: classes,
+        onClick,
+        type: 'button',
+        ...props,
+      },
+      children,
     );
   }
 
-  return (
-    <div className={classes} {...props}>
-      {children}
-    </div>
+  return createElement(
+    'div',
+    {
+      className: classes,
+      ...props,
+    },
+    children,
   );
 }
