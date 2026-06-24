@@ -67,6 +67,7 @@ export function ChecklistClient({
   const [customItemName, setCustomItemName] = useState('');
   const [customItemDescription, setCustomItemDescription] = useState('');
   const didAttemptPendingAccountSave = useRef(false);
+  const explicitAccountSaveInFlightRef = useRef(false);
   const latestChecklistRef = useRef<Checklist | null>(null);
   const localMutationSequenceRef = useRef(0);
   const latestSyncRequestSequenceRef = useRef(0);
@@ -115,23 +116,32 @@ export function ChecklistClient({
       setIsSavingToAccount(true);
 
       const runQueuedSync = async () => {
-        const isLatestSyncCompletion = () =>
-          localMutationSequenceRef.current === mutationSequence &&
-          latestSyncRequestSequenceRef.current === syncRequestSequence &&
+        const isLatestSyncCompletion = (
+          candidateMutationSequence = mutationSequence,
+          candidateSyncRequestSequence = syncRequestSequence,
+        ) =>
+          localMutationSequenceRef.current === candidateMutationSequence &&
+          latestSyncRequestSequenceRef.current ===
+            candidateSyncRequestSequence &&
           latestChecklistRef.current?.id === targetChecklist.id;
 
-        try {
-          const remoteReference = await saveChecklistToAccount(
-            targetChecklist,
-            user,
-          );
-
-          if (!isLatestSyncCompletion()) {
-            return latestChecklistRef.current ?? targetChecklist;
+        const applySyncedChecklist = async (
+          baseChecklist: Checklist,
+          remoteReference: {ownerId: string; remoteId: string},
+          candidateMutationSequence = mutationSequence,
+          candidateSyncRequestSequence = syncRequestSequence,
+        ) => {
+          if (
+            !isLatestSyncCompletion(
+              candidateMutationSequence,
+              candidateSyncRequestSequence,
+            )
+          ) {
+            return latestChecklistRef.current ?? baseChecklist;
           }
 
           const syncedChecklist: Checklist = {
-            ...(latestChecklistRef.current ?? targetChecklist),
+            ...(latestChecklistRef.current ?? baseChecklist),
             ownerId: remoteReference.ownerId,
             remoteId: remoteReference.remoteId,
             saveState: 'synced',
@@ -140,32 +150,147 @@ export function ChecklistClient({
 
           await saveChecklist(syncedChecklist);
 
-          if (!isLatestSyncCompletion()) {
+          if (
+            !isLatestSyncCompletion(
+              candidateMutationSequence,
+              candidateSyncRequestSequence,
+            )
+          ) {
             return latestChecklistRef.current ?? syncedChecklist;
           }
 
           setCurrentChecklist(syncedChecklist);
           return syncedChecklist;
-        } catch (error) {
-          if (!isLatestSyncCompletion()) {
-            return latestChecklistRef.current ?? targetChecklist;
+        };
+
+        const applyFailedChecklist = async (
+          baseChecklist: Checklist,
+          error: unknown,
+          candidateMutationSequence = mutationSequence,
+          candidateSyncRequestSequence = syncRequestSequence,
+        ) => {
+          if (
+            !isLatestSyncCompletion(
+              candidateMutationSequence,
+              candidateSyncRequestSequence,
+            )
+          ) {
+            return latestChecklistRef.current ?? baseChecklist;
           }
 
           const failedChecklist: Checklist = {
-            ...(latestChecklistRef.current ?? targetChecklist),
+            ...(latestChecklistRef.current ?? baseChecklist),
             saveState: 'syncFailed',
             updatedAt: new Date().toISOString(),
           };
 
           await saveChecklist(failedChecklist);
 
-          if (!isLatestSyncCompletion()) {
+          if (
+            !isLatestSyncCompletion(
+              candidateMutationSequence,
+              candidateSyncRequestSequence,
+            )
+          ) {
             return latestChecklistRef.current ?? failedChecklist;
           }
 
           setCurrentChecklist(failedChecklist);
           setSyncError(getErrorMessage(error, ALERT_MESSAGES.syncFailed));
           return failedChecklist;
+        };
+
+        const saveQueuedChecklistToAccount = async (
+          queuedChecklist: Checklist,
+          queuedMutationSequence: number,
+          queuedSyncRequestSequence: number,
+        ) => {
+          try {
+            const remoteReference = await saveChecklistToAccount(
+              queuedChecklist,
+              user,
+            );
+
+            return applySyncedChecklist(
+              queuedChecklist,
+              remoteReference,
+              queuedMutationSequence,
+              queuedSyncRequestSequence,
+            );
+          } catch (error) {
+            return applyFailedChecklist(
+              queuedChecklist,
+              error,
+              queuedMutationSequence,
+              queuedSyncRequestSequence,
+            );
+          }
+        };
+
+        try {
+          const remoteReference = await saveChecklistToAccount(
+            targetChecklist,
+            user,
+          );
+
+          if (!isLatestSyncCompletion()) {
+            const latestChecklist = latestChecklistRef.current;
+
+            if (
+              latestChecklist?.id === targetChecklist.id &&
+              !targetChecklist.remoteId &&
+              !latestChecklist.remoteId
+            ) {
+              const latestWithRemoteReference: Checklist = {
+                ...latestChecklist,
+                ownerId: remoteReference.ownerId,
+                remoteId: remoteReference.remoteId,
+                saveState: 'syncFailed',
+                updatedAt: new Date().toISOString(),
+              };
+
+              setCurrentChecklist(latestWithRemoteReference);
+              await saveChecklist(latestWithRemoteReference);
+
+              if (
+                latestSyncRequestSequenceRef.current !== syncRequestSequence
+              ) {
+                return latestChecklistRef.current ?? latestWithRemoteReference;
+              }
+
+              const followUpChecklist =
+                latestChecklistRef.current?.id === targetChecklist.id
+                  ? latestChecklistRef.current
+                  : latestWithRemoteReference;
+              const followUpMutationSequence =
+                localMutationSequenceRef.current;
+              const followUpSyncRequestSequence =
+                latestSyncRequestSequenceRef.current + 1;
+              latestSyncRequestSequenceRef.current =
+                followUpSyncRequestSequence;
+
+              try {
+                return await saveQueuedChecklistToAccount(
+                  followUpChecklist,
+                  followUpMutationSequence,
+                  followUpSyncRequestSequence,
+                );
+              } finally {
+                if (
+                  latestSyncRequestSequenceRef.current ===
+                  followUpSyncRequestSequence
+                ) {
+                  setIsSavingToAccount(false);
+                }
+              }
+            }
+
+            return latestChecklistRef.current ?? targetChecklist;
+          }
+
+          return applySyncedChecklist(targetChecklist, remoteReference);
+        } catch (error) {
+          return applyFailedChecklist(targetChecklist, error);
         } finally {
           if (latestSyncRequestSequenceRef.current === syncRequestSequence) {
             setIsSavingToAccount(false);
@@ -285,7 +410,11 @@ export function ChecklistClient({
   }
 
   async function handleSaveToAccount() {
-    if (!checklist) {
+    if (
+      !checklist ||
+      isSavingToAccount ||
+      explicitAccountSaveInFlightRef.current
+    ) {
       return;
     }
 
@@ -299,7 +428,13 @@ export function ChecklistClient({
       return;
     }
 
-    await syncChecklistToAccount(checklist);
+    explicitAccountSaveInFlightRef.current = true;
+
+    try {
+      await syncChecklistToAccount(checklist);
+    } finally {
+      explicitAccountSaveInFlightRef.current = false;
+    }
   }
 
   function handleShareCard() {
@@ -363,7 +498,11 @@ export function ChecklistClient({
 
       <div className="ui-bottom-action-bar">
         <div className="ui-bottom-action-bar-inner checklist-bottom-actions">
-          <Button onClick={handleSaveToAccount} variant="brand">
+          <Button
+            disabled={isSavingToAccount}
+            onClick={handleSaveToAccount}
+            variant="brand"
+          >
             내 계정에 저장
           </Button>
           <Button onClick={handleShareCard} variant="secondary">

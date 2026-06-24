@@ -170,6 +170,79 @@ describe('checklist flow', () => {
     expect(await screen.findByText('계정에 저장됨')).toBeInTheDocument();
   });
 
+  it('syncs newer edits made while the first account save is pending', async () => {
+    const firstSync = createDeferred<{ownerId: string; remoteId: string}>();
+    const secondSync = createDeferred<{ownerId: string; remoteId: string}>();
+    mockState.saveChecklistToAccount
+      .mockReturnValueOnce(firstSync.promise)
+      .mockReturnValueOnce(secondSync.promise);
+    mockState.user = authUser;
+    window.localStorage.setItem(
+      'onreori.checklists',
+      JSON.stringify([createChecklist({saveState: 'localOnly'})]),
+    );
+
+    render(<ChecklistClient checklistId="checklist-flow" />);
+
+    const saveToAccountButton = await screen.findByRole('button', {
+      name: '내 계정에 저장',
+    });
+    await user.click(saveToAccountButton);
+    await waitFor(() => {
+      expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(1);
+    });
+    expect(saveToAccountButton).toBeDisabled();
+    await user.click(saveToAccountButton);
+    expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(1);
+
+    fireEvent.change(screen.getByLabelText('아이템 이름'), {
+      target: {value: 'VIP badge'},
+    });
+    await user.click(screen.getByRole('button', {name: '추가'}));
+
+    await waitFor(() => {
+      expect(screen.getByText('VIP badge')).toBeInTheDocument();
+    });
+    expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      firstSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
+      await firstSync.promise;
+    });
+    await waitFor(() => {
+      expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(2);
+    });
+
+    expect(mockState.saveChecklistToAccount).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        id: 'checklist-flow',
+        remoteId: 'remote-1',
+        items: expect.arrayContaining([
+          expect.objectContaining({id: 'ticket'}),
+          expect.objectContaining({name: 'VIP badge'}),
+        ]),
+      }),
+      authUser,
+    );
+
+    await act(async () => {
+      secondSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
+      await secondSync.promise;
+    });
+
+    const storedChecklist = JSON.parse(
+      window.localStorage.getItem('onreori.checklists') ?? '[]',
+    )[0] as Checklist;
+    expect(storedChecklist).toMatchObject({
+      remoteId: 'remote-1',
+      saveState: 'synced',
+    });
+    expect(storedChecklist.items).toEqual(
+      expect.arrayContaining([expect.objectContaining({name: 'VIP badge'})]),
+    );
+  });
+
   it('consumes the pending account save after auth redirects back', async () => {
     mockState.user = authUser;
     window.localStorage.setItem(
