@@ -1,0 +1,577 @@
+{
+  "common": {
+    "actions": {
+      "done": "완료",
+      "login": "로그인하기",
+      "signOut": "로그아웃"
+    },
+    "states": {
+      "loading": "불러오는 중..."
+    },
+    "alerts": {
+      "failed": "실패했습니다.",
+      "createFailed": "생성에 실패했습니다.",
+      "loadFailed": "불러오지 못했습니다.",
+      "partialLoad": "일부 정보만 불러왔습니다.",
+      "saveFailed": "저장에 실패했습니다.",
+      "syncFailed": "동기화에 실패했습니다.",
+      "sendFailed": "전송에 실패했습니다.",
+      "notFound": "찾지 못했습니다.",
+      "openFailed": "열지 못했습니다.",
+      "requiredInput": "정보를 입력해 주세요.",
+      "requiredSelection": "항목을 선택해 주세요.",
+      "checkInput": "입력한 정보를 확인해 주세요.",
+      "unavailable": "현재 사용할 수 없습니다.",
+      "retry": "다시 시도하세요.",
+      "supabaseRequired": "Supabase 설정이 필요합니다."
+    }
+  },
+  "navigation": {
+    "appName": "onreori",
+    "category": "카테고리",
+    "conditions": "상황 선택",
+    "checklist": "체크리스트",
+    "cafeRoutes": "생일카페 루트",
+    "auth": "로그인",
+    "eventRooms": "이벤트 단톡방",
+    "mapPicker": "장소 선택",
+    "roomChat": "단톡방",
+    "myPage": "마이페이지",
+    "shareCard": "공유 카드"
+  },
+  "language": {
+    "title": "앱 언어",
+    "description": "앱에서 사용할 언어를 선택하세요.",
+    "selectorLabel": "앱 언어 선택",
+    "conversationLanguages": "대화 언어",
+    "allLanguages": "전체"
+  },
+  "categories": {
+    "homeTitle": "어떤 이벤트인가요?",
+    "homeDescription": "현장에 있는 팬들과 실시간으로 소통해요.",
+    "eventDay": {
+      "title": "콘서트/팬콘",
+      "description": "겉돌, 대기, 입장, 관람, 퇴장까지 한번에",
+      "roomLabel": "공연장 실시간 정보 공유"
+    },
+    "popup": {
+      "title": "팝업/전시",
+      "description": "예약, 대기, 입장, 굿즈 구매, 교환까지 한번에",
+      "roomLabel": "재고/교환 현황 공유"
+    },
+    "cafeEvent": {
+      "title": "생일카페/이벤트",
+      "description": "동선, 선착순 특전, 관람, 나눔까지 한번에",
+      "roomLabel": "특전/동선 현황 공유"
+    },
+    "actions": {
+      "checklistTitle": "체크리스트 만들기",
+      "checklistDescription": "준비물을 체크하고 이미지로 기기에 저장해요.",
+      "cafeRoutesTitle": "생일카페 루트 만들기",
+      "cafeRoutesDescription": "특전 취향에 맞춰 카페를 고르고 내 동선을 저장해요.",
+      "roomsTitle": "오늘의 단톡방",
+      "roomsDescription": "현장에 있는 팬들과 정보를 실시간으로 공유해요."
+    },
+    "landing": {
+      "title": "ONREORI",
+      "description": "준비물을 챙기고, 현장 정보를 실시간으로 공유해보세요.",
+      "start": "시작하기"
+    }
+  },
+  "conditions": {
+    "templateNotFound": "템플릿을 찾지 못했습니다.",
+    "sectionTitle": "상황 선택",
+    "sectionDescription": "공연 당일의 예상 컨디션을 선택해주세요.",
+    "createChecklist": "체크리스트 만들기"
+  },
+  "checklist": {
+    "loadFailed": "체크리스트를 불러오지 못했습니다.",
+    "completedMeta": "{{checkedCount}}/{{totalCount}} 완료",
+    "addItemTitle": "아이템 추가",
+    "itemPlaceholder": "아이템",
+    "descriptionPlaceholder": "설명",
+    "addItem": "추가",
+    "savingToAccount": "저장 중...",
+    "saveToAccount": "내 계정에 저장",
+    "syncing": "동기화 중...",
+    "retrySync": "다시 동기화",
+    "shareCard": "공유 카드",
+    "noConditions": "선택한 추가 조건 없음",
+    "progress": "진행률 {{checkedCount}}/{{totalCount}}",
+    "defaultTemplate": "기본 템플릿",
+    "essential": "필수",
+    "custom": "직접 추가",
+    "checkAccessibility": "{{itemName}} 체크",
+    "deleteAccessibilityHint": "항목을 삭제합니다.",
+    "deleteAccessibility": "{{itemName}} 삭제",
+    "localSavedRetrySync": "로컬 변경은 저장했습니다. 다시 동기화해 주세요.",
+    "saved": "저장했습니다.",
+    "customSection": "추가 항목",
+    "customTip": "직접 추가한 항목입니다.",
+    "saveStates": {
+      "draft": "임시 저장",
+      "localOnly": "임시 저장",
+      "deviceSaved": "기기에 저장됨",
+      "synced": "계정에 저장됨",
+      "syncFailed": "계정 반영 필요"
+    }
+  },
+  "auth": {
+    "signInTitle": "로그인",
+    "signUpTitle": "회원가입",
+    "description": "이벤트 단톡방 입장과 내 계정 저장은 로그인한 사용자만 사용할 수 있어요.",
+    "previewNotice": "Supabase 설정 전이라 현재는 로컬 프리뷰 로그인으로 동작합니다.",
+    "nicknamePlaceholder": "닉네임",
+    "emailPlaceholder": "이메일",
+    "passwordPlaceholder": "비밀번호",
+    "signInAction": "로그인하기",
+    "signUpAction": "가입하고 계속하기",
+    "switchToSignUp": "계정이 없다면 회원가입",
+    "switchToSignIn": "이미 계정이 있다면 로그인",
+    "confirmEmailBeforeLogin": "가입 확인 이메일을 완료한 뒤 로그인하세요."
+  },
+  "rooms": {
+    "createTitle": "방 만들기",
+    "categoryRoomTitle": "{{categoryTitle}} 단톡방",
+    "categoryNotFound": "카테고리를 찾지 못했습니다.",
+    "todayRooms": "오늘의 단톡방",
+    "tutorialFallbackNotice": "단톡방 목록을 잠시 불러오지 못해 튜토리얼 방을 보여드려요.",
+    "titleLabel": "방 제목",
+    "titlePlaceholder": "방 제목",
+    "artistTitleLabel": "아티스트/멤버명",
+    "artistTitlePlaceholder": "예: 민지",
+    "popupTitlePlaceholder": "예: 성수 팝업 재고방",
+    "eventDayTitlePlaceholder": "예: KSPO 2일차 대기방",
+    "cafeRoomTitle": "{{title}} 생카 정보방",
+    "createdTitle": "생성했습니다.",
+    "createdInactiveNotice": "이 단톡방은 이벤트 {{beforeCount}}일 전부터 {{afterCount}}일 후까지 오늘의 단톡방에 표시됩니다.",
+    "datePlaceholder": "날짜 선택",
+    "placePlaceholder": "장소",
+    "unknownPlace": "장소 미정",
+    "choosePlaceOnMap": "지도에서 장소 선택",
+    "selectedPlaceFallback": "선택한 장소",
+    "eventUrlPlaceholder": "공식 공지/예매/안내 링크",
+    "eventUrlHttpsOnly": "https:// 주소만 사용할 수 있습니다.",
+    "fetchEventUrlPreview": "링크에서 정보 가져오기",
+    "fetchingEventUrlPreview": "가져오는 중...",
+    "entryCodePlaceholder": "입장코드",
+    "createRoom": "단톡방 만들기",
+    "creatingRoom": "만드는 중...",
+    "emptyTitle": "아직 만들어진 방이 없습니다.",
+    "emptyDescription": "첫 방을 만들어 현장 정보를 모아보세요.",
+    "memberCount": "참여 {{count}}명",
+    "startTutorial": "튜토리얼 시작",
+    "join": "입장하기",
+    "enterEntryCode": "입장코드 입력",
+    "tutorialRoomDescription": "오늘의오리가 단톡방 사용법을 안내해요.",
+    "chatRoomDescription": "현장에 계신가요? 실시간 정보를 공유해주세요.",
+    "tutorial": {
+      "botNickname": "오늘의오리",
+      "roomTitle": "튜토리얼 단톡방",
+      "eventDate": "상시",
+      "location": "오늘의오리 사용법",
+      "welcomeBodies": [
+        "안녕하세요! 오늘의오리 입니다.",
+        "이 곳은 현장 상황을 자유롭게 공유할 수 있는 단톡방이에요"
+      ],
+      "replyBodies": [
+        "서로 예쁜 말로 소통해요.",
+        "현장 정보는 확인한 내용만 차분히 공유해요.",
+        "급한 상황일수록 짧고 정확하게 남겨보면 좋아요.",
+        "사진이나 위치를 올릴 땐 다른 사람 개인정보가 보이지 않는지 확인해요.",
+        "궁금한 점은 편하게 묻고, 아는 정보는 따뜻하게 답해줘요."
+      ]
+    },
+    "emptyMessages": "아직 메시지가 없습니다.",
+    "botTyping": "오늘의오리가 입력 중...",
+    "photo": "사진",
+    "composerPlaceholder": "현장 정보를 공유해보세요",
+    "send": "전송",
+    "hashtagFilterPlaceholder": "카페명 또는 #태그 검색",
+    "clearFilter": "해제",
+    "preview": {
+      "fields": {
+        "title": "제목",
+        "eventDate": "날짜",
+        "location": "장소"
+      },
+      "noAutoInfo": "자동으로 불러올 수 있는 정보가 없습니다. 제목, 날짜, 장소를 직접 입력해 주세요.",
+      "missingFields": "{{fields}}는 직접 입력해 주세요.",
+      "confirmLoadedInfo": "불러온 정보가 정확한지 확인해 주세요. 필요한 경우 수정할 수 있습니다."
+    },
+    "activeWindow": "단톡방은 이벤트 {{beforeCount}}일 전부터 {{afterCount}}일 후까지만 만들 수 있습니다."
+  },
+  "map": {
+    "registerCenterMeta": "지도 중심 위치를 등록하세요.",
+    "selectPlaceTitle": "장소를 선택하세요",
+    "cafeNamePlaceholder": "카페명을 직접 입력하세요",
+    "placeNamePlaceholder": "장소명을 직접 입력하세요",
+    "registerCenter": "지도 중심 등록",
+    "registerPlace": "장소 등록",
+    "addressLocation": "주소 위치",
+    "searchPlaceholder": "장소 또는 주소 검색",
+    "searching": "검색 중",
+    "addressBadge": "주소",
+    "selectedPlaceName": "선택한 장소",
+    "mapLoadFailed": "Kakao 지도를 불러오지 못했습니다",
+    "searchErrors": {
+      "default": "장소를 검색하지 못했습니다.",
+      "loginRequired": "로그인이 필요한 장소 검색입니다.",
+      "missingKakaoKey": "Kakao REST API 키가 Supabase에 설정되지 않았습니다.",
+      "functionNotDeployed": "장소 검색 서버 함수가 배포되지 않았습니다.",
+      "rateLimited": "장소 검색 요청이 너무 많습니다. 잠시 후 다시 시도하세요.",
+      "serverConfig": "장소 검색 서버 설정을 확인하세요.",
+      "kakaoRequestFailed": "Kakao 장소 검색 요청에 실패했습니다.",
+      "connectionFailed": "장소 검색 서버에 연결하지 못했습니다."
+    }
+  },
+  "cafeRoutes": {
+    "defaultTitle": "새 생일카페 루트",
+    "categoryRouteTitle": "{{categoryTitle}} 루트",
+    "unavailableCategory": "생일카페 카테고리에서만 사용할 수 있습니다.",
+    "title": "생일카페 루트",
+    "description": "특전 취향에 맞춰 카페를 고르고 내 동선을 저장해요.",
+    "myRoutes": "내 루트",
+    "loadingRoutes": "루트를 불러오는 중입니다.",
+    "emptyTitle": "아직 만든 루트가 없어요.",
+    "emptyDescription": "특전 취향에 맞춰 방문 루트를 만들어 보세요.",
+    "createFirstRoute": "첫 루트 만들기",
+    "selectedRoute": "선택한 루트",
+    "routeNamePlaceholder": "루트 이름",
+    "addCafeTitle": "카페를 추가하세요",
+    "addCafeDescription": "선택한 장소가 실제 지도 위 마커로 표시됩니다.",
+    "noCafes": "아직 추가한 카페가 없습니다.",
+    "cafeCount": "카페 {{count}}곳",
+    "moveUp": "위",
+    "moveDown": "아래",
+    "delete": "삭제",
+    "deleteRoute": "삭제",
+    "deletingRoute": "삭제 중",
+    "deleteRouteTitle": "이 루트를 삭제할까요?",
+    "deleteRouteMessage": "\"{{routeTitle}}\" 루트가 삭제됩니다. 되돌릴 수 없습니다.",
+    "deleteRouteConfirm": "삭제",
+    "cancel": "취소",
+    "addCafe": "카페 추가",
+    "export": "내보내기",
+    "exportPreviewTitle": "내보내기 미리보기",
+    "exportPreviewPreparing": "미리보기를 준비하는 중입니다.",
+    "saveToLibrary": "사진첩에 저장",
+    "close": "닫기",
+    "exporting": "사진첩에 저장 중",
+    "exportSaved": "이미지를 사진첩에 저장했습니다.",
+    "exportFailed": "이미지를 준비하지 못했습니다.",
+    "photoPermissionTitle": "사진 접근 권한이 필요합니다.",
+    "photoPermissionMessage": "동선 이미지를 사진첩에 저장하려면 권한을 허용해 주세요."
+  },
+  "shareCard": {
+    "prepareFailed": "공유 카드를 준비하지 못했습니다.",
+    "messageProgress": "진행률: {{checkedCount}}/{{totalCount}}",
+    "messageConditions": "상황: {{conditions}}",
+    "messageDefaultConditions": "상황: 기본 템플릿",
+    "photoPermissionTitle": "사진 접근 권한이 필요합니다.",
+    "photoPermissionMessage": "공유 카드를 사진첩에 저장하려면 권한을 허용해 주세요.",
+    "savedToLibrary": "사진첩에 저장했습니다.",
+    "loadFailed": "공유 카드를 불러오지 못했습니다.",
+    "export": "내보내기",
+    "saveToLibrary": "사진첩에 저장",
+    "share": "공유"
+  },
+  "myPage": {
+    "title": "마이페이지",
+    "guestDescription": "저장한 체크리스트와 참여한 단톡방은 로그인 후 확인할 수 있어요.",
+    "checklistsTab": "내 체크리스트",
+    "checklistsTabAccessibility": "내 체크리스트 탭",
+    "roomsTab": "내 단톡방",
+    "roomsTabAccessibility": "내 단톡방 탭",
+    "checklistsLoading": "저장된 체크리스트를 불러오는 중입니다.",
+    "checklistsEmpty": "저장된 체크리스트가 없습니다.",
+    "checklistSynced": "계정에 저장됨",
+    "roomsLoading": "단톡방 내역을 불러오는 중입니다.",
+    "roomsEmpty": "단톡방 내역이 없습니다.",
+    "createdRooms": "내가 만든 단톡방",
+    "joinedRooms": "참여한 단톡방",
+    "openRoomAccessibility": "{{title}} 단톡방 열기",
+    "signOut": "로그아웃"
+  },
+  "checklistTemplates": {
+    "conditions": {
+      "OUTDOOR_WAITING": {
+        "label": "야외 대기",
+        "description": "줄을 실외에서 서야 해요(바람/햇빛/추위 대비)"
+      },
+      "LONG_WAIT": {
+        "label": "장시간 대기",
+        "description": "대기 60분 이상 예상(체력/배터리/물/간식)"
+      },
+      "STANDING": {
+        "label": "스탠딩",
+        "description": "입장 경쟁/서서 관람(가방 최소화, 편한 신발 권장)"
+      },
+      "RAIN": {
+        "label": "비/눈 예보",
+        "description": "우산·우비·방수 준비물 추천"
+      },
+      "SUMMER": {
+        "label": "여름/무더위",
+        "description": "열사병/땀/화장 무너짐/휴대용 선풍기·자외선 대비"
+      },
+      "WINTER": {
+        "label": "겨울/한파",
+        "description": "손난로·보온·레이어드 추천"
+      },
+      "GIVEAWAY": {
+        "label": "나눔/교환 예정",
+        "description": "여분 쇼핑백/포장재/슬리브/라벨/펜 등 준비"
+      },
+      "FOREIGN": {
+        "label": "해외팬/한국어 약함",
+        "description": "국내 지도/기본 인사/주문 등 커뮤니케이션 대비"
+      }
+    },
+    "templates": {
+      "concert_basic": {
+        "title": "콘서트/팬콘 체크리스트",
+        "description": "입장/관람/대기 상황을 기준 체크리스트",
+        "items": {
+          "ticket_qr": {
+            "name": "예매 내역/티켓(또는 QR)",
+            "section": "필수",
+            "tip": "통신이 불안할 수 있어 예비로 캡처 저장(오프라인 접근 가능하게)도 준비 추천"
+          },
+          "id_card": {
+            "name": "신분증",
+            "section": "필수",
+            "tip": "본인확인/현장수령 등에서 필요"
+          },
+          "phone": {
+            "name": "휴대폰",
+            "section": "필수",
+            "tip": "입장/연락/지도/촬영 등 사용, 배터리 관리 필수"
+          },
+          "battery": {
+            "name": "보조배터리",
+            "section": "필수",
+            "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비"
+          },
+          "cable": {
+            "name": "충전 케이블",
+            "section": "필수",
+            "tip": "대비를 대비"
+          },
+          "transport_card": {
+            "name": "교통카드/교통 앱",
+            "section": "이동",
+            "tip": "막차/환승 동선 체크"
+          },
+          "payment": {
+            "name": "결제 수단(카드/현금 약간)",
+            "section": "이동",
+            "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액"
+          },
+          "lightstick": {
+            "name": "응원봉/배터리(필요 시)",
+            "section": "관람",
+            "tip": "배터리 규격(AAA 등) 혹은 완충 미리 체크"
+          },
+          "tote_bag": {
+            "name": "에코백/장바구니",
+            "section": "구매",
+            "tip": "굿즈 담기 용"
+          },
+          "small_bag": {
+            "name": "가벼운 가방(크로스/미니백)",
+            "section": "관람",
+            "tip": "현장 반입 규정에 따라 다름, 귀중품과 필수품 위주"
+          },
+          "water": {
+            "name": "물/음료",
+            "section": "편의",
+            "tip": "긴 대기시간 방지, 현장 반입 규정 체크"
+          },
+          "snack": {
+            "name": "간단한 간식",
+            "section": "편의",
+            "tip": "당 떨어질 때 도움, 말랑카우, 마이쮸처럼 부피 작은 것 추천"
+          },
+          "wet_tissue": {
+            "name": "물티슈/휴지",
+            "section": "의외템",
+            "tip": "손 닦기/오염/땀 닦기 등 범용템"
+          },
+          "hand_sanitizer": {
+            "name": "손 소독제",
+            "section": "의외템",
+            "tip": "찝찝함 방지, 위생 관리 도움"
+          },
+          "comfortable_shoes": {
+            "name": "편한 신발/깔창",
+            "section": "체력",
+            "tip": "하루종일 줄서기 + 대기 + 이동 방지"
+          },
+          "zip_bag": {
+            "name": "지퍼백(소형)",
+            "section": "의외템",
+            "tip": "영수증/충전기/작은 굿즈 보관 + 방수"
+          },
+          "portable_fan": {
+            "name": "휴대용 선풍기/쿨링티슈/양산",
+            "section": "날씨",
+            "tip": "특히 여름 + 실외 대기 시 필수"
+          },
+          "hand_warmers": {
+            "name": "손난로/핫팩",
+            "section": "날씨",
+            "tip": "특히 겨울 + 실외 대기 시 필수"
+          },
+          "giveaway_pack": {
+            "name": "나눔/교환용 포장(슬리브/봉투)",
+            "section": "나눔/교환",
+            "tip": "포카는 구김 방지"
+          }
+        }
+      },
+      "popup_store_basic": {
+        "title": "팝업/전시 체크리스트",
+        "description": "예약/구매/줄서기/굿즈 보호에 집중",
+        "items": {
+          "reservation_qr": {
+            "name": "예약/입장 QR(또는 안내 문자)",
+            "section": "필수",
+            "tip": "캡처 저장 + 문자/메일도 바로 찾을 수 있게 즐겨찾기"
+          },
+          "id_card": {
+            "name": "신분증",
+            "section": "필수",
+            "tip": "본인확인/현장수령/연령확인 등에서 필요"
+          },
+          "payment": {
+            "name": "결제 수단(카드/현금 약간)",
+            "section": "필수",
+            "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액"
+          },
+          "tote_bag": {
+            "name": "에코백/장바구니",
+            "section": "구매",
+            "tip": "굿즈 담기 용"
+          },
+          "card_sleeves": {
+            "name": "포카 슬리브/보호필름",
+            "section": "굿즈 보호",
+            "tip": "구김/오염 방지"
+          },
+          "wet_tissue": {
+            "name": "물티슈/휴지",
+            "section": "의외템",
+            "tip": "손 닦기/오염/땀 닦기 등 범용템"
+          },
+          "hand_sanitizer": {
+            "name": "손 소독제",
+            "section": "의외템",
+            "tip": "찝찝함 방지, 위생 관리 도움"
+          },
+          "water": {
+            "name": "물/음료",
+            "section": "편의",
+            "tip": "긴 대기시간 방지, 현장 반입 규정 체크"
+          },
+          "battery": {
+            "name": "보조배터리",
+            "section": "편의",
+            "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비"
+          },
+          "cable": {
+            "name": "충전 케이블",
+            "section": "편의",
+            "tip": "대비를 대비"
+          },
+          "comfortable_shoes": {
+            "name": "편한 신발/깔창",
+            "section": "체력",
+            "tip": "하루종일 줄서기 + 대기 + 이동 방지"
+          },
+          "portable_fan": {
+            "name": "휴대용 선풍기/쿨링티슈/양산",
+            "section": "날씨",
+            "tip": "특히 여름 + 실외 대기 시 필수"
+          },
+          "hand_warmers": {
+            "name": "손난로/핫팩",
+            "section": "날씨",
+            "tip": "특히 겨울 + 실외 대기 시 필수"
+          },
+          "basic_phrase_card": {
+            "name": "기본 문구 메모(예약/입장/결제)",
+            "section": "해외팬",
+            "tip": "예: “예약했어요”, “이 굿즈 재고 있나요?”, “카드 결제 돼요?”"
+          }
+        }
+      },
+      "birthday_cafe_basic": {
+        "title": "생카/카페 이벤트 체크리스트",
+        "description": "카페 이동/굿즈 보관/교환/메모에 특화된 템플릿",
+        "items": {
+          "map_link": {
+            "name": "지도 링크/주소 저장",
+            "section": "필수",
+            "tip": "네이버/카카오/구글 중 본인에게 편한 걸로 저장해두기"
+          },
+          "payment": {
+            "name": "결제 수단(카드/현금 약간)",
+            "section": "필수",
+            "tip": "굿즈/식사/편의점/교통에 필요, 현금은 비상용 소액"
+          },
+          "tote_bag": {
+            "name": "에코백/장바구니",
+            "section": "이동",
+            "tip": "특전 담기 용"
+          },
+          "mini_zipbags": {
+            "name": "지퍼백(소형)",
+            "section": "굿즈 보호",
+            "tip": "영수증/충전기/작은 굿즈 보관 + 방수"
+          },
+          "wet_tissue": {
+            "name": "물티슈/휴지",
+            "section": "의외템",
+            "tip": "손 닦기/오염/땀 닦기 등 범용템"
+          },
+          "hand_sanitizer": {
+            "name": "손 소독제",
+            "section": "의외템",
+            "tip": "찝찝함 방지, 위생 관리 도움"
+          },
+          "water": {
+            "name": "물/음료",
+            "section": "편의",
+            "tip": "긴 대기시간 방지, 현장 반입 규정 체크"
+          },
+          "battery": {
+            "name": "보조배터리",
+            "section": "편의",
+            "tip": "줄서기 + 입장 + 사진/영상 촬영으로 배터리 순삭 대비"
+          },
+          "comfortable_shoes": {
+            "name": "편한 신발/깔창",
+            "section": "체력",
+            "tip": "하루종일 줄서기 + 대기 + 이동 방지"
+          },
+          "portable_fan": {
+            "name": "휴대용 선풍기/쿨링티슈/양산",
+            "section": "날씨",
+            "tip": "특히 여름 + 실외 대기 시 필수"
+          },
+          "hand_warmers": {
+            "name": "손난로/핫팩",
+            "section": "날씨",
+            "tip": "특히 겨울 + 실외 대기 시 필수"
+          },
+          "korean_order_phrase": {
+            "name": "카페 주문용 기본 문구(메모/이미지)",
+            "section": "해외팬",
+            "tip": "예: “아이스로 주세요”, “테이크아웃 가능해요?”, “특전은 어디서 받아요?”"
+          }
+        }
+      }
+    }
+  }
+}

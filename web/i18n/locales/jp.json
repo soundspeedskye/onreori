@@ -1,0 +1,577 @@
+{
+  "common": {
+    "actions": {
+      "done": "完了",
+      "login": "ログイン",
+      "signOut": "ログアウト"
+    },
+    "states": {
+      "loading": "読み込み中..."
+    },
+    "alerts": {
+      "failed": "失敗しました。",
+      "createFailed": "作成に失敗しました。",
+      "loadFailed": "読み込めませんでした。",
+      "partialLoad": "一部の情報のみ読み込みました。",
+      "saveFailed": "保存に失敗しました。",
+      "syncFailed": "同期に失敗しました。",
+      "sendFailed": "送信に失敗しました。",
+      "notFound": "見つかりませんでした。",
+      "openFailed": "開けませんでした。",
+      "requiredInput": "情報を入力してください。",
+      "requiredSelection": "項目を選択してください。",
+      "checkInput": "入力した情報を確認してください。",
+      "unavailable": "現在利用できません。",
+      "retry": "もう一度お試しください。",
+      "supabaseRequired": "Supabase設定が必要です。"
+    }
+  },
+  "navigation": {
+    "appName": "onreori",
+    "category": "カテゴリー",
+    "conditions": "状況を選択",
+    "checklist": "チェックリスト",
+    "cafeRoutes": "誕生日カフェルート",
+    "auth": "ログイン",
+    "eventRooms": "イベントチャットルーム",
+    "mapPicker": "場所を選択",
+    "roomChat": "チャットルーム",
+    "myPage": "マイページ",
+    "shareCard": "共有カード"
+  },
+  "language": {
+    "title": "アプリの言語",
+    "description": "アプリで使用する言語を選択してください。",
+    "selectorLabel": "アプリの言語を選択",
+    "conversationLanguages": "会話の言語",
+    "allLanguages": "すべて"
+  },
+  "categories": {
+    "homeTitle": "どんなイベントですか？",
+    "homeDescription": "現地のファンとリアルタイムで話しましょう。",
+    "eventDay": {
+      "title": "コンサート/ファンコン",
+      "description": "会場外まわり、待機、入場、観覧、退場までまとめて確認できます。",
+      "roomLabel": "会場のリアルタイム情報共有"
+    },
+    "popup": {
+      "title": "ポップアップ/展示",
+      "description": "予約、待機、入場、グッズ購入、交換までまとめて確認できます。",
+      "roomLabel": "在庫/交換状況の共有"
+    },
+    "cafeEvent": {
+      "title": "誕生日カフェ/イベント",
+      "description": "動線、先着特典、観覧、配布までまとめて確認できます。",
+      "roomLabel": "特典/動線状況の共有"
+    },
+    "actions": {
+      "checklistTitle": "チェックリストを作成",
+      "checklistDescription": "持ち物をチェックして画像で端末に保存します。",
+      "cafeRoutesTitle": "誕生日カフェルートを作成",
+      "cafeRoutesDescription": "特典の好みに合わせてカフェを選び、動線を保存します。",
+      "roomsTitle": "今日のチャットルーム",
+      "roomsDescription": "現地のファンとリアルタイムで情報を共有します。"
+    },
+    "landing": {
+      "title": "手軽に、確実に",
+      "description": "持ち物を準備し、現地情報をリアルタイムで共有しましょう。",
+      "start": "始める"
+    }
+  },
+  "conditions": {
+    "templateNotFound": "テンプレートが見つかりませんでした。",
+    "sectionTitle": "状況を選択",
+    "sectionDescription": "イベント当日の想定状況を選択してください。",
+    "createChecklist": "チェックリストを作成"
+  },
+  "checklist": {
+    "loadFailed": "チェックリストを読み込めませんでした。",
+    "completedMeta": "{{checkedCount}}/{{totalCount}}完了",
+    "addItemTitle": "アイテムを追加",
+    "itemPlaceholder": "アイテム",
+    "descriptionPlaceholder": "説明",
+    "addItem": "追加",
+    "savingToAccount": "保存中...",
+    "saveToAccount": "自分のアカウントに保存",
+    "syncing": "同期中...",
+    "retrySync": "再同期",
+    "shareCard": "共有カード",
+    "noConditions": "追加条件は選択されていません",
+    "progress": "進捗 {{checkedCount}}/{{totalCount}}",
+    "defaultTemplate": "基本テンプレート",
+    "essential": "必須",
+    "custom": "手動追加",
+    "checkAccessibility": "{{itemName}}をチェック",
+    "deleteAccessibilityHint": "項目を削除します。",
+    "deleteAccessibility": "{{itemName}}を削除",
+    "localSavedRetrySync": "ローカル変更は保存しました。もう一度同期してください。",
+    "saved": "保存しました。",
+    "customSection": "追加項目",
+    "customTip": "手動で追加した項目です。",
+    "saveStates": {
+      "draft": "一時保存",
+      "localOnly": "一時保存",
+      "deviceSaved": "端末に保存済み",
+      "synced": "アカウントに保存済み",
+      "syncFailed": "アカウント反映が必要"
+    }
+  },
+  "auth": {
+    "signInTitle": "ログイン",
+    "signUpTitle": "会員登録",
+    "description": "イベントチャットルームへの入場とアカウント保存はログインしたユーザーのみ利用できます。",
+    "previewNotice": "Supabase設定前のため、現在はローカルプレビューログインで動作しています。",
+    "nicknamePlaceholder": "ニックネーム",
+    "emailPlaceholder": "メール",
+    "passwordPlaceholder": "パスワード",
+    "signInAction": "ログイン",
+    "signUpAction": "登録して続ける",
+    "switchToSignUp": "アカウントがない場合は登録",
+    "switchToSignIn": "すでにアカウントがある場合はログイン",
+    "confirmEmailBeforeLogin": "確認メールの手続きを完了してからログインしてください。"
+  },
+  "rooms": {
+    "createTitle": "ルームを作成",
+    "categoryRoomTitle": "{{categoryTitle}}チャットルーム",
+    "categoryNotFound": "カテゴリーが見つかりません。",
+    "todayRooms": "今日のチャットルーム",
+    "tutorialFallbackNotice": "チャットルーム一覧を一時的に読み込めないため、チュートリアルルームを表示しています。",
+    "titleLabel": "ルーム名",
+    "titlePlaceholder": "ルーム名",
+    "artistTitleLabel": "アーティスト/メンバー名",
+    "artistTitlePlaceholder": "例: ミンジ",
+    "popupTitlePlaceholder": "例: 聖水ポップアップ在庫ルーム",
+    "eventDayTitlePlaceholder": "例: KSPO 2日目待機ルーム",
+    "cafeRoomTitle": "{{title}}センイルカフェ情報ルーム",
+    "createdTitle": "作成しました。",
+    "createdInactiveNotice": "このチャットルームはイベント{{beforeCount}}日前から{{afterCount}}日後まで今日のチャットルームに表示されます。",
+    "datePlaceholder": "日付を選択",
+    "placePlaceholder": "場所",
+    "unknownPlace": "場所未定",
+    "choosePlaceOnMap": "地図で場所を選択",
+    "selectedPlaceFallback": "選択した場所",
+    "eventUrlPlaceholder": "公式告知・予約・案内リンク",
+    "eventUrlHttpsOnly": "https://のURLのみ使用できます。",
+    "fetchEventUrlPreview": "リンクから情報を取得",
+    "fetchingEventUrlPreview": "取得中...",
+    "entryCodePlaceholder": "入場コード",
+    "createRoom": "チャットルームを作成",
+    "creatingRoom": "作成中...",
+    "emptyTitle": "まだ作成されたルームはありません。",
+    "emptyDescription": "最初のルームを作成して現地情報を集めましょう。",
+    "memberCount": "{{count}}人参加",
+    "startTutorial": "チュートリアル開始",
+    "join": "入場する",
+    "enterEntryCode": "入場コードを入力",
+    "tutorialRoomDescription": "今日のアヒルがチャットルームの使い方を案内します。",
+    "chatRoomDescription": "現地にいますか？リアルタイム情報を共有してください。",
+    "tutorial": {
+      "botNickname": "今日のアヒル",
+      "roomTitle": "チュートリアルチャットルーム",
+      "eventDate": "常時",
+      "location": "Onreoriの使い方",
+      "welcomeBodies": [
+        "こんにちは！今日のアヒルです。",
+        "ここは現地状況を自由に共有できるチャットルームです。"
+      ],
+      "replyBodies": [
+        "やさしい言葉でやり取りしましょう。",
+        "現地情報は確認できた内容だけ落ち着いて共有しましょう。",
+        "急ぎの時ほど短く正確に残すと役立ちます。",
+        "写真や位置を投稿する前に、他の人の個人情報が写っていないか確認しましょう。",
+        "気になることは気軽に聞いて、知っている情報は丁寧に答えましょう。"
+      ]
+    },
+    "emptyMessages": "まだメッセージはありません。",
+    "botTyping": "今日のアヒルが入力中...",
+    "photo": "写真",
+    "composerPlaceholder": "現地情報を共有しましょう",
+    "send": "送信",
+    "hashtagFilterPlaceholder": "カフェ名または#タグを検索",
+    "clearFilter": "解除",
+    "preview": {
+      "fields": {
+        "title": "タイトル",
+        "eventDate": "日付",
+        "location": "場所"
+      },
+      "noAutoInfo": "自動で読み込める情報がありません。タイトル、日付、場所を直接入力してください。",
+      "missingFields": "{{fields}}を直接入力してください。",
+      "confirmLoadedInfo": "読み込んだ情報が正しいか確認してください。必要に応じて修正できます。"
+    },
+    "activeWindow": "チャットルームはイベント{{beforeCount}}日前から{{afterCount}}日後までのみ作成できます。"
+  },
+  "map": {
+    "registerCenterMeta": "地図中心の位置を登録してください。",
+    "selectPlaceTitle": "場所を選択してください",
+    "cafeNamePlaceholder": "カフェ名を直接入力してください",
+    "placeNamePlaceholder": "場所名を直接入力してください",
+    "registerCenter": "地図中心を登録",
+    "registerPlace": "場所を登録",
+    "addressLocation": "住所位置",
+    "searchPlaceholder": "場所または住所を検索",
+    "searching": "検索中",
+    "addressBadge": "住所",
+    "selectedPlaceName": "選択した場所",
+    "mapLoadFailed": "Kakaoマップを読み込めませんでした",
+    "searchErrors": {
+      "default": "場所を検索できませんでした。",
+      "loginRequired": "場所検索にはログインが必要です。",
+      "missingKakaoKey": "Kakao REST APIキーがSupabaseに設定されていません。",
+      "functionNotDeployed": "場所検索サーバー関数がデプロイされていません。",
+      "rateLimited": "場所検索リクエストが多すぎます。しばらくしてからお試しください。",
+      "serverConfig": "場所検索サーバー設定を確認してください。",
+      "kakaoRequestFailed": "Kakao場所検索リクエストに失敗しました。",
+      "connectionFailed": "場所検索サーバーに接続できませんでした。"
+    }
+  },
+  "cafeRoutes": {
+    "defaultTitle": "新しい誕生日カフェルート",
+    "categoryRouteTitle": "{{categoryTitle}}ルート",
+    "unavailableCategory": "誕生日カフェカテゴリーでのみ利用できます。",
+    "title": "誕生日カフェルート",
+    "description": "特典の好みに合わせてカフェを選び、動線を保存します。",
+    "myRoutes": "マイルート",
+    "loadingRoutes": "ルートを読み込み中です。",
+    "emptyTitle": "まだ作成したルートはありません。",
+    "emptyDescription": "特典の好みに合わせて訪問ルートを作成しましょう。",
+    "createFirstRoute": "最初のルートを作成",
+    "selectedRoute": "選択したルート",
+    "routeNamePlaceholder": "ルート名",
+    "addCafeTitle": "カフェを追加してください",
+    "addCafeDescription": "選択した場所が実際の地図上にマーカーで表示されます。",
+    "noCafes": "まだ追加したカフェはありません。",
+    "cafeCount": "カフェ{{count}}件",
+    "moveUp": "上",
+    "moveDown": "下",
+    "delete": "削除",
+    "deleteRoute": "ルートを削除",
+    "deletingRoute": "削除中",
+    "deleteRouteTitle": "このルートを削除しますか？",
+    "deleteRouteMessage": "\"{{routeTitle}}\"ルートが削除されます。元に戻せません。",
+    "deleteRouteConfirm": "削除",
+    "cancel": "キャンセル",
+    "addCafe": "カフェを追加",
+    "export": "書き出し",
+    "exportPreviewTitle": "書き出しプレビュー",
+    "exportPreviewPreparing": "プレビューを準備しています。",
+    "saveToLibrary": "写真ライブラリに保存",
+    "close": "閉じる",
+    "exporting": "写真ライブラリに保存中",
+    "exportSaved": "動線画像を写真ライブラリに保存しました。",
+    "exportFailed": "動線画像を準備できませんでした。",
+    "photoPermissionTitle": "写真アクセス権限が必要です。",
+    "photoPermissionMessage": "動線画像を写真ライブラリに保存するには権限を許可してください。"
+  },
+  "shareCard": {
+    "prepareFailed": "共有カードを準備できませんでした。",
+    "messageProgress": "進捗: {{checkedCount}}/{{totalCount}}",
+    "messageConditions": "状況: {{conditions}}",
+    "messageDefaultConditions": "状況: 基本テンプレート",
+    "photoPermissionTitle": "写真アクセス権限が必要です。",
+    "photoPermissionMessage": "共有カードを写真ライブラリに保存するには権限を許可してください。",
+    "savedToLibrary": "写真ライブラリに保存しました。",
+    "loadFailed": "共有カードを読み込めませんでした。",
+    "export": "書き出し",
+    "saveToLibrary": "写真ライブラリに保存",
+    "share": "共有"
+  },
+  "myPage": {
+    "title": "マイページ",
+    "guestDescription": "保存したチェックリストと参加したチャットルームはログイン後に確認できます。",
+    "checklistsTab": "マイチェックリスト",
+    "checklistsTabAccessibility": "マイチェックリストタブ",
+    "roomsTab": "マイチャットルーム",
+    "roomsTabAccessibility": "マイチャットルームタブ",
+    "checklistsLoading": "保存したチェックリストを読み込み中です。",
+    "checklistsEmpty": "保存したチェックリストはありません。",
+    "checklistSynced": "アカウントに保存済み",
+    "roomsLoading": "チャットルーム履歴を読み込み中です。",
+    "roomsEmpty": "チャットルーム履歴はありません。",
+    "createdRooms": "作成したチャットルーム",
+    "joinedRooms": "参加したチャットルーム",
+    "openRoomAccessibility": "{{title}}チャットルームを開く",
+    "signOut": "ログアウト"
+  },
+  "checklistTemplates": {
+    "conditions": {
+      "OUTDOOR_WAITING": {
+        "label": "屋外待機",
+        "description": "屋外で並ぶ可能性があります。風、日差し、寒さに備えましょう。"
+      },
+      "LONG_WAIT": {
+        "label": "長時間待機",
+        "description": "60分以上の待機を想定。体力、バッテリー、水、軽食を準備しましょう。"
+      },
+      "STANDING": {
+        "label": "スタンディング",
+        "description": "入場や観覧で立つ時間が長くなります。荷物は少なく、歩きやすい靴がおすすめです。"
+      },
+      "RAIN": {
+        "label": "雨/雪予報",
+        "description": "傘、レインコート、防水対策を準備しましょう。"
+      },
+      "SUMMER": {
+        "label": "夏/猛暑",
+        "description": "熱中症、汗、メイク崩れ、携帯扇風機、日差し対策を準備しましょう。"
+      },
+      "WINTER": {
+        "label": "冬/寒波",
+        "description": "カイロ、防寒、重ね着がおすすめです。"
+      },
+      "GIVEAWAY": {
+        "label": "配布/交換予定",
+        "description": "予備の袋、梱包材、スリーブ、ラベル、ペンなどを準備しましょう。"
+      },
+      "FOREIGN": {
+        "label": "海外ファン/韓国語が不安",
+        "description": "現地地図、基本あいさつ、注文などの簡単な会話を準備しましょう。"
+      }
+    },
+    "templates": {
+      "concert_basic": {
+        "title": "コンサート/ファンコン基本チェックリスト",
+        "description": "入場、観覧、待機状況を基準にしたチェックリストです。",
+        "items": {
+          "ticket_qr": {
+            "name": "予約内容/チケットまたはQR",
+            "section": "必須",
+            "tip": "通信が不安定な場合に備えて、オフラインで見られるスクリーンショットも保存しておきましょう。"
+          },
+          "id_card": {
+            "name": "身分証明書",
+            "section": "必須",
+            "tip": "本人確認や現地受け取りなどで必要です。"
+          },
+          "phone": {
+            "name": "スマートフォン",
+            "section": "必須",
+            "tip": "入場、連絡、地図、撮影に使います。バッテリー管理が大切です。"
+          },
+          "battery": {
+            "name": "モバイルバッテリー",
+            "section": "必須",
+            "tip": "待機、入場、写真/動画撮影でバッテリーが早く減ることに備えましょう。"
+          },
+          "cable": {
+            "name": "充電ケーブル",
+            "section": "必須",
+            "tip": "スマホとモバイルバッテリーに合うケーブルを持っていきましょう。"
+          },
+          "transport_card": {
+            "name": "交通カード/交通アプリ",
+            "section": "移動",
+            "tip": "終電や乗り換えルートを事前に確認しましょう。"
+          },
+          "payment": {
+            "name": "支払い手段（カード/少額の現金）",
+            "section": "移動",
+            "tip": "グッズ、食事、コンビニ、交通に必要です。現金は緊急用に少額あると安心です。"
+          },
+          "lightstick": {
+            "name": "ペンライト/電池（必要な場合）",
+            "section": "観覧",
+            "tip": "電池規格（AAAなど）や充電状態を事前に確認しましょう。"
+          },
+          "tote_bag": {
+            "name": "エコバッグ/ショッピングバッグ",
+            "section": "購入",
+            "tip": "グッズを入れるのに便利です。"
+          },
+          "small_bag": {
+            "name": "軽いバッグ（ショルダー/ミニバッグ）",
+            "section": "観覧",
+            "tip": "会場の持ち込み規定に合わせ、貴重品と必需品中心にしましょう。"
+          },
+          "water": {
+            "name": "水/飲み物",
+            "section": "便利",
+            "tip": "長い待機時間に備えましょう。会場の持ち込み規定も確認してください。"
+          },
+          "snack": {
+            "name": "簡単な軽食",
+            "section": "便利",
+            "tip": "エネルギーが切れた時に便利です。かさばらないものがおすすめです。"
+          },
+          "wet_tissue": {
+            "name": "ウェットティッシュ/ティッシュ",
+            "section": "あると便利",
+            "tip": "手拭き、汚れ、汗拭きなど幅広く使えます。"
+          },
+          "hand_sanitizer": {
+            "name": "手指消毒ジェル",
+            "section": "あると便利",
+            "tip": "衛生管理に役立ち、気になる時にすぐ使えます。"
+          },
+          "comfortable_shoes": {
+            "name": "歩きやすい靴/インソール",
+            "section": "体力",
+            "tip": "一日中の列待ち、待機、移動に備えましょう。"
+          },
+          "zip_bag": {
+            "name": "小さめのジッパーバッグ",
+            "section": "あると便利",
+            "tip": "レシート、充電器、小さなグッズの保管や防水に便利です。"
+          },
+          "portable_fan": {
+            "name": "携帯扇風機/冷却シート/日傘",
+            "section": "天気",
+            "tip": "特に夏や屋外待機では重要です。"
+          },
+          "hand_warmers": {
+            "name": "カイロ/ハンドウォーマー",
+            "section": "天気",
+            "tip": "特に冬や屋外待機では重要です。"
+          },
+          "giveaway_pack": {
+            "name": "配布/交換用の梱包（スリーブ/袋）",
+            "section": "配布/交換",
+            "tip": "フォトカードの折れ防止に役立ちます。"
+          }
+        }
+      },
+      "popup_store_basic": {
+        "title": "ポップアップ/展示 基本チェックリスト",
+        "description": "予約、購入、待機列、グッズ保護に集中したチェックリストです。",
+        "items": {
+          "reservation_qr": {
+            "name": "予約/入場QRまたは案内メッセージ",
+            "section": "必須",
+            "tip": "スクリーンショットを保存し、メッセージやメールもすぐ見つけられるようにしましょう。"
+          },
+          "id_card": {
+            "name": "身分証明書",
+            "section": "必須",
+            "tip": "本人確認、現地受け取り、年齢確認などで必要です。"
+          },
+          "payment": {
+            "name": "支払い手段（カード/少額の現金）",
+            "section": "必須",
+            "tip": "グッズ、食事、コンビニ、交通に必要です。現金は緊急用に少額あると安心です。"
+          },
+          "tote_bag": {
+            "name": "エコバッグ/ショッピングバッグ",
+            "section": "購入",
+            "tip": "グッズを入れるのに便利です。"
+          },
+          "card_sleeves": {
+            "name": "フォトカードスリーブ/保護フィルム",
+            "section": "グッズ保護",
+            "tip": "折れや汚れを防ぎます。"
+          },
+          "wet_tissue": {
+            "name": "ウェットティッシュ/ティッシュ",
+            "section": "あると便利",
+            "tip": "手拭き、汚れ、汗拭きなど幅広く使えます。"
+          },
+          "hand_sanitizer": {
+            "name": "手指消毒ジェル",
+            "section": "あると便利",
+            "tip": "衛生管理に役立ち、気になる時にすぐ使えます。"
+          },
+          "water": {
+            "name": "水/飲み物",
+            "section": "便利",
+            "tip": "長い待機時間に備えましょう。会場の持ち込み規定も確認してください。"
+          },
+          "battery": {
+            "name": "モバイルバッテリー",
+            "section": "便利",
+            "tip": "待機、入場、写真/動画撮影でバッテリーが早く減ることに備えましょう。"
+          },
+          "cable": {
+            "name": "充電ケーブル",
+            "section": "便利",
+            "tip": "スマホとモバイルバッテリーに合うケーブルを持っていきましょう。"
+          },
+          "comfortable_shoes": {
+            "name": "歩きやすい靴/インソール",
+            "section": "体力",
+            "tip": "一日中の列待ち、待機、移動に備えましょう。"
+          },
+          "portable_fan": {
+            "name": "携帯扇風機/冷却シート/日傘",
+            "section": "天気",
+            "tip": "特に夏や屋外待機では重要です。"
+          },
+          "hand_warmers": {
+            "name": "カイロ/ハンドウォーマー",
+            "section": "天気",
+            "tip": "特に冬や屋外待機では重要です。"
+          },
+          "basic_phrase_card": {
+            "name": "基本フレーズメモ（予約/入場/支払い）",
+            "section": "海外ファン",
+            "tip": "例:「予約しています」「このグッズは在庫がありますか？」「カード決済できますか？」"
+          }
+        }
+      },
+      "birthday_cafe_basic": {
+        "title": "センイルカフェ/カフェイベント基本チェックリスト",
+        "description": "カフェ移動、グッズ保管、交換、メモに特化したテンプレートです。",
+        "items": {
+          "map_link": {
+            "name": "地図リンク/住所の保存",
+            "section": "必須",
+            "tip": "Naver、Kakao、Googleなど自分が使いやすい地図アプリに保存しておきましょう。"
+          },
+          "payment": {
+            "name": "支払い手段（カード/少額の現金）",
+            "section": "必須",
+            "tip": "グッズ、食事、コンビニ、交通に必要です。現金は緊急用に少額あると安心です。"
+          },
+          "tote_bag": {
+            "name": "エコバッグ/ショッピングバッグ",
+            "section": "移動",
+            "tip": "特典やグッズを入れるのに便利です。"
+          },
+          "mini_zipbags": {
+            "name": "小さめのジッパーバッグ",
+            "section": "グッズ保護",
+            "tip": "レシート、充電器、小さなグッズの保管や防水に便利です。"
+          },
+          "wet_tissue": {
+            "name": "ウェットティッシュ/ティッシュ",
+            "section": "あると便利",
+            "tip": "手拭き、汚れ、汗拭きなど幅広く使えます。"
+          },
+          "hand_sanitizer": {
+            "name": "手指消毒ジェル",
+            "section": "あると便利",
+            "tip": "衛生管理に役立ち、気になる時にすぐ使えます。"
+          },
+          "water": {
+            "name": "水/飲み物",
+            "section": "便利",
+            "tip": "長い待機時間に備えましょう。会場の持ち込み規定も確認してください。"
+          },
+          "battery": {
+            "name": "モバイルバッテリー",
+            "section": "便利",
+            "tip": "待機、入場、写真/動画撮影でバッテリーが早く減ることに備えましょう。"
+          },
+          "comfortable_shoes": {
+            "name": "歩きやすい靴/インソール",
+            "section": "体力",
+            "tip": "一日中の列待ち、待機、移動に備えましょう。"
+          },
+          "portable_fan": {
+            "name": "携帯扇風機/冷却シート/日傘",
+            "section": "天気",
+            "tip": "特に夏や屋外待機では重要です。"
+          },
+          "hand_warmers": {
+            "name": "カイロ/ハンドウォーマー",
+            "section": "天気",
+            "tip": "特に冬や屋外待機では重要です。"
+          },
+          "korean_order_phrase": {
+            "name": "カフェ注文用の基本フレーズ（メモ/画像）",
+            "section": "海外ファン",
+            "tip": "例:「アイスでお願いします」「テイクアウトできますか？」「特典はどこで受け取れますか？」"
+          }
+        }
+      }
+    }
+  }
+}

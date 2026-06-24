@@ -1,0 +1,577 @@
+{
+  "common": {
+    "actions": {
+      "done": "Done",
+      "login": "Log in",
+      "signOut": "Sign out"
+    },
+    "states": {
+      "loading": "Loading..."
+    },
+    "alerts": {
+      "failed": "Failed.",
+      "createFailed": "Could not create it.",
+      "loadFailed": "Could not load it.",
+      "partialLoad": "Only some information was loaded.",
+      "saveFailed": "Could not save it.",
+      "syncFailed": "Could not sync it.",
+      "sendFailed": "Could not send it.",
+      "notFound": "Not found.",
+      "openFailed": "Could not open it.",
+      "requiredInput": "Please enter the information.",
+      "requiredSelection": "Please choose an item.",
+      "checkInput": "Please check the information you entered.",
+      "unavailable": "Currently unavailable.",
+      "retry": "Please try again.",
+      "supabaseRequired": "Supabase configuration is required."
+    }
+  },
+  "navigation": {
+    "appName": "onreori",
+    "category": "Category",
+    "conditions": "Choose Situation",
+    "checklist": "Checklist",
+    "cafeRoutes": "Birthday Cafe Route",
+    "auth": "Log in",
+    "eventRooms": "Event Chat Rooms",
+    "mapPicker": "Choose Place",
+    "roomChat": "Chat Room",
+    "myPage": "My Page",
+    "shareCard": "Share Card"
+  },
+  "language": {
+    "title": "App language",
+    "description": "Choose the language to use in the app.",
+    "selectorLabel": "Choose app language",
+    "conversationLanguages": "Conversation languages",
+    "allLanguages": "All"
+  },
+  "categories": {
+    "homeTitle": "What kind of event is it?",
+    "homeDescription": "Talk with fans on site in real time.",
+    "eventDay": {
+      "title": "Concert/Fancon",
+      "description": "Handle venue rounds, waiting, entry, viewing, and exit in one place.",
+      "roomLabel": "Real-time venue info sharing"
+    },
+    "popup": {
+      "title": "Popup/Exhibition",
+      "description": "Handle reservations, waiting, entry, merch purchases, and trades in one place.",
+      "roomLabel": "Stock and trade updates"
+    },
+    "cafeEvent": {
+      "title": "Birthday Cafe/Event",
+      "description": "Plan routes, first-come benefits, viewing, and giveaways in one place.",
+      "roomLabel": "Benefit and route updates"
+    },
+    "actions": {
+      "checklistTitle": "Create checklist",
+      "checklistDescription": "Check what to bring and save it as an image.",
+      "cafeRoutesTitle": "Create birthday cafe route",
+      "cafeRoutesDescription": "Choose cafes by benefit preference and save your route.",
+      "roomsTitle": "Today's chat room",
+      "roomsDescription": "Share real-time updates with fans on site."
+    },
+    "landing": {
+      "title": "Light and reliable",
+      "description": "Pack what you need and share on-site info in real time.",
+      "start": "Get started"
+    }
+  },
+  "conditions": {
+    "templateNotFound": "Template not found.",
+    "sectionTitle": "Choose situation",
+    "sectionDescription": "Choose the expected conditions on event day.",
+    "createChecklist": "Create checklist"
+  },
+  "checklist": {
+    "loadFailed": "Could not load the checklist.",
+    "completedMeta": "{{checkedCount}}/{{totalCount}} done",
+    "addItemTitle": "Add item",
+    "itemPlaceholder": "Item",
+    "descriptionPlaceholder": "Description",
+    "addItem": "Add",
+    "savingToAccount": "Saving...",
+    "saveToAccount": "Save to my account",
+    "syncing": "Syncing...",
+    "retrySync": "Sync again",
+    "shareCard": "Share card",
+    "noConditions": "No extra conditions selected",
+    "progress": "Progress {{checkedCount}}/{{totalCount}}",
+    "defaultTemplate": "Default template",
+    "essential": "Required",
+    "custom": "Added manually",
+    "checkAccessibility": "Check {{itemName}}",
+    "deleteAccessibilityHint": "Deletes the item.",
+    "deleteAccessibility": "Delete {{itemName}}",
+    "localSavedRetrySync": "Local changes were saved. Please sync again.",
+    "saved": "Saved.",
+    "customSection": "Additional items",
+    "customTip": "This item was added manually.",
+    "saveStates": {
+      "draft": "Draft",
+      "localOnly": "Draft",
+      "deviceSaved": "Saved on device",
+      "synced": "Saved to account",
+      "syncFailed": "Needs account sync"
+    }
+  },
+  "auth": {
+    "signInTitle": "Log in",
+    "signUpTitle": "Sign up",
+    "description": "Only logged-in users can enter event chat rooms and save to their account.",
+    "previewNotice": "Supabase is not configured, so local preview login is being used.",
+    "nicknamePlaceholder": "Nickname",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "signInAction": "Log in",
+    "signUpAction": "Sign up and continue",
+    "switchToSignUp": "No account? Sign up",
+    "switchToSignIn": "Already have an account? Log in",
+    "confirmEmailBeforeLogin": "Complete the confirmation email before logging in."
+  },
+  "rooms": {
+    "createTitle": "Create room",
+    "categoryRoomTitle": "{{categoryTitle}} chat rooms",
+    "categoryNotFound": "Category not found.",
+    "todayRooms": "Today's chat rooms",
+    "tutorialFallbackNotice": "We could not load chat rooms for a moment, so we are showing the tutorial room.",
+    "titleLabel": "Room title",
+    "titlePlaceholder": "Room title",
+    "artistTitleLabel": "Artist/member name",
+    "artistTitlePlaceholder": "e.g. Minji",
+    "popupTitlePlaceholder": "e.g. Seongsu popup stock room",
+    "eventDayTitlePlaceholder": "e.g. KSPO day 2 waiting room",
+    "cafeRoomTitle": "{{title}} cafe info room",
+    "createdTitle": "Created.",
+    "createdInactiveNotice": "This chat room appears in today's chat rooms from {{beforeCount}} days before the event until {{afterCount}} days after.",
+    "datePlaceholder": "Choose date",
+    "placePlaceholder": "Place",
+    "unknownPlace": "Place not set",
+    "choosePlaceOnMap": "Choose place on map",
+    "selectedPlaceFallback": "Selected place",
+    "eventUrlPlaceholder": "Official notice, ticket, or guide link",
+    "eventUrlHttpsOnly": "Only https:// URLs are supported.",
+    "fetchEventUrlPreview": "Get info from link",
+    "fetchingEventUrlPreview": "Fetching...",
+    "entryCodePlaceholder": "Entry code",
+    "createRoom": "Create chat room",
+    "creatingRoom": "Creating...",
+    "emptyTitle": "No rooms have been created yet.",
+    "emptyDescription": "Create the first room to collect on-site info.",
+    "memberCount": "{{count}} joined",
+    "startTutorial": "Start tutorial",
+    "join": "Enter",
+    "enterEntryCode": "Enter code",
+    "tutorialRoomDescription": "Today Duck will show you how to use chat rooms.",
+    "chatRoomDescription": "On site now? Share real-time updates.",
+    "tutorial": {
+      "botNickname": "Today Duck",
+      "roomTitle": "Tutorial chat room",
+      "eventDate": "Always on",
+      "location": "How to use Onreori",
+      "welcomeBodies": [
+        "Hi! This is Today Duck.",
+        "This is a chat room where you can freely share on-site updates."
+      ],
+      "replyBodies": [
+        "Keep the conversation kind.",
+        "Share only on-site information you have checked.",
+        "When things are urgent, short and clear updates work best.",
+        "Before posting photos or locations, check that no personal information is visible.",
+        "Ask questions freely, and answer what you know with care."
+      ]
+    },
+    "emptyMessages": "No messages yet.",
+    "botTyping": "Today Duck is typing...",
+    "photo": "Photo",
+    "composerPlaceholder": "Share on-site info",
+    "send": "Send",
+    "hashtagFilterPlaceholder": "Search cafe name or #tag",
+    "clearFilter": "Clear",
+    "preview": {
+      "fields": {
+        "title": "Title",
+        "eventDate": "Date",
+        "location": "Place"
+      },
+      "noAutoInfo": "No information could be loaded automatically. Please enter the title, date, and place manually.",
+      "missingFields": "Please enter {{fields}} manually.",
+      "confirmLoadedInfo": "Please check that the loaded information is accurate. You can edit it if needed."
+    },
+    "activeWindow": "Chat rooms can only be created from {{beforeCount}} days before the event until {{afterCount}} days after."
+  },
+  "map": {
+    "registerCenterMeta": "Register the map center location.",
+    "selectPlaceTitle": "Choose a place",
+    "cafeNamePlaceholder": "Enter the cafe name manually",
+    "placeNamePlaceholder": "Enter the place name manually",
+    "registerCenter": "Register map center",
+    "registerPlace": "Register place",
+    "addressLocation": "Address location",
+    "searchPlaceholder": "Search place or address",
+    "searching": "Searching",
+    "addressBadge": "Address",
+    "selectedPlaceName": "Selected place",
+    "mapLoadFailed": "Could not load the Kakao map",
+    "searchErrors": {
+      "default": "Could not search places.",
+      "loginRequired": "Log in is required to search places.",
+      "missingKakaoKey": "The Kakao REST API key is not set in Supabase.",
+      "functionNotDeployed": "The place search server function is not deployed.",
+      "rateLimited": "Too many place search requests. Please try again later.",
+      "serverConfig": "Please check the place search server settings.",
+      "kakaoRequestFailed": "The Kakao place search request failed.",
+      "connectionFailed": "Could not connect to the place search server."
+    }
+  },
+  "cafeRoutes": {
+    "defaultTitle": "New birthday cafe route",
+    "categoryRouteTitle": "{{categoryTitle}} route",
+    "unavailableCategory": "This is only available for birthday cafe categories.",
+    "title": "Birthday cafe route",
+    "description": "Choose cafes by benefit preference and save your route.",
+    "myRoutes": "My routes",
+    "loadingRoutes": "Loading routes.",
+    "emptyTitle": "No routes yet.",
+    "emptyDescription": "Create a visit route based on your benefit preferences.",
+    "createFirstRoute": "Create first route",
+    "selectedRoute": "Selected route",
+    "routeNamePlaceholder": "Route name",
+    "addCafeTitle": "Add a cafe",
+    "addCafeDescription": "Selected places appear as markers on the map.",
+    "noCafes": "No cafes added yet.",
+    "cafeCount": "{{count}} cafes",
+    "moveUp": "Up",
+    "moveDown": "Down",
+    "delete": "Delete",
+    "deleteRoute": "Delete route",
+    "deletingRoute": "Deleting",
+    "deleteRouteTitle": "Delete this route?",
+    "deleteRouteMessage": "\"{{routeTitle}}\" will be deleted. This cannot be undone.",
+    "deleteRouteConfirm": "Delete",
+    "cancel": "Cancel",
+    "addCafe": "Add cafe",
+    "export": "Export",
+    "exportPreviewTitle": "Export preview",
+    "exportPreviewPreparing": "Preparing preview.",
+    "saveToLibrary": "Save to photo library",
+    "close": "Close",
+    "exporting": "Saving to photo library",
+    "exportSaved": "Route image saved to photo library.",
+    "exportFailed": "Could not prepare the route image.",
+    "photoPermissionTitle": "Photo access permission is required.",
+    "photoPermissionMessage": "Allow permission to save the route image to your photo library."
+  },
+  "shareCard": {
+    "prepareFailed": "Could not prepare the share card.",
+    "messageProgress": "Progress: {{checkedCount}}/{{totalCount}}",
+    "messageConditions": "Conditions: {{conditions}}",
+    "messageDefaultConditions": "Conditions: Default template",
+    "photoPermissionTitle": "Photo access permission is required.",
+    "photoPermissionMessage": "Allow permission to save the share card to your photo library.",
+    "savedToLibrary": "Saved to photo library.",
+    "loadFailed": "Could not load the share card.",
+    "export": "Export",
+    "saveToLibrary": "Save to photo library",
+    "share": "Share"
+  },
+  "myPage": {
+    "title": "My Page",
+    "guestDescription": "Log in to view saved checklists and chat rooms you joined.",
+    "checklistsTab": "My checklists",
+    "checklistsTabAccessibility": "My checklists tab",
+    "roomsTab": "My chat rooms",
+    "roomsTabAccessibility": "My chat rooms tab",
+    "checklistsLoading": "Loading saved checklists.",
+    "checklistsEmpty": "No saved checklists yet.",
+    "checklistSynced": "Saved to account",
+    "roomsLoading": "Loading your chat room history.",
+    "roomsEmpty": "No chat room history yet.",
+    "createdRooms": "Chat rooms I created",
+    "joinedRooms": "Chat rooms I joined",
+    "openRoomAccessibility": "Open {{title}} chat room",
+    "signOut": "Sign out"
+  },
+  "checklistTemplates": {
+    "conditions": {
+      "OUTDOOR_WAITING": {
+        "label": "Outdoor waiting",
+        "description": "You may need to queue outside, so prepare for wind, sun, or cold."
+      },
+      "LONG_WAIT": {
+        "label": "Long wait",
+        "description": "Expected wait of 60+ minutes. Plan for stamina, battery, water, and snacks."
+      },
+      "STANDING": {
+        "label": "Standing",
+        "description": "Entry and viewing may involve standing. Pack light and wear comfortable shoes."
+      },
+      "RAIN": {
+        "label": "Rain or snow",
+        "description": "Bring an umbrella, raincoat, and waterproof protection."
+      },
+      "SUMMER": {
+        "label": "Summer heat",
+        "description": "Prepare for heat, sweat, makeup smudging, portable fans, and sun protection."
+      },
+      "WINTER": {
+        "label": "Winter cold",
+        "description": "Hand warmers, insulation, and layering are recommended."
+      },
+      "GIVEAWAY": {
+        "label": "Giveaway or trade",
+        "description": "Bring extra bags, packaging, sleeves, labels, and pens."
+      },
+      "FOREIGN": {
+        "label": "International fan",
+        "description": "Prepare local maps and basic phrases for greetings, orders, and simple communication."
+      }
+    },
+    "templates": {
+      "concert_basic": {
+        "title": "Concert/Fancon Basic Checklist",
+        "description": "A baseline checklist for entry, viewing, and waiting situations.",
+        "items": {
+          "ticket_qr": {
+            "name": "Reservation details/ticket or QR",
+            "section": "Required",
+            "tip": "Save a screenshot as backup so you can access it offline if the network is unstable."
+          },
+          "id_card": {
+            "name": "Photo ID",
+            "section": "Required",
+            "tip": "Needed for identity checks, on-site pickup, and similar checks."
+          },
+          "phone": {
+            "name": "Phone",
+            "section": "Required",
+            "tip": "Used for entry, contact, maps, and photos. Battery management is essential."
+          },
+          "battery": {
+            "name": "Portable battery",
+            "section": "Required",
+            "tip": "Queues, entry, and photo/video shooting can drain your battery quickly."
+          },
+          "cable": {
+            "name": "Charging cable",
+            "section": "Required",
+            "tip": "Bring the cable that fits your phone and portable battery."
+          },
+          "transport_card": {
+            "name": "Transit card or transit app",
+            "section": "Getting around",
+            "tip": "Check last trains and transfer routes in advance."
+          },
+          "payment": {
+            "name": "Payment method: card and a little cash",
+            "section": "Getting around",
+            "tip": "Needed for merch, meals, convenience stores, and transit. Keep small cash for emergencies."
+          },
+          "lightstick": {
+            "name": "Lightstick and batteries if needed",
+            "section": "Viewing",
+            "tip": "Check the battery type, such as AAA, or charge it in advance."
+          },
+          "tote_bag": {
+            "name": "Eco bag or shopping bag",
+            "section": "Shopping",
+            "tip": "Useful for carrying merch."
+          },
+          "small_bag": {
+            "name": "Light bag: crossbody or mini bag",
+            "section": "Viewing",
+            "tip": "Depends on venue rules. Keep valuables and essentials only."
+          },
+          "water": {
+            "name": "Water or drink",
+            "section": "Comfort",
+            "tip": "Helps during long waits. Check venue carry-in rules."
+          },
+          "snack": {
+            "name": "Small snack",
+            "section": "Comfort",
+            "tip": "Helpful when your energy drops. Choose compact snacks."
+          },
+          "wet_tissue": {
+            "name": "Wet wipes or tissues",
+            "section": "Useful extras",
+            "tip": "Useful for hands, spills, sweat, and general cleanup."
+          },
+          "hand_sanitizer": {
+            "name": "Hand sanitizer",
+            "section": "Useful extras",
+            "tip": "Helps with hygiene and keeps things feeling clean."
+          },
+          "comfortable_shoes": {
+            "name": "Comfortable shoes or insoles",
+            "section": "Stamina",
+            "tip": "Prepares you for all-day queues, waiting, and walking."
+          },
+          "zip_bag": {
+            "name": "Small zip bag",
+            "section": "Useful extras",
+            "tip": "Keeps receipts, chargers, and small merch organized and protected from water."
+          },
+          "portable_fan": {
+            "name": "Portable fan, cooling wipes, or parasol",
+            "section": "Weather",
+            "tip": "Especially important in summer or outdoor waiting."
+          },
+          "hand_warmers": {
+            "name": "Hand warmers or heat packs",
+            "section": "Weather",
+            "tip": "Especially important in winter or outdoor waiting."
+          },
+          "giveaway_pack": {
+            "name": "Packaging for giveaways or trades: sleeves/bags",
+            "section": "Giveaway/Trade",
+            "tip": "Protects photo cards from bending."
+          }
+        }
+      },
+      "popup_store_basic": {
+        "title": "Popup/Exhibition Basic Checklist",
+        "description": "Focused on reservations, purchases, queues, and merch protection.",
+        "items": {
+          "reservation_qr": {
+            "name": "Reservation/entry QR or guide message",
+            "section": "Required",
+            "tip": "Save a screenshot and keep the message or email easy to find."
+          },
+          "id_card": {
+            "name": "Photo ID",
+            "section": "Required",
+            "tip": "Needed for identity checks, on-site pickup, age checks, and similar checks."
+          },
+          "payment": {
+            "name": "Payment method: card and a little cash",
+            "section": "Required",
+            "tip": "Needed for merch, meals, convenience stores, and transit. Keep small cash for emergencies."
+          },
+          "tote_bag": {
+            "name": "Eco bag or shopping bag",
+            "section": "Shopping",
+            "tip": "Useful for carrying merch."
+          },
+          "card_sleeves": {
+            "name": "Photo card sleeves or protective film",
+            "section": "Merch protection",
+            "tip": "Prevents bending and stains."
+          },
+          "wet_tissue": {
+            "name": "Wet wipes or tissues",
+            "section": "Useful extras",
+            "tip": "Useful for hands, spills, sweat, and general cleanup."
+          },
+          "hand_sanitizer": {
+            "name": "Hand sanitizer",
+            "section": "Useful extras",
+            "tip": "Helps with hygiene and keeps things feeling clean."
+          },
+          "water": {
+            "name": "Water or drink",
+            "section": "Comfort",
+            "tip": "Helps during long waits. Check venue carry-in rules."
+          },
+          "battery": {
+            "name": "Portable battery",
+            "section": "Comfort",
+            "tip": "Queues, entry, and photo/video shooting can drain your battery quickly."
+          },
+          "cable": {
+            "name": "Charging cable",
+            "section": "Comfort",
+            "tip": "Bring the cable that fits your phone and portable battery."
+          },
+          "comfortable_shoes": {
+            "name": "Comfortable shoes or insoles",
+            "section": "Stamina",
+            "tip": "Prepares you for all-day queues, waiting, and walking."
+          },
+          "portable_fan": {
+            "name": "Portable fan, cooling wipes, or parasol",
+            "section": "Weather",
+            "tip": "Especially important in summer or outdoor waiting."
+          },
+          "hand_warmers": {
+            "name": "Hand warmers or heat packs",
+            "section": "Weather",
+            "tip": "Especially important in winter or outdoor waiting."
+          },
+          "basic_phrase_card": {
+            "name": "Basic phrase memo: reservation, entry, payment",
+            "section": "International fans",
+            "tip": "Examples: \"I have a reservation,\" \"Is this merch in stock?\", \"Can I pay by card?\""
+          }
+        }
+      },
+      "birthday_cafe_basic": {
+        "title": "Birthday Cafe Event Basic Checklist",
+        "description": "A template for cafe routes, merch storage, trades, and notes.",
+        "items": {
+          "map_link": {
+            "name": "Saved map link or address",
+            "section": "Required",
+            "tip": "Save it in the map app you prefer: Naver, Kakao, or Google."
+          },
+          "payment": {
+            "name": "Payment method: card and a little cash",
+            "section": "Required",
+            "tip": "Needed for merch, meals, convenience stores, and transit. Keep small cash for emergencies."
+          },
+          "tote_bag": {
+            "name": "Eco bag or shopping bag",
+            "section": "Getting around",
+            "tip": "Useful for carrying benefits and merch."
+          },
+          "mini_zipbags": {
+            "name": "Small zip bags",
+            "section": "Merch protection",
+            "tip": "Keeps receipts, chargers, and small merch organized and protected from water."
+          },
+          "wet_tissue": {
+            "name": "Wet wipes or tissues",
+            "section": "Useful extras",
+            "tip": "Useful for hands, spills, sweat, and general cleanup."
+          },
+          "hand_sanitizer": {
+            "name": "Hand sanitizer",
+            "section": "Useful extras",
+            "tip": "Helps with hygiene and keeps things feeling clean."
+          },
+          "water": {
+            "name": "Water or drink",
+            "section": "Comfort",
+            "tip": "Helps during long waits. Check venue carry-in rules."
+          },
+          "battery": {
+            "name": "Portable battery",
+            "section": "Comfort",
+            "tip": "Queues, entry, and photo/video shooting can drain your battery quickly."
+          },
+          "comfortable_shoes": {
+            "name": "Comfortable shoes or insoles",
+            "section": "Stamina",
+            "tip": "Prepares you for all-day queues, waiting, and walking."
+          },
+          "portable_fan": {
+            "name": "Portable fan, cooling wipes, or parasol",
+            "section": "Weather",
+            "tip": "Especially important in summer or outdoor waiting."
+          },
+          "hand_warmers": {
+            "name": "Hand warmers or heat packs",
+            "section": "Weather",
+            "tip": "Especially important in winter or outdoor waiting."
+          },
+          "korean_order_phrase": {
+            "name": "Basic cafe order phrases: memo or image",
+            "section": "International fans",
+            "tip": "Examples: \"Iced, please,\" \"Is takeout available?\", \"Where do I receive the benefit?\""
+          }
+        }
+      }
+    }
+  }
+}
