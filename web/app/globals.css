@@ -724,3 +724,97 @@ button.ui-card {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+.auth-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+
+.auth-screen__header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-screen__header p {
+  margin: 0;
+  color: var(--color-brand-text);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.auth-screen__header h1 {
+  max-width: 340px;
+  margin: 0;
+  color: var(--color-dark);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.auth-card {
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 18px 42px rgba(106, 53, 168, 0.12);
+}
+
+.auth-form,
+.auth-form__fields,
+.auth-form__actions,
+.auth-form__field,
+.auth-form__heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form {
+  gap: 18px;
+}
+
+.auth-form__heading {
+  gap: 8px;
+}
+
+.auth-form__heading h1 {
+  margin: 0;
+  color: var(--color-dark);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.auth-form__heading p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.auth-form__fields {
+  gap: 12px;
+}
+
+.auth-form__field {
+  gap: 7px;
+}
+
+.auth-form__field span {
+  color: var(--color-dark);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.auth-form__error {
+  min-height: 20px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.auth-form__actions {
+  gap: 8px;
+}
