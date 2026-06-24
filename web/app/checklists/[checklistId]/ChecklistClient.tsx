@@ -27,6 +27,16 @@ type ChecklistClientProps = {
   checklistId: string;
 };
 
+export function getAccountSaveHref(checklistId: string): string {
+  return `/auth?redirect=accountSave&checklistId=${encodeURIComponent(
+    checklistId,
+  )}`;
+}
+
+export function getShareHref(checklistId: string): string {
+  return `/share/${encodeURIComponent(checklistId)}`;
+}
+
 function getConditionLabels(checklist: Checklist): string[] {
   return conditions
     .filter(condition => checklist.selectedConditions.includes(condition.id))
@@ -117,7 +127,7 @@ export function ChecklistClient({checklistId}: ChecklistClientProps) {
     }
 
     await setPendingAccountSaveChecklistId(checklist.id);
-    window.location.assign('/auth');
+    window.location.assign(getAccountSaveHref(checklist.id));
   }
 
   function handleShareCard() {
@@ -125,7 +135,7 @@ export function ChecklistClient({checklistId}: ChecklistClientProps) {
       return;
     }
 
-    window.location.assign(`/share-card?checklistId=${checklist.id}`);
+    window.location.assign(getShareHref(checklist.id));
   }
 
   if (isLoading) {

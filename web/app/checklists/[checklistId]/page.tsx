@@ -6,7 +6,11 @@ type ChecklistPageProps = {
   }>;
 };
 
-export {ChecklistClient} from './ChecklistClient';
+export {
+  ChecklistClient,
+  getAccountSaveHref,
+  getShareHref,
+} from './ChecklistClient';
 
 export default async function ChecklistPage({params}: ChecklistPageProps) {
   const {checklistId} = await params;

@@ -3,7 +3,11 @@ import {beforeEach, describe, expect, it} from 'vitest';
 
 import type {Checklist} from '@/types';
 
-import {ChecklistClient} from './[checklistId]/page';
+import {
+  ChecklistClient,
+  getAccountSaveHref,
+  getShareHref,
+} from './[checklistId]/page';
 
 const user = {
   async click(element: HTMLElement) {
@@ -54,5 +58,12 @@ describe('checklist flow', () => {
     expect(await screen.findByText(/0\/1 완료/)).toBeInTheDocument();
     await user.click(screen.getByRole('checkbox', {name: /Ticket/}));
     expect(await screen.findByText(/1\/1 완료/)).toBeInTheDocument();
+  });
+
+  it('uses the planned account save and share routes', () => {
+    expect(getAccountSaveHref('checklist-flow')).toBe(
+      '/auth?redirect=accountSave&checklistId=checklist-flow',
+    );
+    expect(getShareHref('checklist-flow')).toBe('/share/checklist-flow');
   });
 });
