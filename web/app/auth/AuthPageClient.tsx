@@ -5,7 +5,7 @@ import {useCallback} from 'react';
 
 import {AuthForm} from '@/components/auth/AuthForm';
 
-function getSuccessPath(searchParams: URLSearchParams): string {
+export function getSuccessPath(searchParams: URLSearchParams): string {
   const redirect = searchParams.get('redirect');
 
   if (redirect === 'accountSave') {

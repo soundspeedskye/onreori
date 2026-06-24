@@ -19,7 +19,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export function AuthForm({onSuccess}: AuthFormProps) {
-  const {signIn, signUp} = useAuth();
+  const {serverConfigured, signIn, signUp} = useAuth();
   const [mode, setMode] = useState<AuthFormMode>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,13 +58,17 @@ export function AuthForm({onSuccess}: AuthFormProps) {
     <Card className="auth-card">
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="auth-form__heading">
-          <h1>{isSignUp ? '계정 만들기' : '로그인'}</h1>
+          <h2>{isSignUp ? '계정 만들기' : '로그인'}</h2>
           <p>
             {isSignUp
               ? '체크리스트를 계정에 저장할 수 있어요.'
               : '저장한 체크리스트와 MY 페이지를 이어서 볼 수 있어요.'}
           </p>
         </div>
+
+        {!serverConfigured ? (
+          <p className="auth-form__notice">미리보기 모드로 로그인합니다.</p>
+        ) : null}
 
         <div className="auth-form__fields">
           {isSignUp ? (
