@@ -1,4 +1,4 @@
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {AuthUser, Checklist} from '@/types';
@@ -47,6 +47,17 @@ const authUser: AuthUser = {
   email: 'fan@example.com',
   nickname: 'Fan',
 };
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return {promise, reject, resolve};
+}
 
 function createChecklist(overrides: Partial<Checklist> = {}): Checklist {
   return {
@@ -240,5 +251,61 @@ describe('checklist flow', () => {
         authUser,
       );
     });
+  });
+
+  it('keeps newer local edits when auto-sync RPCs resolve out of order', async () => {
+    const firstSync = createDeferred<{ownerId: string; remoteId: string}>();
+    const secondSync = createDeferred<{ownerId: string; remoteId: string}>();
+    mockState.saveChecklistToAccount
+      .mockReturnValueOnce(firstSync.promise)
+      .mockReturnValueOnce(secondSync.promise);
+    mockState.user = authUser;
+    window.localStorage.setItem(
+      'onreori.checklists',
+      JSON.stringify([
+        createChecklist({
+          ownerId: authUser.id,
+          remoteId: 'remote-1',
+          saveState: 'synced',
+        }),
+      ]),
+    );
+
+    render(<ChecklistClient checklistId="checklist-flow" />);
+
+    await user.click(await screen.findByRole('checkbox', {name: /Ticket/}));
+    await waitFor(() => {
+      expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.change(screen.getByLabelText('아이템 이름'), {
+      target: {value: 'VIP badge'},
+    });
+    await user.click(screen.getByRole('button', {name: '추가'}));
+    await waitFor(() => {
+      expect(mockState.saveChecklistToAccount).toHaveBeenCalledTimes(2);
+    });
+
+    await act(async () => {
+      secondSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
+      await secondSync.promise;
+    });
+    expect(screen.getByText('VIP badge')).toBeInTheDocument();
+
+    await act(async () => {
+      firstSync.resolve({ownerId: authUser.id, remoteId: 'remote-1'});
+      await firstSync.promise;
+    });
+
+    const storedChecklist = JSON.parse(
+      window.localStorage.getItem('onreori.checklists') ?? '[]',
+    )[0] as Checklist;
+    expect(storedChecklist.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({id: 'ticket', checked: true}),
+        expect.objectContaining({name: 'VIP badge'}),
+      ]),
+    );
+    expect(screen.getByText('VIP badge')).toBeInTheDocument();
   });
 });

@@ -16,8 +16,6 @@ import {
   getChecklistById,
   saveChecklist,
   saveChecklistDraft,
-  saveChecklistSyncFailed,
-  saveChecklistSynced,
   setPendingAccountSaveChecklistId,
 } from '@/lib/storage/checklists';
 import {saveChecklistToAccount} from '@/services/checklistAccount';
@@ -69,6 +67,14 @@ export function ChecklistClient({
   const [customItemName, setCustomItemName] = useState('');
   const [customItemDescription, setCustomItemDescription] = useState('');
   const didAttemptPendingAccountSave = useRef(false);
+  const latestChecklistRef = useRef<Checklist | null>(null);
+  const localMutationSequenceRef = useRef(0);
+  const latestSyncRequestSequenceRef = useRef(0);
+
+  const setCurrentChecklist = useCallback((nextChecklist: Checklist | null) => {
+    latestChecklistRef.current = nextChecklist;
+    setChecklist(nextChecklist);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -80,7 +86,7 @@ export function ChecklistClient({
         return;
       }
 
-      setChecklist(loadedChecklist ?? null);
+      setCurrentChecklist(loadedChecklist ?? null);
       setIsLoading(false);
     }
 
@@ -89,45 +95,87 @@ export function ChecklistClient({
     return () => {
       isMounted = false;
     };
-  }, [checklistId]);
+  }, [checklistId, setCurrentChecklist]);
 
   const syncChecklistToAccount = useCallback(
-    async (targetChecklist: Checklist) => {
+    async (
+      targetChecklist: Checklist,
+      mutationSequence = localMutationSequenceRef.current,
+    ) => {
       if (!user) {
         return targetChecklist;
       }
 
+      const syncRequestSequence = latestSyncRequestSequenceRef.current + 1;
+      latestSyncRequestSequenceRef.current = syncRequestSequence;
       setSyncError('');
       setIsSavingToAccount(true);
+
+      const isLatestSyncCompletion = () =>
+        localMutationSequenceRef.current === mutationSequence &&
+        latestSyncRequestSequenceRef.current === syncRequestSequence &&
+        latestChecklistRef.current?.id === targetChecklist.id;
 
       try {
         const remoteReference = await saveChecklistToAccount(
           targetChecklist,
           user,
         );
-        const syncedChecklist = await saveChecklistSynced(
-          targetChecklist,
-          remoteReference,
-        );
 
-        setChecklist(syncedChecklist);
+        if (!isLatestSyncCompletion()) {
+          return latestChecklistRef.current ?? targetChecklist;
+        }
+
+        const syncedChecklist: Checklist = {
+          ...(latestChecklistRef.current ?? targetChecklist),
+          ownerId: remoteReference.ownerId,
+          remoteId: remoteReference.remoteId,
+          saveState: 'synced',
+          updatedAt: new Date().toISOString(),
+        };
+
+        await saveChecklist(syncedChecklist);
+
+        if (!isLatestSyncCompletion()) {
+          return latestChecklistRef.current ?? syncedChecklist;
+        }
+
+        setCurrentChecklist(syncedChecklist);
         return syncedChecklist;
       } catch (error) {
-        const failedChecklist = await saveChecklistSyncFailed(targetChecklist);
+        if (!isLatestSyncCompletion()) {
+          return latestChecklistRef.current ?? targetChecklist;
+        }
 
-        setChecklist(failedChecklist);
+        const failedChecklist: Checklist = {
+          ...(latestChecklistRef.current ?? targetChecklist),
+          saveState: 'syncFailed',
+          updatedAt: new Date().toISOString(),
+        };
+
+        await saveChecklist(failedChecklist);
+
+        if (!isLatestSyncCompletion()) {
+          return latestChecklistRef.current ?? failedChecklist;
+        }
+
+        setCurrentChecklist(failedChecklist);
         setSyncError(getErrorMessage(error, ALERT_MESSAGES.syncFailed));
         return failedChecklist;
       } finally {
-        setIsSavingToAccount(false);
+        if (latestSyncRequestSequenceRef.current === syncRequestSequence) {
+          setIsSavingToAccount(false);
+        }
       }
     },
-    [user],
+    [setCurrentChecklist, user],
   );
 
   const persistChecklist = useCallback(
     async (nextChecklist: Checklist) => {
-      setChecklist(nextChecklist);
+      const mutationSequence = localMutationSequenceRef.current + 1;
+      localMutationSequenceRef.current = mutationSequence;
+      setCurrentChecklist(nextChecklist);
       setSyncError('');
       await saveChecklist(nextChecklist);
 
@@ -137,10 +185,10 @@ export function ChecklistClient({
         (nextChecklist.saveState === 'synced' ||
           nextChecklist.saveState === 'syncFailed')
       ) {
-        await syncChecklistToAccount(nextChecklist);
+        await syncChecklistToAccount(nextChecklist, mutationSequence);
       }
     },
-    [syncChecklistToAccount, user],
+    [setCurrentChecklist, syncChecklistToAccount, user],
   );
 
   useEffect(() => {
@@ -229,7 +277,8 @@ export function ChecklistClient({
     if (!user) {
       const draftChecklist = await saveChecklistDraft(checklist);
 
-      setChecklist(draftChecklist);
+      localMutationSequenceRef.current += 1;
+      setCurrentChecklist(draftChecklist);
       await setPendingAccountSaveChecklistId(draftChecklist.id);
       router.push(getAccountSaveHref(draftChecklist.id));
       return;
