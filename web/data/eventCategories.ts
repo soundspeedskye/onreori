@@ -1,8 +1,18 @@
 import { EVENT_CATEGORY_IDS } from '../constants/eventCategories';
-import { i18n } from '../i18n';
+import ko from '../i18n/locales/ko.json';
 import type { EventCategory } from '../types';
 
 type EventCategoryResourceKey = 'eventDay' | 'popup' | 'cafeEvent';
+type EventCategoryResource = {
+  title: string;
+  description: string;
+  roomLabel: string;
+};
+
+const categoryResources = ko.categories as Record<
+  EventCategoryResourceKey,
+  EventCategoryResource
+>;
 
 const eventCategoryBase: Array<
   Pick<EventCategory, 'id' | 'icon' | 'templateId'> & {
@@ -30,18 +40,18 @@ const eventCategoryBase: Array<
 ];
 
 export function getEventCategories(): EventCategory[] {
-  return eventCategoryBase.map(category => ({
-    id: category.id,
-    icon: category.icon,
-    templateId: category.templateId,
-    title: i18n.t(`${category.resourceKey}.title`, { ns: 'categories' }),
-    description: i18n.t(`${category.resourceKey}.description`, {
-      ns: 'categories',
-    }),
-    roomLabel: i18n.t(`${category.resourceKey}.roomLabel`, {
-      ns: 'categories',
-    }),
-  }));
+  return eventCategoryBase.map(category => {
+    const resource = categoryResources[category.resourceKey];
+
+    return {
+      id: category.id,
+      icon: category.icon,
+      templateId: category.templateId,
+      title: resource.title,
+      description: resource.description,
+      roomLabel: resource.roomLabel,
+    };
+  });
 }
 
 export function getEventCategoryById(
