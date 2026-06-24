@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.13.0"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.0",
