@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {getChecklistById, saveChecklist} from '../../storage/checklists';
@@ -43,17 +43,22 @@ export function useChecklistState(checklistId: string) {
     [checklist],
   );
 
-  const persistChecklist = async (
-    nextChecklist: Checklist,
-    options: {afterPersist?: (targetChecklist: Checklist) => Promise<void>} = {},
-  ) => {
-    setChecklist(nextChecklist);
-    await saveChecklist(nextChecklist);
+  const persistChecklist = useCallback(
+    async (
+      nextChecklist: Checklist,
+      options: {
+        afterPersist?: (targetChecklist: Checklist) => Promise<void>;
+      } = {},
+    ) => {
+      setChecklist(nextChecklist);
+      await saveChecklist(nextChecklist);
 
-    if (options.afterPersist) {
-      await options.afterPersist(nextChecklist);
-    }
-  };
+      if (options.afterPersist) {
+        await options.afterPersist(nextChecklist);
+      }
+    },
+    [],
+  );
 
   return {
     checklist,

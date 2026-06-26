@@ -27,10 +27,8 @@ export function ChecklistSections({
                 canDelete={!item.essential}
                 key={item.id}
                 item={item}
-                onDelete={() => {
-                  onDeleteItem(item.id);
-                }}
-                onToggle={() => onToggleItem(item.id)}
+                onDeleteItem={onDeleteItem}
+                onToggleItem={onToggleItem}
               />
             ))}
           </View>

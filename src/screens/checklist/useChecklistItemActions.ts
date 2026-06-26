@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 
 import type {Checklist} from '../../types';
 import {ALERT_MESSAGES, showAlert} from '../../utils/appAlert';
@@ -27,21 +27,27 @@ export function useChecklistItemActions({
   const [customItemDescription, setCustomItemDescription] = useState('');
   const [customItemName, setCustomItemName] = useState('');
 
-  const getSyncAfterPersist = (targetChecklist: Checklist) =>
-    shouldSyncToAccount(targetChecklist) ? syncChecklistToAccount : undefined;
+  const getSyncAfterPersist = useCallback(
+    (targetChecklist: Checklist) =>
+      shouldSyncToAccount(targetChecklist) ? syncChecklistToAccount : undefined,
+    [shouldSyncToAccount, syncChecklistToAccount],
+  );
 
-  const toggleItem = async (itemId: string) => {
-    if (!checklist) {
-      return;
-    }
+  const toggleItem = useCallback(
+    async (itemId: string) => {
+      if (!checklist) {
+        return;
+      }
 
-    const nextChecklist = toggleChecklistItem(checklist, itemId);
-    await persistChecklist(nextChecklist, {
-      afterPersist: getSyncAfterPersist(checklist),
-    });
-  };
+      const nextChecklist = toggleChecklistItem(checklist, itemId);
+      await persistChecklist(nextChecklist, {
+        afterPersist: getSyncAfterPersist(checklist),
+      });
+    },
+    [checklist, getSyncAfterPersist, persistChecklist],
+  );
 
-  const handleAddCustomItem = async () => {
+  const handleAddCustomItem = useCallback(async () => {
     if (!checklist) {
       return;
     }
@@ -64,23 +70,32 @@ export function useChecklistItemActions({
     await persistChecklist(nextChecklist, {
       afterPersist: getSyncAfterPersist(checklist),
     });
-  };
+  }, [
+    checklist,
+    customItemDescription,
+    customItemName,
+    getSyncAfterPersist,
+    persistChecklist,
+  ]);
 
-  const handleDeleteItem = async (itemId: string) => {
-    if (!checklist) {
-      return;
-    }
+  const handleDeleteItem = useCallback(
+    async (itemId: string) => {
+      if (!checklist) {
+        return;
+      }
 
-    const nextChecklist = deleteChecklistItem(checklist, itemId);
+      const nextChecklist = deleteChecklistItem(checklist, itemId);
 
-    if (nextChecklist === checklist) {
-      return;
-    }
+      if (nextChecklist === checklist) {
+        return;
+      }
 
-    await persistChecklist(nextChecklist, {
-      afterPersist: getSyncAfterPersist(checklist),
-    });
-  };
+      await persistChecklist(nextChecklist, {
+        afterPersist: getSyncAfterPersist(checklist),
+      });
+    },
+    [checklist, getSyncAfterPersist, persistChecklist],
+  );
 
   return {
     customItemDescription,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo, useCallback} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
@@ -11,24 +11,30 @@ import {PixelIcon} from '../ui/PixelIcon';
 type ChecklistItemRowProps = {
   canDelete?: boolean;
   item: ChecklistItem;
-  onDelete: () => void;
-  onToggle: () => void;
+  onDeleteItem: (itemId: string) => void;
+  onToggleItem: (itemId: string) => void;
 };
 
-export function ChecklistItemRow({
+export const ChecklistItemRow = memo(function ChecklistItemRow({
   canDelete = true,
   item,
-  onDelete,
-  onToggle,
+  onDeleteItem,
+  onToggleItem,
 }: ChecklistItemRowProps) {
   const {t} = useTranslation('checklist');
+  const handleDelete = useCallback(() => {
+    onDeleteItem(item.id);
+  }, [item.id, onDeleteItem]);
+  const handleToggle = useCallback(() => {
+    onToggleItem(item.id);
+  }, [item.id, onToggleItem]);
 
   return (
     <Card
       accessibilityLabel={t('checkAccessibility', {itemName: item.name})}
       accessibilityRole="checkbox"
       accessibilityState={{checked: item.checked}}
-      onPress={onToggle}
+      onPress={handleToggle}
       style={styles.row}>
       <View style={styles.checkbox}>
         <PixelIcon name={item.checked ? 'checkOn' : 'checkOff'} size={28} />
@@ -56,7 +62,7 @@ export function ChecklistItemRow({
               hitSlop={8}
               onPress={event => {
                 event?.stopPropagation?.();
-                onDelete();
+                handleDelete();
               }}
               style={styles.deleteButton}>
               <Text style={styles.deleteIcon}>×</Text>
@@ -68,7 +74,7 @@ export function ChecklistItemRow({
       </View>
     </Card>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: {

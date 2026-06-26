@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {ScrollView, StyleSheet} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -40,12 +40,34 @@ export function ChecklistScreen({navigation, route}: Props) {
     navigation,
     setChecklist,
   });
+  const {
+    handleSaveToAccount: saveChecklistToAccount,
+    savingToAccount,
+    shouldSyncToAccount,
+    syncChecklistToAccount,
+    syncingToAccount,
+  } = accountActions;
   const itemActions = useChecklistItemActions({
     checklist,
     persistChecklist,
-    shouldSyncToAccount: accountActions.shouldSyncToAccount,
-    syncChecklistToAccount: accountActions.syncChecklistToAccount,
+    shouldSyncToAccount,
+    syncChecklistToAccount,
   });
+  const handleSaveToAccount = useCallback(async () => {
+    if (checklist) {
+      await saveChecklistToAccount(checklist);
+    }
+  }, [checklist, saveChecklistToAccount]);
+  const handleRetrySync = useCallback(async () => {
+    if (checklist) {
+      await syncChecklistToAccount(checklist);
+    }
+  }, [checklist, syncChecklistToAccount]);
+  const handleOpenShareCard = useCallback(() => {
+    if (checklist) {
+      navigation.navigate('ShareCard', {checklistId: checklist.id});
+    }
+  }, [checklist, navigation]);
 
   if (!checklist) {
     return (
@@ -59,7 +81,7 @@ export function ChecklistScreen({navigation, route}: Props) {
   }
 
   const saveStateLabel = getChecklistSaveStateLabel(checklist.saveState, {
-    syncing: accountActions.syncingToAccount,
+    syncing: syncingToAccount,
   });
   const checklistTitle = getLocalizedChecklistTitle(checklist, tTemplates);
 
@@ -93,14 +115,12 @@ export function ChecklistScreen({navigation, route}: Props) {
       </ScrollView>
 
       <ChecklistActionBar
-        savingToAccount={accountActions.savingToAccount}
-        syncingToAccount={accountActions.syncingToAccount}
+        savingToAccount={savingToAccount}
+        syncingToAccount={syncingToAccount}
         syncFailed={checklist.saveState === 'syncFailed'}
-        onSaveToAccount={() => accountActions.handleSaveToAccount(checklist)}
-        onRetrySync={() => accountActions.syncChecklistToAccount(checklist)}
-        onOpenShareCard={() =>
-          navigation.navigate('ShareCard', {checklistId: checklist.id})
-        }
+        onSaveToAccount={handleSaveToAccount}
+        onRetrySync={handleRetrySync}
+        onOpenShareCard={handleOpenShareCard}
       />
     </SafeAreaView>
   );
