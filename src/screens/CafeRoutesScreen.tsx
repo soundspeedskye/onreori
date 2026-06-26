@@ -56,10 +56,15 @@ import {
 } from '../utils/photoLibrary';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CafeRoutes'>;
+type PendingRouteTitle = {
+  routeId: string;
+  title: string;
+};
 
 const MAP_PREVIEW_HEIGHT = 220;
 const EXPORT_CARD_MAX_WIDTH = 360;
 const EXPORT_CAPTURE_DELAY_MS = 350;
+const ROUTE_TITLE_SAVE_DEBOUNCE_MS = 600;
 
 function wait(ms: number) {
   return new Promise<void>(resolve => {
@@ -118,10 +123,18 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
   const [deletingRouteId, setDeletingRouteId] = useState<string | null>(null);
   const [exportRoute, setExportRoute] = useState<CafeRoute | null>(null);
   const [exportReady, setExportReady] = useState(false);
+  const [routeTitleDraft, setRouteTitleDraft] = useState('');
   const [savingExportImage, setSavingExportImage] = useState(false);
   const exportCardRef = useRef<ViewShotRef>(null);
   const consumedPlaceSignatureRef = useRef<string | null>(null);
   const pendingSaveCountRef = useRef(0);
+  const pendingRouteTitleRef = useRef<PendingRouteTitle | null>(null);
+  const routeTitleSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const routesRef = useRef<CafeRoute[]>([]);
+
+  routesRef.current = routes;
 
   useEffect(() => {
     let mounted = true;
@@ -172,6 +185,28 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
 
     return routes[0] ?? null;
   }, [route.params.routeId, routes]);
+
+  useEffect(() => {
+    if (!selectedRoute) {
+      setRouteTitleDraft('');
+      pendingRouteTitleRef.current = null;
+      return;
+    }
+
+    if (pendingRouteTitleRef.current?.routeId === selectedRoute.id) {
+      return;
+    }
+
+    setRouteTitleDraft(selectedRoute.title);
+  }, [selectedRoute]);
+
+  useEffect(() => {
+    return () => {
+      if (routeTitleSaveTimerRef.current) {
+        clearTimeout(routeTitleSaveTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (loadingRoutes || !route.params.routeId) {
@@ -316,15 +351,100 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
     selectedRoute,
   ]);
 
-  const handleSelectRoute = (routeId: string) => {
+  function clearRouteTitleSaveTimer() {
+    if (routeTitleSaveTimerRef.current) {
+      clearTimeout(routeTitleSaveTimerRef.current);
+      routeTitleSaveTimerRef.current = null;
+    }
+  }
+
+  function getPendingRouteTitle(): PendingRouteTitle | null {
+    return pendingRouteTitleRef.current;
+  }
+
+  async function flushRouteTitleSave(normalize = false) {
+    const pendingTitle = pendingRouteTitleRef.current;
+
+    if (!pendingTitle) {
+      return;
+    }
+
+    clearRouteTitleSaveTimer();
+
+    const previousRoute = routesRef.current.find(
+      item => item.id === pendingTitle.routeId,
+    );
+
+    if (!previousRoute) {
+      pendingRouteTitleRef.current = null;
+      return;
+    }
+
+    const nextTitle = normalize
+      ? normalizeCafeRouteTitle(pendingTitle.title)
+      : pendingTitle.title;
+
+    if (nextTitle === previousRoute.title) {
+      pendingRouteTitleRef.current = null;
+      setRouteTitleDraft(nextTitle);
+      return;
+    }
+
+    pendingRouteTitleRef.current = null;
+
+    const nextRoute = updateCafeRouteTitle(previousRoute, nextTitle);
+    const persisted = await persistRoute(nextRoute);
+    const newerPendingTitle = getPendingRouteTitle();
+
+    if (persisted) {
+      if (!newerPendingTitle || newerPendingTitle.routeId !== nextRoute.id) {
+        setRouteTitleDraft(nextRoute.title);
+      }
+      return;
+    }
+
+    setRoutes(currentRoutes =>
+      restoreRouteAfterFailedPersist(currentRoutes, nextRoute, previousRoute),
+    );
+
+    if (!newerPendingTitle || newerPendingTitle.routeId !== previousRoute.id) {
+      setRouteTitleDraft(previousRoute.title);
+    }
+  }
+
+  function handleRouteTitleChange(title: string) {
+    if (!selectedRoute) {
+      return;
+    }
+
+    const nextTitle = title
+      .replace(/[\r\n\t]+/g, ' ')
+      .slice(0, CAFE_ROUTE_TITLE_MAX_LENGTH);
+
+    setRouteTitleDraft(nextTitle);
+    pendingRouteTitleRef.current = {
+      routeId: selectedRoute.id,
+      title: nextTitle,
+    };
+
+    clearRouteTitleSaveTimer();
+    routeTitleSaveTimerRef.current = setTimeout(() => {
+      flushRouteTitleSave().catch(() => undefined);
+    }, ROUTE_TITLE_SAVE_DEBOUNCE_MS);
+  }
+
+  const handleSelectRoute = async (routeId: string) => {
+    await flushRouteTitleSave(true);
     navigation.setParams({ routeId, selectedPlace: undefined });
   };
 
   const handleCreateRoute = async () => {
+    await flushRouteTitleSave(true);
     await createRoute();
   };
 
   const handleOpenMapPicker = async () => {
+    await flushRouteTitleSave(true);
     const targetRoute = selectedRoute ?? (await createRoute());
 
     if (!targetRoute) {
@@ -358,31 +478,33 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
     }
   };
 
-  const deleteRouteAndSelectNext = useCallback(
-    async (routeToDelete: CafeRoute) => {
-      const nextRouteId = getNextRouteIdAfterDelete(routes, routeToDelete.id);
+  async function deleteRouteAndSelectNext(routeToDelete: CafeRoute) {
+    const nextRouteId = getNextRouteIdAfterDelete(routes, routeToDelete.id);
 
-      try {
-        setDeletingRouteId(routeToDelete.id);
-        await deleteCafeRoute(routeToDelete.id);
-        setRoutes(currentRoutes =>
-          currentRoutes.filter(item => item.id !== routeToDelete.id),
-        );
-        navigation.setParams({
-          routeId: nextRouteId,
-          selectedPlace: undefined,
-        });
-      } catch (error) {
-        showError(error, {
-          title: ALERT_MESSAGES.failed,
-          fallbackMessage: ALERT_MESSAGES.retry,
-        });
-      } finally {
-        setDeletingRouteId(null);
-      }
-    },
-    [navigation, routes],
-  );
+    if (pendingRouteTitleRef.current?.routeId === routeToDelete.id) {
+      clearRouteTitleSaveTimer();
+      pendingRouteTitleRef.current = null;
+    }
+
+    try {
+      setDeletingRouteId(routeToDelete.id);
+      await deleteCafeRoute(routeToDelete.id);
+      setRoutes(currentRoutes =>
+        currentRoutes.filter(item => item.id !== routeToDelete.id),
+      );
+      navigation.setParams({
+        routeId: nextRouteId,
+        selectedPlace: undefined,
+      });
+    } catch (error) {
+      showError(error, {
+        title: ALERT_MESSAGES.failed,
+        fallbackMessage: ALERT_MESSAGES.retry,
+      });
+    } finally {
+      setDeletingRouteId(null);
+    }
+  }
 
   const handleDeleteSelectedRoute = () => {
     if (!selectedRoute || isSelectedRouteBusy) {
@@ -540,7 +662,9 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
                   return (
                     <Pressable
                       key={item.id}
-                      onPress={() => handleSelectRoute(item.id)}
+                      onPress={() => {
+                        handleSelectRoute(item.id).catch(() => undefined);
+                      }}
                       style={[
                         styles.routeTab,
                         isSelected && styles.routeTabSelected,
@@ -576,20 +700,11 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
                   <View style={styles.sectionTitleWrap}>
                     <Text style={styles.eyebrow}>{t('selectedRoute')}</Text>
                     <TextField
-                      value={selectedRoute.title}
-                      onChangeText={title =>
-                        handlePersistSelectedRoute(
-                          updateCafeRouteTitle(selectedRoute, title),
-                        )
-                      }
-                      onEndEditing={({ nativeEvent }) =>
-                        handlePersistSelectedRoute(
-                          updateCafeRouteTitle(
-                            selectedRoute,
-                            normalizeCafeRouteTitle(nativeEvent.text),
-                          ),
-                        )
-                      }
+                      value={routeTitleDraft}
+                      onChangeText={handleRouteTitleChange}
+                      onEndEditing={() => {
+                        flushRouteTitleSave(true).catch(() => undefined);
+                      }}
                       maxLength={CAFE_ROUTE_TITLE_MAX_LENGTH}
                       placeholder={t('routeNamePlaceholder')}
                       style={styles.titleInput}
@@ -661,6 +776,7 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
                           </View>
                           <View style={styles.stopActions}>
                             <Pressable
+                              accessibilityLabel={t('moveUp')}
                               disabled={isMoveUpDisabled}
                               onPress={() =>
                                 handlePersistSelectedRoute(
@@ -677,10 +793,11 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
                               ]}
                             >
                               <Text style={styles.stopActionText}>
-                                {t('moveUp')}
+                                {'↑'}
                               </Text>
                             </Pressable>
                             <Pressable
+                              accessibilityLabel={t('moveDown')}
                               disabled={isMoveDownDisabled}
                               onPress={() =>
                                 handlePersistSelectedRoute(
@@ -697,7 +814,7 @@ export function CafeRoutesScreen({ navigation, route }: Props) {
                               ]}
                             >
                               <Text style={styles.stopActionText}>
-                                {t('moveDown')}
+                                {'↓'}
                               </Text>
                             </Pressable>
                             <Pressable
