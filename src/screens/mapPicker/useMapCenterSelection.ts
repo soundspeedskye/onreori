@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import type {KakaoPlaceSearchResult} from '../../services/placeSearch';
@@ -29,11 +29,10 @@ export function useMapCenterSelection() {
   const {t} = useTranslation('map');
   const currentCenterRef = useRef<Coordinate>(SEOUL_COORDINATE);
   const [nativeCenter, setNativeCenter] = useState(SEOUL_COORDINATE);
-  const [searchCenter, setSearchCenter] = useState(SEOUL_COORDINATE);
   const [mapFocusVersion, setMapFocusVersion] = useState(0);
   const [place, setPlace] = useState<PlaceSelection | null>(null);
 
-  const handleMapChange = ({nativeEvent}: KakaoMapChangeEvent) => {
+  const handleMapChange = useCallback(({nativeEvent}: KakaoMapChangeEvent) => {
     if (
       nativeEvent.status === 'error' ||
       nativeEvent.lat === undefined ||
@@ -48,10 +47,9 @@ export function useMapCenterSelection() {
     };
 
     currentCenterRef.current = nextCenter;
-    setSearchCenter(nextCenter);
-  };
+  }, []);
 
-  const handleSelectCenter = () => {
+  const handleSelectCenter = useCallback(() => {
     const selectedCenter = currentCenterRef.current;
 
     setNativeCenter(selectedCenter);
@@ -63,16 +61,15 @@ export function useMapCenterSelection() {
       longitude: selectedCenter.longitude,
       source: 'center',
     });
-  };
+  }, [t]);
 
-  const handleSelectSearchPlace = (searchPlace: KakaoPlaceSearchResult) => {
+  const handleSelectSearchPlace = useCallback((searchPlace: KakaoPlaceSearchResult) => {
     const selectedCenter = {
       latitude: searchPlace.latitude,
       longitude: searchPlace.longitude,
     };
 
     currentCenterRef.current = selectedCenter;
-    setSearchCenter(selectedCenter);
     setNativeCenter(selectedCenter);
     setMapFocusVersion(version => version + 1);
     setPlace({
@@ -84,11 +81,11 @@ export function useMapCenterSelection() {
       longitude: searchPlace.longitude,
       source: searchPlace.resultType === 'address' ? 'address' : 'search',
     });
-  };
+  }, []);
 
   return {
+    currentCenterRef,
     nativeCenter,
-    searchCenter,
     mapFocusVersion,
     place,
     handleMapChange,

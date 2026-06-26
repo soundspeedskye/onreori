@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {useIsFocused} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -19,11 +19,13 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MapPicker'>;
  */
 export function MapPickerScreen({navigation, route}: Props) {
   const isFocused = useIsFocused();
+  const {categoryId, returnTo} = route.params;
+  const routeId = returnTo === 'CafeRoutes' ? route.params.routeId : undefined;
   const [confirming, setConfirming] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const {
+    currentCenterRef,
     nativeCenter,
-    searchCenter,
     mapFocusVersion,
     place,
     handleMapChange,
@@ -35,7 +37,7 @@ export function MapPickerScreen({navigation, route}: Props) {
     setDisplayName('');
   }, [place?.latitude, place?.longitude, place?.name, place?.source]);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     if (confirming) {
       return;
     }
@@ -51,12 +53,12 @@ export function MapPickerScreen({navigation, route}: Props) {
       name: displayName.trim() || place.name,
     };
 
-    if (route.params.returnTo === 'CafeRoutes') {
+    if (returnTo === 'CafeRoutes') {
       navigation.popTo(
         'CafeRoutes',
         {
-          categoryId: route.params.categoryId,
-          routeId: route.params.routeId,
+          categoryId,
+          routeId,
           selectedPlace: confirmedPlace,
         },
         {merge: true},
@@ -67,12 +69,20 @@ export function MapPickerScreen({navigation, route}: Props) {
     navigation.popTo(
       'EventRooms',
       {
-        categoryId: route.params.categoryId,
+        categoryId,
         selectedPlace: confirmedPlace,
       },
       {merge: true},
     );
-  };
+  }, [
+    confirming,
+    categoryId,
+    displayName,
+    navigation,
+    place,
+    returnTo,
+    routeId,
+  ]);
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
@@ -85,7 +95,7 @@ export function MapPickerScreen({navigation, route}: Props) {
         />
       ) : null}
       <KakaoPlaceSearchPanel
-        center={searchCenter}
+        centerRef={currentCenterRef}
         onSelectPlace={handleSelectSearchPlace}
       />
       <MapSelectionPanel

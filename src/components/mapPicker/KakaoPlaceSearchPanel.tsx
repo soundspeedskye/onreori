@@ -19,7 +19,7 @@ import {colors, radii, spacing} from '../../theme/tokens';
 import type {Coordinate} from '../../screens/mapPicker/useMapCenterSelection';
 
 type KakaoPlaceSearchPanelProps = {
-  center: Coordinate;
+  centerRef: React.MutableRefObject<Coordinate>;
   onSelectPlace: (place: KakaoPlaceSearchResult) => void;
 };
 
@@ -36,7 +36,7 @@ function getResultDetail(place: KakaoPlaceSearchResult, addressLocation: string)
 }
 
 export function KakaoPlaceSearchPanel({
-  center,
+  centerRef,
   onSelectPlace,
 }: KakaoPlaceSearchPanelProps) {
   const {t} = useTranslation('map');
@@ -77,7 +77,7 @@ export function KakaoPlaceSearchPanel({
       try {
         const nextPlaces = await searchKakaoPlaces({
           query: trimmedQuery,
-          center,
+          center: centerRef.current,
           preferAddress: options.selectAddressResult === true,
         });
 
@@ -108,7 +108,7 @@ export function KakaoPlaceSearchPanel({
         }
       }
     },
-    [center, handleSelectPlace],
+    [centerRef, handleSelectPlace],
   );
 
   useEffect(() => {
@@ -140,12 +140,12 @@ export function KakaoPlaceSearchPanel({
     };
   }, [executeSearch, query]);
 
-  const handleChangeQuery = (nextQuery: string) => {
+  const handleChangeQuery = useCallback((nextQuery: string) => {
     shouldSearchRef.current = true;
     setQuery(nextQuery);
-  };
+  }, []);
 
-  const handleSubmitQuery = () => {
+  const handleSubmitQuery = useCallback(() => {
     const trimmedQuery = query.trim();
 
     if (trimmedQuery.length < 2) {
@@ -154,7 +154,7 @@ export function KakaoPlaceSearchPanel({
 
     shouldSearchRef.current = false;
     executeSearch(trimmedQuery, {selectAddressResult: true});
-  };
+  }, [executeSearch, query]);
 
   return (
     <View pointerEvents="box-none" style={styles.wrapper}>
