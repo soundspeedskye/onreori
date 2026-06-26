@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -28,10 +28,13 @@ export function MyPageScreen({navigation}: Props) {
   const {user, signOut} = useAuth();
   const {t} = useTranslation('common');
   const [activeTab, setActiveTab] = useState<MyPageTab>('checklists');
-  const {checklists, loadingChecklists} = useMyChecklists(user);
-  const {myRooms, loadingMyRooms} = useMyRooms(user);
+  const {checklists, loadingChecklists} = useMyChecklists(
+    user,
+    activeTab === 'checklists',
+  );
+  const {myRooms, loadingMyRooms} = useMyRooms(user, activeTab === 'rooms');
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     try {
       await signOut();
       navigation.replace('CategoryHome');
@@ -41,18 +44,18 @@ export function MyPageScreen({navigation}: Props) {
         fallbackMessage: ALERT_MESSAGES.retry,
       });
     }
-  };
+  }, [navigation, signOut]);
 
-  const openRoom = (room: EventRoom) => {
+  const openRoom = useCallback((room: EventRoom) => {
     navigation.navigate('RoomChat', {
       roomId: room.id,
       title: room.title,
       categoryId: room.categoryId,
       languageCodes: room.languageCodes,
     });
-  };
+  }, [navigation]);
 
-  const openChecklist = async (checklist: RemoteChecklistSummary) => {
+  const openChecklist = useCallback(async (checklist: RemoteChecklistSummary) => {
     if (!user) {
       return;
     }
@@ -70,7 +73,7 @@ export function MyPageScreen({navigation}: Props) {
         fallbackMessage: ALERT_MESSAGES.retry,
       });
     }
-  };
+  }, [navigation, user]);
 
   if (!user) {
     return (

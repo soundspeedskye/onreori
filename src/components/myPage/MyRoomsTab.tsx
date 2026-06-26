@@ -2,14 +2,11 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
-import {RoomLanguageChips} from '../rooms/RoomLanguageChips';
-import {useAppLanguage} from '../../i18n/AppLanguageProvider';
-import {getIntlLocale} from '../../i18n/languages';
 import {colors, radii, spacing} from '../../theme/tokens';
 import type {EventRoom} from '../../types';
 import type {MyRooms} from '../../services/rooms';
-import {getEventRoomMetaLabel} from '../../utils/eventRoomPresentation';
-import {Card} from '../ui/Card';
+import {isEventRoomActiveAt} from '../../utils/eventRoomVisibility';
+import {RoomSummaryCard} from '../rooms/RoomSummaryCard';
 import {EmptyState} from '../ui/EmptyState';
 
 type MyRoomsTabProps = {
@@ -74,44 +71,44 @@ function RoomGroup({
     <View style={styles.roomGroup}>
       <Text style={styles.roomSectionTitle}>{title}</Text>
       <View style={styles.roomList}>
-        {rooms.map(room => (
-          <RoomHistoryCard key={room.id} room={room} onOpenRoom={onOpenRoom} />
-        ))}
+        {rooms.map(room => {
+          const disabled = !isEventRoomActiveAt(room);
+
+          return (
+            <RoomHistoryCard
+              disabled={disabled}
+              key={room.id}
+              room={room}
+              onOpenRoom={onOpenRoom}
+            />
+          );
+        })}
       </View>
     </View>
   );
 }
 
 function RoomHistoryCard({
+  disabled,
   room,
   onOpenRoom,
 }: {
+  disabled: boolean;
   room: EventRoom;
   onOpenRoom: (room: EventRoom) => void;
 }) {
-  const {t} = useTranslation('rooms');
   const {t: tMyPage} = useTranslation('myPage');
-  const {language} = useAppLanguage();
-  const intlLocale = getIntlLocale(language);
 
   return (
-    <Card
+    <RoomSummaryCard
       accessibilityLabel={tMyPage('openRoomAccessibility', {
         title: room.title,
       })}
+      disabled={disabled}
       onPress={() => onOpenRoom(room)}
-      style={styles.roomCard}>
-      <Text style={styles.roomTitle}>{room.title}</Text>
-      <Text style={styles.roomMeta}>
-        {getEventRoomMetaLabel(room, intlLocale)}
-      </Text>
-      <View style={styles.roomMetaRow}>
-        <Text style={styles.roomMembers}>
-          {t('memberCount', {count: room.memberCount})}
-        </Text>
-        <RoomLanguageChips languageCodes={room.languageCodes} />
-      </View>
-    </Card>
+      room={room}
+      variant="history"
+    />
   );
 }
 
@@ -125,36 +122,10 @@ const styles = StyleSheet.create({
   roomList: {
     gap: spacing.md,
   },
-  roomCard: {
-    borderRadius: radii.card,
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
   roomSectionTitle: {
     color: colors.text,
     fontSize: 16,
     fontWeight: '900',
-  },
-  roomTitle: {
-    color: colors.text,
-    fontSize: 17,
-    fontWeight: '900',
-  },
-  roomMeta: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  roomMembers: {
-    color: colors.brandMuted,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  roomMetaRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
   },
   emptyBox: {
     backgroundColor: colors.surface,

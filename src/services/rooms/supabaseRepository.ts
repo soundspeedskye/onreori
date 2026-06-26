@@ -11,23 +11,18 @@ import {
   isRoomCreationActiveWindowError,
   isRoomCreationDateInputError,
 } from '../../utils/eventRoomPolicy';
+import {isEventRoomActiveAt} from '../../utils/eventRoomVisibility';
 import {extractHashtags} from '../../utils/hashtags';
 import type {
   ChatMessageRow,
   CreateRoomParams,
   EventRoomRow,
   MyRooms,
-  RoomMemberWithRoomRow,
   SendImageMessageParams,
 } from './contracts';
-import {
-  getRoomRowFromMemberRow,
-  mapChatMessageRow,
-  mapEventRoomRow,
-} from './mappers';
+import {mapChatMessageRow, mapEventRoomRow} from './mappers';
 import {
   CHAT_MESSAGE_SELECT,
-  MY_ROOM_SELECT,
   ROOM_SELECT,
 } from './selects';
 import {splitMyRooms} from './roomCollections';
@@ -39,6 +34,29 @@ function requireSupabase() {
   }
 
   return supabase;
+}
+
+async function getRemoteRoom(roomId: string): Promise<EventRoom | undefined> {
+  const client = requireSupabase();
+  const {data, error} = await client
+    .from('event_rooms')
+    .select(ROOM_SELECT)
+    .eq('id', roomId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? mapEventRoomRow(data) : undefined;
+}
+
+async function assertRemoteRoomIsActive(roomId: string): Promise<void> {
+  const room = await getRemoteRoom(roomId);
+
+  if (!room || !isEventRoomActiveAt(room)) {
+    throw new Error(ALERT_MESSAGES.unavailable);
+  }
 }
 
 export async function listRemoteRoomsByCategory(
@@ -64,20 +82,61 @@ export async function listRemoteRoomsByCategory(
 
 export async function listRemoteMyRooms(user: AuthUser): Promise<MyRooms> {
   const client = requireSupabase();
-  const {data, error} = await client
-    .from('room_members')
-    .select(MY_ROOM_SELECT)
-    .eq('user_id', user.id)
-    .order('joined_at', {ascending: false});
+  const [createdRoomsResult, sentMessagesResult] = await Promise.all([
+    client
+      .from('event_rooms')
+      .select(ROOM_SELECT)
+      .eq('created_by', user.id)
+      .order('event_date', {ascending: false}),
+    client.from('chat_messages').select('room_id').eq('user_id', user.id),
+  ]);
 
-  if (error) {
-    throw new Error(error.message);
+  if (createdRoomsResult.error) {
+    throw new Error(createdRoomsResult.error.message);
   }
 
-  const rooms = ((data ?? []) as RoomMemberWithRoomRow[])
-    .map(row => getRoomRowFromMemberRow(row))
-    .filter((row): row is EventRoomRow => Boolean(row))
-    .map(row => mapEventRoomRow(row));
+  if (sentMessagesResult.error) {
+    throw new Error(sentMessagesResult.error.message);
+  }
+
+  const sentRoomIds = Array.from(
+    new Set(
+      ((sentMessagesResult.data ?? []) as Pick<ChatMessageRow, 'room_id'>[])
+        .map(row => row.room_id)
+        .filter((roomId): roomId is string => typeof roomId === 'string'),
+    ),
+  );
+  const sentRoomsResult =
+    sentRoomIds.length > 0
+      ? await client
+          .from('event_rooms')
+          .select(ROOM_SELECT)
+          .in('id', sentRoomIds)
+      : {data: [], error: null};
+
+  if (sentRoomsResult.error) {
+    throw new Error(sentRoomsResult.error.message);
+  }
+
+  const roomsById = new Map<string, EventRoom>();
+
+  ((createdRoomsResult.data ?? []) as EventRoomRow[])
+    .map(row => mapEventRoomRow(row))
+    .forEach(room => {
+      roomsById.set(room.id, room);
+    });
+
+  ((sentRoomsResult.data ?? []) as EventRoomRow[])
+    .map(row => mapEventRoomRow(row))
+    .forEach(room => {
+      roomsById.set(room.id, room);
+    });
+
+  const rooms = Array.from(roomsById.values()).sort(
+    (left, right) =>
+      right.eventDate.localeCompare(left.eventDate) ||
+      right.createdAt.localeCompare(left.createdAt),
+  );
 
   return splitMyRooms(rooms, user.id);
 }
@@ -141,6 +200,8 @@ export async function joinRemoteRoomWithCode(
 export async function listRemoteMessages(
   roomId: string,
 ): Promise<ChatMessage[]> {
+  await assertRemoteRoomIsActive(roomId);
+
   const client = requireSupabase();
   const {data, error} = await client
     .from('chat_messages')
@@ -161,6 +222,8 @@ export async function sendRemoteTextMessage(
   trimmedBody: string,
   user: AuthUser,
 ): Promise<ChatMessage> {
+  await assertRemoteRoomIsActive(roomId);
+
   const client = requireSupabase();
   const hashtags = extractHashtags(trimmedBody);
   const {data, error} = await client
@@ -186,6 +249,8 @@ export async function sendRemoteTextMessage(
 export async function sendRemoteImageMessage(
   params: SendImageMessageParams,
 ): Promise<ChatMessage> {
+  await assertRemoteRoomIsActive(params.roomId);
+
   const client = requireSupabase();
   const now = Date.now();
   const storagePath = await uploadChatImage({

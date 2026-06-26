@@ -38,12 +38,6 @@ export type EventRoomRow = {
   created_at: unknown;
 };
 
-export type RoomMemberWithRoomRow = {
-  role: unknown;
-  joined_at: unknown;
-  event_rooms: EventRoomRow | EventRoomRow[] | null;
-};
-
 export type PreviewRoom = EventRoom & {
   entryCode: string;
 };

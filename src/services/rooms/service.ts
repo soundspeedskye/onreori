@@ -26,7 +26,6 @@ import {
   subscribeToRemoteRoomMessages,
 } from './supabaseRepository';
 import {
-  getTutorialRoomForCategory,
   type TutorialRoomCopy,
   isTutorialRoomId,
   joinTutorialRoom,
@@ -46,12 +45,8 @@ export async function listRoomsByCategory(
     return withTutorialRoom(categoryId, rooms, tutorialCopy);
   }
 
-  try {
-    const rooms = await listRemoteRoomsByCategory(categoryId);
-    return withTutorialRoom(categoryId, rooms, tutorialCopy);
-  } catch {
-    return [getTutorialRoomForCategory(categoryId, tutorialCopy)];
-  }
+  const rooms = await listRemoteRoomsByCategory(categoryId);
+  return withTutorialRoom(categoryId, rooms, tutorialCopy);
 }
 
 export async function listLinkableRoomsByCategory(

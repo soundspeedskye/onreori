@@ -9,7 +9,6 @@ import type {
   ChatMessageRow,
   EventRoomRow,
   PreviewRoom,
-  RoomMemberWithRoomRow,
 } from './contracts';
 import {resolveChatMediaUrl} from './chatMedia';
 
@@ -121,16 +120,4 @@ export function toPublicPreviewRoom(room: PreviewRoom): EventRoom {
     createdBy: room.createdBy,
     createdAt: room.createdAt,
   };
-}
-
-export function getRoomRowFromMemberRow(
-  row: RoomMemberWithRoomRow,
-): EventRoomRow | undefined {
-  if (!row.event_rooms) {
-    return undefined;
-  }
-
-  return Array.isArray(row.event_rooms)
-    ? row.event_rooms[0]
-    : row.event_rooms;
 }

@@ -27,7 +27,6 @@ import {toPublicPreviewRoom} from './mappers';
 import {
   addPreviewMember,
   getPreviewRoom,
-  readPreviewMembers,
   readPreviewMessages,
   readPreviewRooms,
   writePreviewMessages,
@@ -69,14 +68,26 @@ export async function listPreviewRoomsByCategory(
 }
 
 export async function listPreviewMyRooms(user: AuthUser): Promise<MyRooms> {
-  const [rooms, members] = await Promise.all([
-    readPreviewRooms(),
-    readPreviewMembers(),
-  ]);
-  const nowIso = new Date().toISOString();
+  const rooms = await readPreviewRooms();
+  const messagesByRoom = new Map<string, ChatMessage[]>(
+    await Promise.all(
+      rooms.map(
+        async room =>
+          [room.id, await readPreviewMessages(room.id)] as [
+            string,
+            ChatMessage[],
+          ],
+      ),
+    ),
+  );
   const myRooms = rooms
-    .filter(room => (members[room.id] ?? []).includes(user.id))
-    .filter(room => isEventRoomActiveAt(room, nowIso))
+    .filter(
+      room =>
+        room.createdBy === user.id ||
+        messagesByRoom
+          .get(room.id)
+          ?.some(message => message.userId === user.id),
+    )
     .map(room => toPublicPreviewRoom(room));
 
   return splitMyRooms(myRooms, user.id);
