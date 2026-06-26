@@ -23,6 +23,13 @@ export function ChatComposer({
 }: ChatComposerProps) {
   const {t} = useTranslation('rooms');
   const isSendDisabled = sending || body.trim().length === 0;
+  const handleSubmitEditing = () => {
+    if (isSendDisabled) {
+      return;
+    }
+
+    onSendText();
+  };
 
   return (
     <View style={styles.composer}>
@@ -36,7 +43,10 @@ export function ChatComposer({
       />
       <TextField
         onChangeText={onBodyChange}
+        onSubmitEditing={handleSubmitEditing}
         placeholder={t('composerPlaceholder')}
+        returnKeyType="send"
+        submitBehavior="submit"
         style={styles.input}
         value={body}
       />

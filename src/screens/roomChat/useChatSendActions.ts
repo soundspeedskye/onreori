@@ -1,5 +1,5 @@
 import type {Dispatch, SetStateAction} from 'react';
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import {launchImageLibrary} from 'react-native-image-picker';
 
 import {
@@ -31,14 +31,16 @@ export function useChatSendActions({
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
 
-  const handleSendText = async () => {
-    if (!user || sending || body.trim().length === 0) {
+  const handleSendText = useCallback(async () => {
+    const trimmedBody = body.trim();
+
+    if (!user || sending || trimmedBody.length === 0) {
       return;
     }
 
     try {
       setSending(true);
-      const message = await sendTextMessage(roomId, body, user);
+      const message = await sendTextMessage(roomId, trimmedBody, user);
       setMessages(current => mergeMessagesByCreatedAt(current, message));
       setBody('');
       if (isTutorialRoomId(roomId)) {
@@ -54,9 +56,17 @@ export function useChatSendActions({
     } finally {
       setSending(false);
     }
-  };
+  }, [
+    body,
+    roomId,
+    scheduleTutorialReply,
+    sending,
+    setMessages,
+    tutorialCopy,
+    user,
+  ]);
 
-  const handleSendImage = async () => {
+  const handleSendImage = useCallback(async () => {
     if (!user || sending) {
       return;
     }
@@ -96,7 +106,7 @@ export function useChatSendActions({
     } finally {
       setSending(false);
     }
-  };
+  }, [roomId, sending, setMessages, user]);
 
   return {
     body,

@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 import {
   ensureTutorialWelcomeMessages,
@@ -10,11 +10,11 @@ import {
 import type {ChatMessage} from '../../types';
 import {ALERT_MESSAGES, showError} from '../../utils/appAlert';
 import {
-  appendRealtimeMessageIfActive,
   mergeMessagesByCreatedAt,
   mergeRoomMessagesByCreatedAt,
 } from '../../utils/chatMessages';
 
+const REALTIME_MESSAGE_BATCH_MS = 80;
 const TUTORIAL_BOT_TYPING_DELAY_MS = 700;
 
 export function useRoomMessages(
@@ -26,10 +26,22 @@ export function useRoomMessages(
   const [loading, setLoading] = useState(true);
   const [botTyping, setBotTyping] = useState(false);
   const tutorialBotTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const realtimeMessageBatchRef = useRef<ChatMessage[]>([]);
+  const realtimeBatchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   function clearTutorialBotTimers() {
     tutorialBotTimersRef.current.forEach(timer => clearTimeout(timer));
     tutorialBotTimersRef.current = [];
+  }
+
+  function clearRealtimeMessageBatch() {
+    if (realtimeBatchTimerRef.current) {
+      clearTimeout(realtimeBatchTimerRef.current);
+      realtimeBatchTimerRef.current = null;
+    }
+    realtimeMessageBatchRef.current = [];
   }
 
   useEffect(() => {
@@ -43,6 +55,7 @@ export function useRoomMessages(
     setLoading(true);
     setBotTyping(false);
     clearTutorialBotTimers();
+    clearRealtimeMessageBatch();
     setMessages(current => current.filter(message => message.roomId === roomId));
 
     function scheduleTutorialWelcomeMessages() {
@@ -111,30 +124,54 @@ export function useRoomMessages(
     load();
 
     const unsubscribe = subscribeToRoomMessages(roomId, message => {
-      if (message.roomId === roomId) {
-        appendRealtimeMessageIfActive(active, setMessages, message);
+      if (message.roomId !== roomId) {
+        return;
       }
+
+      realtimeMessageBatchRef.current.push(message);
+
+      if (realtimeBatchTimerRef.current) {
+        return;
+      }
+
+      realtimeBatchTimerRef.current = setTimeout(() => {
+        const pendingMessages = realtimeMessageBatchRef.current;
+        realtimeMessageBatchRef.current = [];
+        realtimeBatchTimerRef.current = null;
+
+        if (!active || pendingMessages.length === 0) {
+          return;
+        }
+
+        setMessages(current =>
+          mergeRoomMessagesByCreatedAt(roomId, current, ...pendingMessages),
+        );
+      }, REALTIME_MESSAGE_BATCH_MS);
     });
 
     return () => {
       active = false;
       clearTutorialBotTimers();
+      clearRealtimeMessageBatch();
       unsubscribe();
     };
   }, [enabled, roomId, tutorialCopy]);
 
-  function scheduleTutorialReply(replyFactory: () => Promise<ChatMessage>) {
-    setBotTyping(true);
-    const timer = setTimeout(async () => {
-      try {
-        const botReply = await replyFactory();
-        setMessages(current => mergeMessagesByCreatedAt(current, botReply));
-      } finally {
-        setBotTyping(false);
-      }
-    }, TUTORIAL_BOT_TYPING_DELAY_MS);
-    tutorialBotTimersRef.current.push(timer);
-  }
+  const scheduleTutorialReply = useCallback(
+    (replyFactory: () => Promise<ChatMessage>) => {
+      setBotTyping(true);
+      const timer = setTimeout(async () => {
+        try {
+          const botReply = await replyFactory();
+          setMessages(current => mergeMessagesByCreatedAt(current, botReply));
+        } finally {
+          setBotTyping(false);
+        }
+      }, TUTORIAL_BOT_TYPING_DELAY_MS);
+      tutorialBotTimersRef.current.push(timer);
+    },
+    [],
+  );
 
   return {
     messages,

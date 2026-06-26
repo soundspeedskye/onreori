@@ -75,26 +75,31 @@ export function ChatMessageList({
     [loading, messages.length, scrollToBottom],
   );
 
+  const keyExtractor = useCallback((item: ChatMessage) => item.id, []);
+
+  const renderMessage = useCallback(
+    ({item, index}: {item: ChatMessage; index: number}) => {
+      const {dateLabel, showDateSeparator, ...presentation} =
+        getChatMessagePresentation(
+          messages,
+          index,
+          currentUserId,
+          intlLocale,
+        );
+
+      return (
+        <View style={styles.messageItem}>
+          {showDateSeparator ? <DateSeparator label={dateLabel} /> : null}
+          <ChatMessageBubble message={item} {...presentation} />
+        </View>
+      );
+    },
+    [currentUserId, intlLocale, messages],
+  );
+
   if (loading) {
     return <ActivityIndicator color={colors.brand} style={styles.loader} />;
   }
-
-  const renderMessage = ({item, index}: {item: ChatMessage; index: number}) => {
-    const {dateLabel, showDateSeparator, ...presentation} =
-      getChatMessagePresentation(
-        messages,
-        index,
-        currentUserId,
-        intlLocale,
-      );
-
-    return (
-      <View style={styles.messageItem}>
-        {showDateSeparator ? <DateSeparator label={dateLabel} /> : null}
-        <ChatMessageBubble message={item} {...presentation} />
-      </View>
-    );
-  };
 
   return (
     <>
@@ -111,7 +116,7 @@ export function ChatMessageList({
         contentContainerStyle={styles.messageList}
         data={messages}
         extraData={intlLocale}
-        keyExtractor={item => item.id}
+        keyExtractor={keyExtractor}
         renderItem={renderMessage}
         onContentSizeChange={handleContentSizeChange}
         onLayout={handleListLayout}
