@@ -13,6 +13,7 @@ type KakaoMapPoint = {
 
 type KakaoMapMarker = KakaoMapPoint & {
   markerName: string;
+  markerNumber?: number;
 };
 
 export type OnreoriAndroidKakaoMapViewProps = ViewProps & {

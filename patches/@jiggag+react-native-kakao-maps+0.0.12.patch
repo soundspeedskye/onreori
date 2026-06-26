@@ -271,10 +271,18 @@ index d226222..3922c58 100644
 
      private void manuallyLayoutChildren(View view) {
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/index.d.ts b/node_modules/@jiggag/react-native-kakao-maps/index.d.ts
-index 97f0a29..93a2169 100644
+index 97f0a29..389db25 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/index.d.ts
 +++ b/node_modules/@jiggag/react-native-kakao-maps/index.d.ts
-@@ -18,6 +18,7 @@ interface MapNativeEvent {
+@@ -7,6 +7,7 @@ interface Coordinate {
+
+ interface Maker extends Coordinate {
+   markerName: string;
++  markerNumber?: number;
+ }
+
+ interface MapNativeEvent {
+@@ -18,6 +19,7 @@ interface MapNativeEvent {
  }
 
  interface Params {
@@ -313,10 +321,10 @@ index e7c27e9..2c2018b 100644
  @property(nonatomic, assign) double lng;
  @property(nonatomic, assign, nonnull) NSString *markerImageUrl;
 diff --git a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
-index fc6a668..a8103c6 100644
+index fc6a668..bc63bcd 100644
 --- a/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
 +++ b/node_modules/@jiggag/react-native-kakao-maps/ios/MapViewController.m
-@@ -1,99 +1,684 @@
+@@ -1,99 +1,734 @@
  #import "MapViewController.h"
 +#import <float.h>
 +#import <TargetConditionals.h>
@@ -382,8 +390,12 @@ index fc6a668..a8103c6 100644
 +  id value = point[key];
 +  return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : 0;
 +}
-
--@implementation MapViewController
++
++static NSNumber *MarkerNumberValue(NSDictionary *point) {
++  id value = point[@"markerNumber"];
++  return [value respondsToSelector:@selector(integerValue)] ? @([value integerValue]) : nil;
++}
++
 +static double ExpandedCoordinatePadding(double span, double minimumPadding) {
 +  return MAX(span * OnreoriFitPaddingRatio, minimumPadding);
 +}
@@ -400,18 +412,11 @@ index fc6a668..a8103c6 100644
 +  UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
 +  format.opaque = NO;
 +  format.scale = UIScreen.mainScreen.scale;
-
--NSArray *createMarker(NSArray *markerList, NSString *markerImageUrl, NSString *markerImageName) {
--  NSMutableArray *pointList = [[NSMutableArray alloc] init];
++
 +  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size format:format];
 +  return [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
 +    CGContextScaleCTM(context.CGContext, 0.5, 0.5);
-
--  for (NSDictionary *point in markerList) {
--    MTMapPOIItem* item = [MTMapPOIItem poiItem];
--    item.itemName = point[@"markerName"];
--    item.mapPoint = [MTMapPoint mapPointWithGeoCoord:MTMapPointGeoMake([point[@"lat"] doubleValue], [point[@"lng"] doubleValue])];
--    item.showAnimationType = MTMapPOIItemShowAnimationTypeSpringFromGround;
++
 +    UIBezierPath *pinPath = [UIBezierPath bezierPath];
 +    [pinPath moveToPoint:CGPointMake(22, 2)];
 +    [pinPath addCurveToPoint:CGPointMake(4, 20)
@@ -429,8 +434,7 @@ index fc6a668..a8103c6 100644
 +    [pinPath closePath];
 +    [ColorFromRGB(0x5B36B8) setFill];
 +    [pinPath fill];
-
--    item.markerType = markerImageUrl != nil || markerImageName != nil ? MTMapPOIItemMarkerTypeCustomImage : MTMapPOIItemMarkerTypeBluePin;
++
 +    UIBezierPath *highlightPath = [UIBezierPath bezierPath];
 +    [highlightPath moveToPoint:CGPointMake(22, 52)];
 +    [highlightPath addCurveToPoint:CGPointMake(38.67, 27.7)
@@ -442,15 +446,42 @@ index fc6a668..a8103c6 100644
 +    [highlightPath closePath];
 +    [[ColorFromRGB(0x3A2474) colorWithAlphaComponent:0.24] setFill];
 +    [highlightPath fill];
-
--    if (markerImageUrl != nil) {
--      item.customImage = [[[UIImage alloc] init] initWithData: [NSData dataWithContentsOfURL: [NSURL URLWithString: markerImageUrl]]];
++
 +    UIBezierPath *centerPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(14, 12, 16, 16)];
 +    [UIColor.whiteColor setFill];
 +    [centerPath fill];
 +  }];
 +}
 +
++static UIImage *CreateOnreoriRouteMarkerImage(NSNumber *markerNumber) {
++  CGSize size = CGSizeMake(16, 16);
++  UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
++  format.opaque = NO;
++  format.scale = UIScreen.mainScreen.scale;
++
++  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size format:format];
++  return [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
++    UIBezierPath *backgroundPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, size.width, size.height)];
++    [ColorFromRGB(0xFFCF3F) setFill];
++    [backgroundPath fill];
++
++    NSString *numberText = markerNumber.stringValue;
++    NSDictionary *attributes = @{
++      NSFontAttributeName: [UIFont systemFontOfSize:6 weight:UIFontWeightBlack],
++      NSForegroundColorAttributeName: ColorFromRGB(0x251B2D)
++    };
++    CGSize textSize = [numberText sizeWithAttributes:attributes];
++    CGRect textRect = CGRectMake(
++      (size.width - textSize.width) / 2.0,
++      (size.height - textSize.height) / 2.0,
++      textSize.width,
++      textSize.height
++    );
++    [numberText drawInRect:textRect withAttributes:attributes];
++  }];
++}
+
+-@implementation MapViewController
 +- (instancetype)init
 +{
 +  self = [super init];
@@ -460,7 +491,9 @@ index fc6a668..a8103c6 100644
 +    __markerList = @[];
 +
 +    InitializeKakaoMapsSDKIfNeeded();
-+
+
+-NSArray *createMarker(NSArray *markerList, NSString *markerImageUrl, NSString *markerImageName) {
+-  NSMutableArray *pointList = [[NSMutableArray alloc] init];
 +    _mapContainer = [[KMViewContainer alloc] initWithFrame:self.bounds];
 +    _mapContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 +    [self addSubview:_mapContainer];
@@ -471,19 +504,27 @@ index fc6a668..a8103c6 100644
 +  }
 +  return self;
 +}
-+
+
+-  for (NSDictionary *point in markerList) {
+-    MTMapPOIItem* item = [MTMapPOIItem poiItem];
+-    item.itemName = point[@"markerName"];
+-    item.mapPoint = [MTMapPoint mapPointWithGeoCoord:MTMapPointGeoMake([point[@"lat"] doubleValue], [point[@"lng"] doubleValue])];
+-    item.showAnimationType = MTMapPOIItemShowAnimationTypeSpringFromGround;
 +- (void)dealloc
 +{
 +  [self stopMapReadyTimeout];
 +  [_mapController pauseEngine];
 +  [_mapController resetEngine];
 +}
-+
+
+-    item.markerType = markerImageUrl != nil || markerImageName != nil ? MTMapPOIItemMarkerTypeCustomImage : MTMapPOIItemMarkerTypeBluePin;
 +- (BOOL)hasRenderableSize
 +{
 +  return self.bounds.size.width > 0.5 && self.bounds.size.height > 0.5;
 +}
-+
+
+-    if (markerImageUrl != nil) {
+-      item.customImage = [[[UIImage alloc] init] initWithData: [NSData dataWithContentsOfURL: [NSURL URLWithString: markerImageUrl]]];
 +- (CGRect)mapBounds
 +{
 +  return CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
@@ -577,20 +618,23 @@ index fc6a668..a8103c6 100644
 +    [self stopMapReadyTimeout];
 +    if (_mapController.isEngineActive) {
 +      [_mapController pauseEngine];
-+    }
+     }
 +    return;
 +  }
-+
+
+-    [pointList addObject:item];
 +  if (_mapUnavailable) {
 +    [self updateMapContainerLayout];
 +    return;
-+  }
-+
+   }
+
+-  return pointList;
 +  [self updateMapContainerLayout];
 +  [self prepareEngineIfNeeded];
 +  [self activateEngineIfReady];
-+}
-+
+ }
+
+-- (void)setMarkerImageName:(NSString *)markerImageName {
 +- (void)prepareEngineIfNeeded
 +{
 +  if (
@@ -620,9 +664,8 @@ index fc6a668..a8103c6 100644
 +      ![self hasRenderableSize]
 +    ) {
 +      return;
-     }
-
--    [pointList addObject:item];
++    }
++
 +    [self updateMapContainerLayout];
 +
 +    BOOL prepared = [self->_mapController prepareEngine];
@@ -639,9 +682,8 @@ index fc6a668..a8103c6 100644
 +{
 +  if (_mapUnavailable) {
 +    return;
-   }
-
--  return pointList;
++  }
++
 +  _mapUnavailable = YES;
 +  [self stopMapReadyTimeout];
 +  [_mapController pauseEngine];
@@ -685,9 +727,8 @@ index fc6a668..a8103c6 100644
 +  [self prepareEngineIfNeeded];
 +  [self activateEngineIfReady];
 +  [self completeMapReadyIfAvailableWithReason:@"layoutSubviews"];
- }
-
--- (void)setMarkerImageName:(NSString *)markerImageName {
++}
++
 +- (void)setMarkerImageName:(NSString *)markerImageName
 +{
    __markerImageName = markerImageName;
@@ -728,16 +769,16 @@ index fc6a668..a8103c6 100644
 -  [self load];
 +
 +  [self applyCurrentCamera];
- }
-
--- (void)load {
--  if (_mapView == nil) {
++}
++
 +- (void)setFitToMarkers:(BOOL)fitToMarkers
 +{
 +  _fitToMarkers = fitToMarkers;
 +  [self applyCurrentCamera];
-+}
-+
+ }
+
+-- (void)load {
+-  if (_mapView == nil) {
 +- (void)applyCurrentCamera
 +{
 +  if (_fitToMarkers && [self moveMapToMarkerBounds]) {
@@ -835,11 +876,10 @@ index fc6a668..a8103c6 100644
 +    [self emitChangeForMap:map];
 +  }];
 +  return YES;
- }
-
--- (void)mapView:(MTMapView*)mapView finishedMapMoveAnimation:(MTMapPoint*)mapCenterPoint
++}
++
 +- (void)moveMapToCurrentCenter
- {
++{
 +  if (_mapUnavailable) {
 +    return;
 +  }
@@ -868,7 +908,18 @@ index fc6a668..a8103c6 100644
 +  return __markerImageName.length > 0 ? __markerImageName : OnreoriDefaultPoiStyleID;
 +}
 +
-+- (void)registerMarkerPoiStyleWithManager:(LabelManager *)manager styleID:(NSString *)styleID
++- (NSString *)markerPoiStyleIDForMarkerNumber:(NSNumber *)markerNumber
++{
++  if (markerNumber != nil) {
++    return [NSString stringWithFormat:@"%@-number-%@", OnreoriDefaultPoiStyleID, markerNumber];
++  }
++
++  return [self markerPoiStyleID];
++}
++
++- (void)registerMarkerPoiStyleWithManager:(LabelManager *)manager
++                                  styleID:(NSString *)styleID
++                             markerNumber:(NSNumber *)markerNumber
 +{
 +  [manager removePoiStyle:styleID];
 +
@@ -876,8 +927,11 @@ index fc6a668..a8103c6 100644
 +    TransitionTypeNone,
 +    TransitionTypeNone
 +  };
++  UIImage *markerImage = markerNumber != nil
++    ? CreateOnreoriRouteMarkerImage(markerNumber)
++    : CreateOnreoriMarkerImage();
 +  PoiIconStyle *iconStyle =
-+    [[PoiIconStyle alloc] initWithSymbol:CreateOnreoriMarkerImage()
++    [[PoiIconStyle alloc] initWithSymbol:markerImage
 +                             anchorPoint:CGPointMake(0.5, 1.0)
 +                              transition:transition
 +              enableEntranceTransition:NO
@@ -920,22 +974,26 @@ index fc6a668..a8103c6 100644
 +  }
 +
 +  [layer clearAllItems];
-+  NSString *styleID = [self markerPoiStyleID];
-+  [self registerMarkerPoiStyleWithManager:manager styleID:styleID];
 +
 +  [__markerList enumerateObjectsUsingBlock:^(NSDictionary *point, NSUInteger index, BOOL *stop) {
 +    double lat = CoordinateValue(point, @"lat");
 +    double lng = CoordinateValue(point, @"lng");
++    NSNumber *markerNumber = MarkerNumberValue(point);
++    NSString *styleID = [self markerPoiStyleIDForMarkerNumber:markerNumber];
++    [self registerMarkerPoiStyleWithManager:manager
++                                    styleID:styleID
++                               markerNumber:markerNumber];
 +    NSString *poiID = [NSString stringWithFormat:@"onreori-marker-%lu", (unsigned long)index];
 +    PoiOptions *poiOptions = [[PoiOptions alloc] initWithStyleID:styleID poiID:poiID];
 +    poiOptions.rank = NSIntegerMax - (NSInteger)index;
 +    Poi *poi = [layer addPoiWithOption:poiOptions at:CreateMapPoint(lat, lng) callback:nil];
 +    [poi show];
 +  }];
-+}
-+
+ }
+
+-- (void)mapView:(MTMapView*)mapView finishedMapMoveAnimation:(MTMapPoint*)mapCenterPoint
 +- (void)emitChangeForMap:(KakaoMap *)map
-+{
+ {
 +  if (_onChange == nil || map == nil) {
 +    return;
 +  }

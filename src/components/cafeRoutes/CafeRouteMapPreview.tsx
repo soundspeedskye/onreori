@@ -28,6 +28,7 @@ type KakaoMapMarker = {
   lat: number;
   lng: number;
   markerName: string;
+  markerNumber: number;
 };
 
 type KakaoMapViewWithStyleProps = {
@@ -100,6 +101,17 @@ function getRouteMapSignature(stops: CafeRouteStop[]) {
     .join('|');
 }
 
+function buildCafeRouteMarkerList(stops: CafeRouteStop[]): KakaoMapMarker[] {
+  return [...stops]
+    .sort((a, b) => a.order - b.order)
+    .map(stop => ({
+      lat: stop.latitude,
+      lng: stop.longitude,
+      markerName: `${stop.order}. ${stop.name}`,
+      markerNumber: stop.order,
+    }));
+}
+
 export function CafeRouteMapPreview({
   height,
   onRenderSettled,
@@ -115,17 +127,7 @@ export function CafeRouteMapPreview({
   const previewWidth =
     layoutWidth === null ? null : Math.max(1, Math.round(layoutWidth));
   const centerPoint = useMemo(() => getRouteMapCenter(stops), [stops]);
-  const markerList = useMemo(
-    () =>
-      [...stops]
-        .sort((a, b) => a.order - b.order)
-        .map(stop => ({
-          lat: stop.latitude,
-          lng: stop.longitude,
-          markerName: `${stop.order}. ${stop.name}`,
-        })),
-    [stops],
-  );
+  const markerList = useMemo(() => buildCafeRouteMarkerList(stops), [stops]);
   const mapKey = useMemo(() => getRouteMapSignature(stops), [stops]);
   const clearLoadTimeout = useCallback(() => {
     if (loadTimeoutRef.current) {

@@ -3,6 +3,8 @@ package com.jiggag.rnkakaomaps;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.view.Choreographer;
 import android.util.Log;
@@ -44,6 +46,11 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
     private static final String PARAM_LAT = "lat";
     private static final String PARAM_LNG = "lng";
     private static final String PARAM_MARKER_NAME = "markerName";
+    private static final String PARAM_MARKER_NUMBER = "markerNumber";
+    private static final int ROUTE_MARKER_BACKGROUND_COLOR = Color.rgb(255, 207, 63);
+    private static final int ROUTE_MARKER_TEXT_COLOR = Color.rgb(37, 27, 45);
+    private static final int ROUTE_MARKER_SIZE_DP = 16;
+    private static final int ROUTE_MARKER_TEXT_SIZE_DP = 6;
 
     private final ThemedReactContext reactContext;
     private final MapView mapView;
@@ -380,12 +387,13 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
             }
 
             String markerName = getString(markerMap.get(PARAM_MARKER_NAME));
+            Integer markerNumber = getInteger(markerMap.get(PARAM_MARKER_NUMBER));
             LabelOptions options = LabelOptions.from(
                     "onreori-marker-" + i,
                     LatLng.from(lat, lng)
-            ).setStyles(createMarkerStyles(map));
+            ).setStyles(createMarkerStyles(map, markerNumber));
 
-            if (markerName != null && !markerName.isEmpty()) {
+            if (markerNumber == null && markerName != null && !markerName.isEmpty()) {
                 options.setTexts(new LabelTextBuilder().setTexts(markerName));
             }
 
@@ -393,7 +401,17 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
         }
     }
 
-    private LabelStyles createMarkerStyles(KakaoMap map) {
+    private LabelStyles createMarkerStyles(KakaoMap map, @Nullable Integer markerNumber) {
+        if (markerNumber != null) {
+            return map.getLabelManager().addLabelStyles(
+                    LabelStyles.from(
+                            LabelStyle.from(createNumberMarkerBitmap(markerNumber))
+                                    .setAnchorPoint(0.5f, 1.0f)
+                                    .setApplyDpScale(false)
+                    )
+            );
+        }
+
         int markerImageResourceId = markerImageName != null
                 ? getResources().getIdentifier(markerImageName, "drawable", reactContext.getPackageName())
                 : 0;
@@ -416,6 +434,32 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
         return map.getLabelManager().addLabelStyles(
                 LabelStyles.from(LabelStyle.from().setTextStyles(28, Color.BLACK))
         );
+    }
+
+    private Bitmap createNumberMarkerBitmap(int markerNumber) {
+        float density = getResources().getDisplayMetrics().density;
+        int size = Math.round(ROUTE_MARKER_SIZE_DP * density);
+        float textSize = ROUTE_MARKER_TEXT_SIZE_DP * density;
+        float center = size / 2f;
+
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        Paint backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        backgroundPaint.setColor(ROUTE_MARKER_BACKGROUND_COLOR);
+        canvas.drawCircle(center, center, center, backgroundPaint);
+
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(ROUTE_MARKER_TEXT_COLOR);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTextSize(textSize);
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
+        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+        float textY = center - (fontMetrics.ascent + fontMetrics.descent) / 2f;
+        canvas.drawText(String.valueOf(markerNumber), center, textY, textPaint);
+
+        return bitmap;
     }
 
     @Nullable
@@ -499,5 +543,14 @@ public class OnreoriAndroidKakaoMapView extends FrameLayout implements Lifecycle
     @Nullable
     private static String getString(@Nullable Object value) {
         return value instanceof String ? (String) value : null;
+    }
+
+    @Nullable
+    private static Integer getInteger(@Nullable Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+
+        return null;
     }
 }
