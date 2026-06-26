@@ -1,10 +1,10 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import React, {useMemo} from 'react';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
-import { SUPPORTED_LANGUAGES } from '../../i18n/languages';
-import { colors, radii, spacing } from '../../theme/tokens';
-import type { EventRoomLanguageFilter } from '../../types';
+import {SUPPORTED_LANGUAGES} from '../../i18n/languages';
+import {colors, radii, spacing} from '../../theme/tokens';
+import type {EventRoomLanguageFilter} from '../../types';
 
 type RoomLanguageFilterBarProps = {
   selectedFilter: EventRoomLanguageFilter;
@@ -15,14 +15,17 @@ export function RoomLanguageFilterBar({
   selectedFilter,
   onSelectFilter,
 }: RoomLanguageFilterBarProps) {
-  const { t } = useTranslation('language');
-  const filters: { code: EventRoomLanguageFilter; label: string }[] = [
-    { code: 'all', label: t('allLanguages') },
-    ...SUPPORTED_LANGUAGES.map(language => ({
-      code: language.code,
-      label: language.chipLabel,
-    })),
-  ];
+  const {t} = useTranslation('language');
+  const filters = useMemo(
+    (): {code: EventRoomLanguageFilter; label: string}[] => [
+      {code: 'all', label: t('allLanguages')},
+      ...SUPPORTED_LANGUAGES.map(language => ({
+        code: language.code,
+        label: language.chipLabel,
+      })),
+    ],
+    [t],
+  );
 
   return (
     <View accessibilityRole="radiogroup" style={styles.container}>
@@ -32,11 +35,10 @@ export function RoomLanguageFilterBar({
         return (
           <Pressable
             accessibilityRole="radio"
-            accessibilityState={{ checked: selected }}
+            accessibilityState={{checked: selected}}
             key={filter.code}
             onPress={() => onSelectFilter(filter.code)}
-            style={[styles.chip, selected && styles.selectedChip]}
-          >
+            style={[styles.chip, selected && styles.selectedChip]}>
             <Text style={[styles.label, selected && styles.selectedLabel]}>
               {filter.label}
             </Text>

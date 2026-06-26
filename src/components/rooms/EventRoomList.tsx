@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
@@ -12,18 +12,14 @@ type EventRoomListProps = {
   rooms: EventRoom[];
   loading: boolean;
   selectedRoomId: string | null;
-  entryCode: string;
-  onEntryCodeChange: (entryCode: string) => void;
   onSelectRoom: (roomId: string) => void;
-  onJoinRoom: (room: EventRoom) => void;
+  onJoinRoom: (room: EventRoom, entryCode: string) => void;
 };
 
 export function EventRoomList({
   rooms,
   loading,
   selectedRoomId,
-  entryCode,
-  onEntryCodeChange,
   onSelectRoom,
   onJoinRoom,
 }: EventRoomListProps) {
@@ -46,15 +42,10 @@ export function EventRoomList({
   return (
     <View style={styles.roomList}>
       {rooms.map(item => (
-        <RoomCard
+        <EventRoomListItem
           key={item.id}
-          entryCode={entryCode}
-          isTutorial={isTutorialRoomId(item.id)}
-          onEntryCodeChange={onEntryCodeChange}
-          onJoin={() => {
-            onJoinRoom(item);
-          }}
-          onSelect={() => onSelectRoom(item.id)}
+          onJoinRoom={onJoinRoom}
+          onSelectRoom={onSelectRoom}
           room={item}
           selected={selectedRoomId === item.id}
         />
@@ -62,6 +53,40 @@ export function EventRoomList({
     </View>
   );
 }
+
+type EventRoomListItemProps = {
+  room: EventRoom;
+  selected: boolean;
+  onSelectRoom: (roomId: string) => void;
+  onJoinRoom: (room: EventRoom, entryCode: string) => void;
+};
+
+const EventRoomListItem = React.memo(function EventRoomListItem({
+  room,
+  selected,
+  onSelectRoom,
+  onJoinRoom,
+}: EventRoomListItemProps) {
+  const handleJoin = useCallback(
+    (entryCode: string) => {
+      onJoinRoom(room, entryCode);
+    },
+    [onJoinRoom, room],
+  );
+  const handleSelect = useCallback(() => {
+    onSelectRoom(room.id);
+  }, [onSelectRoom, room.id]);
+
+  return (
+    <RoomCard
+      isTutorial={isTutorialRoomId(room.id)}
+      onJoin={handleJoin}
+      onSelect={handleSelect}
+      room={room}
+      selected={selected}
+    />
+  );
+});
 
 const styles = StyleSheet.create({
   loader: {

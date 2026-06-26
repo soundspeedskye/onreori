@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import {
@@ -23,40 +23,39 @@ export function useRoomJoinAction({
   navigation,
 }: UseRoomJoinActionParams) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [entryCode, setEntryCode] = useState('');
 
-  const handleJoinRoom = async (room: EventRoom) => {
-    if (!user) {
-      return;
-    }
+  const handleJoinRoom = useCallback(
+    async (room: EventRoom, entryCode: string) => {
+      if (!user) {
+        return;
+      }
 
-    try {
-      await joinRoomWithCode(
-        room.id,
-        isTutorialRoomId(room.id) ? '' : entryCode,
-        user,
-      );
-      setEntryCode('');
-      setSelectedRoomId(null);
-      navigation.navigate('RoomChat', {
-        roomId: room.id,
-        title: room.title,
-        categoryId: room.categoryId,
-        languageCodes: room.languageCodes,
-      });
-    } catch (error) {
-      showError(error, {
-        title: ALERT_MESSAGES.failed,
-        fallbackMessage: ALERT_MESSAGES.checkInput,
-      });
-    }
-  };
+      try {
+        await joinRoomWithCode(
+          room.id,
+          isTutorialRoomId(room.id) ? '' : entryCode,
+          user,
+        );
+        setSelectedRoomId(null);
+        navigation.navigate('RoomChat', {
+          roomId: room.id,
+          title: room.title,
+          categoryId: room.categoryId,
+          languageCodes: room.languageCodes,
+        });
+      } catch (error) {
+        showError(error, {
+          title: ALERT_MESSAGES.failed,
+          fallbackMessage: ALERT_MESSAGES.checkInput,
+        });
+      }
+    },
+    [navigation, user],
+  );
 
   return {
     selectedRoomId,
     setSelectedRoomId,
-    entryCode,
-    setEntryCode,
     handleJoinRoom,
   };
 }

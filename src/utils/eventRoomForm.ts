@@ -1,6 +1,6 @@
 import {ALERT_MESSAGES} from '../constants/alertMessages';
 import {EVENT_CATEGORY_IDS} from '../constants/eventCategories';
-import {i18n} from '../i18n';
+import {DEFAULT_LANGUAGE_CODE, i18n, type SupportedLanguageCode} from '../i18n';
 import {
   getKoreanEventRoomAvailability,
   isKoreanEventRoomDateActiveNow,
@@ -8,8 +8,6 @@ import {
 import {getRoomCreationActiveWindowMessage} from './eventRoomPolicy';
 
 export type RoomCreationConfig = {
-  titleLabel: string;
-  titlePlaceholder: string;
   requiresPlace: boolean;
   allowsEventUrlPreview: boolean;
 };
@@ -24,29 +22,30 @@ type RoomCreationDraft = {
 export function getRoomCreationConfig(categoryId: string): RoomCreationConfig {
   if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
     return {
-      titleLabel: i18n.t('artistTitleLabel', {ns: 'rooms'}),
-      titlePlaceholder: i18n.t('artistTitlePlaceholder', {ns: 'rooms'}),
       requiresPlace: false,
       allowsEventUrlPreview: false,
     };
   }
 
   return {
-    titleLabel: i18n.t('titleLabel', {ns: 'rooms'}),
-    titlePlaceholder:
-      categoryId === EVENT_CATEGORY_IDS.POPUP
-        ? i18n.t('popupTitlePlaceholder', {ns: 'rooms'})
-        : i18n.t('eventDayTitlePlaceholder', {ns: 'rooms'}),
     requiresPlace: true,
     allowsEventUrlPreview: true,
   };
 }
 
-export function buildRoomTitle(categoryId: string, title: string): string {
+export function buildRoomTitle(
+  categoryId: string,
+  title: string,
+  languageCode: SupportedLanguageCode = DEFAULT_LANGUAGE_CODE,
+): string {
   const trimmedTitle = title.trim();
 
   if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
-    return i18n.t('cafeRoomTitle', {title: trimmedTitle, ns: 'rooms'});
+    return i18n.t('cafeRoomTitle', {
+      title: trimmedTitle,
+      lng: languageCode,
+      ns: 'rooms',
+    });
   }
 
   return trimmedTitle;

@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {useAppLanguage} from '../../i18n/AppLanguageProvider';
@@ -65,30 +65,30 @@ export function useRoomCreationForm({
     delete appliedPreviewValuesRef.current.location;
   }, [requiresPlace, selectedPlace, t]);
 
-  const handleTitleChange = (nextTitle: string) => {
+  const handleTitleChange = useCallback((nextTitle: string) => {
     setTitle(nextTitle);
     delete appliedPreviewValuesRef.current.title;
-  };
+  }, []);
 
-  const handleLocationChange = (nextLocation: string) => {
+  const handleLocationChange = useCallback((nextLocation: string) => {
     setLocation(nextLocation);
     setSelectedPlaceForRoom(null);
     delete appliedPreviewValuesRef.current.location;
-  };
+  }, []);
 
-  const handleDateChange = (nextEventDate: string) => {
+  const handleDateChange = useCallback((nextEventDate: string) => {
     delete appliedPreviewValuesRef.current.eventDate;
     setEventDate(nextEventDate);
-  };
+  }, []);
 
-  const toggleLanguageCode = (languageCode: SupportedLanguageCode) => {
+  const toggleLanguageCode = useCallback((languageCode: SupportedLanguageCode) => {
     languageSelectionEditedRef.current = true;
     setLanguageCodes(currentLanguageCodes =>
       toggleRoomLanguageCode(currentLanguageCodes, languageCode),
     );
-  };
+  }, []);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setTitle('');
     setEventDate('');
     setLocation('');
@@ -98,7 +98,7 @@ export function useRoomCreationForm({
     setLanguageCodes([language]);
     setSelectedPlaceForRoom(null);
     appliedPreviewValuesRef.current = {};
-  };
+  }, [language]);
 
   return {
     title,

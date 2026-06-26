@@ -1,19 +1,21 @@
 import React from 'react';
-import { Platform, StyleSheet, Text } from 'react-native';
+import {Platform, Pressable, StyleSheet, Text} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 
-import type { SupportedLanguageCode } from '../../i18n/languages';
-import { colors, radii, spacing } from '../../theme/tokens';
-import { formatDateInput, parseDateInput } from '../../utils/date';
-import type { RoomCreationConfig } from '../../utils/eventRoomForm';
-import { LanguageChipSelector } from '../language/LanguageChipSelector';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { TextField } from '../ui/TextField';
+import type {SupportedLanguageCode} from '../../i18n/languages';
+import {colors, radii, spacing} from '../../theme/tokens';
+import {formatDateInput, parseDateInput} from '../../utils/date';
+import type {RoomCreationConfig} from '../../utils/eventRoomForm';
+import {LanguageChipSelector} from '../language/LanguageChipSelector';
+import {Button} from '../ui/Button';
+import {Card} from '../ui/Card';
+import {TextField} from '../ui/TextField';
 
 type RoomCreateFormProps = {
   creationConfig: RoomCreationConfig;
+  titleLabel: string;
+  titlePlaceholder: string;
   title: string;
   eventDate: string;
   location: string;
@@ -37,6 +39,8 @@ type RoomCreateFormProps = {
 
 export function RoomCreateForm({
   creationConfig,
+  titleLabel,
+  titlePlaceholder,
   title,
   eventDate,
   location,
@@ -65,18 +69,27 @@ export function RoomCreateForm({
     <Card style={styles.createBox}>
       <Text style={styles.sectionTitle}>{tRooms('createTitle')}</Text>
       <TextField
-        accessibilityLabel={creationConfig.titleLabel}
+        accessibilityLabel={titleLabel}
         onChangeText={onTitleChange}
-        placeholder={creationConfig.titlePlaceholder}
+        placeholder={titlePlaceholder}
         value={title}
       />
-      <Button
+      <Pressable
+        accessibilityLabel={eventDate || tRooms('datePlaceholder')}
+        accessibilityRole="button"
         onPress={() => onShowDatePickerChange(true)}
-        title={eventDate || tRooms('datePlaceholder')}
-        variant="secondary"
-      />
+        style={styles.dateField}>
+        <Text
+          style={[
+            styles.dateText,
+            eventDate ? styles.dateTextSelected : styles.dateTextPlaceholder,
+          ]}>
+          {eventDate || tRooms('datePlaceholder')}
+        </Text>
+      </Pressable>
       {showDatePicker ? (
         <DateTimePicker
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           mode="date"
           value={parseDateInput(eventDate) ?? new Date()}
           onChange={(_event, date) => {
@@ -165,6 +178,28 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 13,
     fontWeight: '800',
+  },
+  dateField: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.button,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  dateText: {
+    fontSize: 15,
+  },
+  dateTextPlaceholder: {
+    color: colors.text,
+    fontWeight: '800',
+  },
+  dateTextSelected: {
+    color: colors.text,
+    fontWeight: '900',
   },
   createBox: {
     borderRadius: radii.hero,

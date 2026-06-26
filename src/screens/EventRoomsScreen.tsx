@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -36,27 +36,27 @@ export function EventRoomsScreen({navigation, route}: Props) {
   const [selectedLanguageFilter, setSelectedLanguageFilter] =
     useState<EventRoomLanguageFilter>('all');
   const category = getEventCategoryById(route.params.categoryId);
-  const creationConfig = category
-    ? getRoomCreationConfig(category.id)
-    : getRoomCreationConfig(route.params.categoryId);
-  const localizedCreationConfig = useMemo(() => {
-    if (category?.id === EVENT_CATEGORY_IDS.CAFE_EVENT) {
+  const categoryId = category?.id ?? route.params.categoryId;
+  const creationConfig = useMemo(
+    () => getRoomCreationConfig(categoryId),
+    [categoryId],
+  );
+  const titleCopy = useMemo(() => {
+    if (categoryId === EVENT_CATEGORY_IDS.CAFE_EVENT) {
       return {
-        ...creationConfig,
         titleLabel: tRooms('artistTitleLabel'),
         titlePlaceholder: tRooms('artistTitlePlaceholder'),
       };
     }
 
     return {
-      ...creationConfig,
       titleLabel: tRooms('titleLabel'),
       titlePlaceholder:
-        category?.id === EVENT_CATEGORY_IDS.POPUP
+        categoryId === EVENT_CATEGORY_IDS.POPUP
           ? tRooms('popupTitlePlaceholder')
           : tRooms('eventDayTitlePlaceholder'),
     };
-  }, [category?.id, creationConfig, tRooms]);
+  }, [categoryId, tRooms]);
   const tutorialCopy = useMemo(() => getTutorialRoomCopy(language), [language]);
   const {rooms, loading, usingTutorialFallback, loadRooms, addRoomToList} =
     useEventRooms(category?.id, tutorialCopy);
@@ -65,7 +65,7 @@ export function EventRoomsScreen({navigation, route}: Props) {
     [rooms, selectedLanguageFilter],
   );
   const form = useRoomCreationForm({
-    requiresPlace: localizedCreationConfig.requiresPlace,
+    requiresPlace: creationConfig.requiresPlace,
     selectedPlace: route.params.selectedPlace,
   });
   const {previewLoading, handleFetchEventUrlPreview} = useEventUrlPreview({
@@ -79,11 +79,21 @@ export function EventRoomsScreen({navigation, route}: Props) {
   const {creating, handleCreateRoom} = useCreateRoomAction({
     user,
     category,
-    creationConfig: localizedCreationConfig,
+    creationConfig,
     form,
     onVisibleRoomCreated: addRoomToList,
   });
   const roomJoin = useRoomJoinAction({user, navigation});
+  const handleOpenMapPicker = useCallback(() => {
+    if (!category) {
+      return;
+    }
+
+    navigation.navigate('MapPicker', {
+      categoryId: category.id,
+      returnTo: 'EventRooms',
+    });
+  }, [category, navigation]);
 
   useEffect(() => {
     if (!user) {
@@ -115,7 +125,9 @@ export function EventRoomsScreen({navigation, route}: Props) {
             title={tRooms('categoryRoomTitle', {categoryTitle: category.title})}
           />
           <RoomCreateForm
-            creationConfig={localizedCreationConfig}
+            creationConfig={creationConfig}
+            titleLabel={titleCopy.titleLabel}
+            titlePlaceholder={titleCopy.titlePlaceholder}
             title={form.title}
             eventDate={form.eventDate}
             location={form.location}
@@ -133,12 +145,7 @@ export function EventRoomsScreen({navigation, route}: Props) {
             onShowDatePickerChange={form.setShowDatePicker}
             onEventUrlChange={form.setEventUrl}
             onFetchEventUrlPreview={handleFetchEventUrlPreview}
-            onOpenMapPicker={() =>
-              navigation.navigate('MapPicker', {
-                categoryId: category.id,
-                returnTo: 'EventRooms',
-              })
-            }
+            onOpenMapPicker={handleOpenMapPicker}
             onCreateRoom={handleCreateRoom}
           />
 
@@ -158,8 +165,6 @@ export function EventRoomsScreen({navigation, route}: Props) {
           rooms={visibleRooms}
           loading={loading}
           selectedRoomId={roomJoin.selectedRoomId}
-          entryCode={roomJoin.entryCode}
-          onEntryCodeChange={roomJoin.setEntryCode}
           onSelectRoom={roomJoin.setSelectedRoomId}
           onJoinRoom={roomJoin.handleJoinRoom}
         />

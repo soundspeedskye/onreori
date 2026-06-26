@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {isCafeEventCategory} from '../../constants/eventCategories';
@@ -40,37 +40,48 @@ export function useCreateRoomAction({
 }: UseCreateRoomActionParams) {
   const {t: tRooms} = useTranslation('rooms');
   const [creating, setCreating] = useState(false);
+  const {
+    eventDate,
+    eventUrl,
+    languageCodes: formLanguageCodes,
+    location,
+    newRoomCode,
+    reset,
+    selectedPlaceForRoom: selectedPlaceForRoomDraft,
+    title,
+  } = form;
 
-  const handleCreateRoom = async () => {
+  const handleCreateRoom = useCallback(async () => {
     if (!user || !category) {
       return;
     }
 
     const validationMessage = validateRoomCreationDraft(category.id, {
-      title: form.title,
-      eventDate: form.eventDate,
-      entryCode: form.newRoomCode,
-      location: form.location,
+      title,
+      eventDate,
+      entryCode: newRoomCode,
+      location,
     });
 
     if (validationMessage) {
-      showAlert({ title: validationMessage });
+      showAlert({title: validationMessage});
       return;
     }
 
     try {
       setCreating(true);
       const selectedPlaceForRoom = creationConfig.requiresPlace
-        ? form.selectedPlaceForRoom
+        ? selectedPlaceForRoomDraft
         : undefined;
-      const languageCodes = normalizeRoomLanguageCodes(form.languageCodes);
+      const languageCodes = normalizeRoomLanguageCodes(formLanguageCodes);
+      const primaryLanguage = getPrimaryRoomLanguage(languageCodes);
       const room = await createRoom({
         categoryId: category.id,
-        title: buildRoomTitle(category.id, form.title),
-        eventDate: form.eventDate,
-        location: creationConfig.requiresPlace ? form.location : '',
+        title: buildRoomTitle(category.id, title, primaryLanguage),
+        eventDate,
+        location: creationConfig.requiresPlace ? location : '',
         eventUrl: creationConfig.allowsEventUrlPreview
-          ? form.eventUrl
+          ? eventUrl
           : undefined,
         locationName: selectedPlaceForRoom?.name,
         address: selectedPlaceForRoom?.address,
@@ -78,11 +89,11 @@ export function useCreateRoomAction({
         latitude: selectedPlaceForRoom?.latitude,
         longitude: selectedPlaceForRoom?.longitude,
         subjectName: isCafeEventCategory(category.id)
-          ? form.title.trim()
+          ? title.trim()
           : undefined,
-        primaryLanguage: getPrimaryRoomLanguage(languageCodes),
+        primaryLanguage,
         languageCodes,
-        entryCode: form.newRoomCode,
+        entryCode: newRoomCode,
         user,
       });
       if (shouldShowRoomInTodayList(room)) {
@@ -96,7 +107,7 @@ export function useCreateRoomAction({
           }),
         });
       }
-      form.reset();
+      reset();
     } catch (error) {
       showError(error, {
         title: ALERT_MESSAGES.createFailed,
@@ -105,7 +116,22 @@ export function useCreateRoomAction({
     } finally {
       setCreating(false);
     }
-  };
+  }, [
+    category,
+    creationConfig.allowsEventUrlPreview,
+    creationConfig.requiresPlace,
+    eventDate,
+    eventUrl,
+    formLanguageCodes,
+    location,
+    newRoomCode,
+    onVisibleRoomCreated,
+    reset,
+    selectedPlaceForRoomDraft,
+    tRooms,
+    title,
+    user,
+  ]);
 
   return {
     creating,
