@@ -1,5 +1,6 @@
 import {isCafeEventCategory} from '../constants/eventCategories';
 import type {EventRoom} from '../types';
+import {parseUtcDateInput} from './date';
 
 type EventRoomPlaceSource = Pick<
   EventRoom,
@@ -7,25 +8,6 @@ type EventRoomPlaceSource = Pick<
 >;
 
 type EventRoomMetaSource = EventRoomPlaceSource & Pick<EventRoom, 'eventDate'>;
-
-function parseIsoDateOnly(value: string): Date | undefined {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return undefined;
-  }
-
-  const [year, month, day] = value.split('-').map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-
-  if (
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
-  ) {
-    return undefined;
-  }
-
-  return date;
-}
 
 export function getEventRoomPlaceLabel(room: EventRoomPlaceSource): string {
   return isCafeEventCategory(room.categoryId)
@@ -37,7 +19,7 @@ export function formatEventRoomDate(
   eventDate: string,
   locale = 'ko-KR',
 ): string {
-  const date = parseIsoDateOnly(eventDate);
+  const date = parseUtcDateInput(eventDate);
 
   if (!date) {
     return eventDate;

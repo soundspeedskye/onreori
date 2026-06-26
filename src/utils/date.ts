@@ -37,7 +37,7 @@ type DateInputParts = {
   day: number;
 };
 
-function parseDateInputParts(value: string): DateInputParts | undefined {
+export function parseUtcDateInput(value: string): Date | undefined {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return undefined;
   }
@@ -53,7 +53,21 @@ function parseDateInputParts(value: string): DateInputParts | undefined {
     return undefined;
   }
 
-  return { year, monthIndex: month - 1, day };
+  return parsedDate;
+}
+
+function parseDateInputParts(value: string): DateInputParts | undefined {
+  const parsedDate = parseUtcDateInput(value);
+
+  if (!parsedDate) {
+    return undefined;
+  }
+
+  return {
+    year: parsedDate.getUTCFullYear(),
+    monthIndex: parsedDate.getUTCMonth(),
+    day: parsedDate.getUTCDate(),
+  };
 }
 
 function getKoreanDateStartInstant(

@@ -13,10 +13,10 @@ import {i18n} from './index';
 import {
   DEFAULT_LANGUAGE_CODE,
   SUPPORTED_LANGUAGES,
-  SupportedLanguageCode,
   normalizeLanguageCode,
   normalizeOptionalLanguageCode,
 } from './languages';
+import type {SupportedLanguageCode} from './languages';
 
 const APP_LANGUAGE_STORAGE_KEY = '@onreori/appLanguage';
 
